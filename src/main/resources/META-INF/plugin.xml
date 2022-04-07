@@ -19,9 +19,18 @@
         <action id="com.querybuilder.MainAction"
                 class="org.quebee.com.MainAction"
                 text="Open SQL QueBee to Edit Query"
-                description="Open SQL QueBee to edit query"
-                icon="/images/qbicon.png">
+                description="Open SQL QueBee to edit query">
+<!--                icon="/images/qbicon.png">-->
             <add-to-group group-id="Console.Jdbc.Left" anchor="after" relative-to-action="Database.Settings"/>
         </action>
     </actions>
+
+    <projectListeners>
+        <listener class="org.quebee.com.DbPsiFacadeListener"
+                  topic="com.intellij.database.psi.DbPsiFacade$Listener"/>
+    </projectListeners>
+    <projectListeners>
+        <listener class="org.quebee.com.DataSourceStorageListener"
+                  topic="com.intellij.database.dataSource.DataSourceStorage$Listener"/>
+    </projectListeners>
 </idea-plugin>
