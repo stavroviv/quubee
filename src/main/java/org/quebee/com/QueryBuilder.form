@@ -68,7 +68,7 @@
                                 <constraints/>
                                 <properties>
                                   <borderPainted value="false"/>
-                                  <icon value="images/delete.png"/>
+                                  <icon value="images/cancel@2x_dark.png"/>
                                   <maximumSize width="30" height="30"/>
                                   <opaque value="true"/>
                                   <preferredSize width="30" height="30"/>

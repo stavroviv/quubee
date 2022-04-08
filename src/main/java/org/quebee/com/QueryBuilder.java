@@ -1,5 +1,8 @@
 package org.quebee.com;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.ui.tabs.impl.JBTabsImpl;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import java.awt.*;
@@ -19,19 +22,26 @@ public class QueryBuilder {
 
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("QueryBuilder");
-        frame.setPreferredSize(new Dimension(600, 700));
-        QueryBuilder queryBuilder = new QueryBuilder();
-//        queryBuilder.splitPanelOne.getco(Color.BLACK);
-        BasicSplitPaneDivider divider = (BasicSplitPaneDivider) queryBuilder.splitPanelOne.getComponent(0);
-        divider.setBackground(Color.black);
-        divider.setBorder(null);
-//        queryBuilder.splitPanelOne.getComponents()[0].setBackground(Color.BLACK);
-//        queryBuilder.splitPanelOne.getComponents()[0].set(Color.BLACK);
-        frame.setContentPane(queryBuilder.panel1);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        JFrame frame = new JFrame("QueryBuilder");
+//        frame.setPreferredSize(new Dimension(600, 700));
+//        QueryBuilder queryBuilder = new QueryBuilder();
+////        queryBuilder.splitPanelOne.getco(Color.BLACK);
+//        BasicSplitPaneDivider divider = (BasicSplitPaneDivider) queryBuilder.splitPanelOne.getComponent(0);
+//        divider.setBackground(Color.black);
+//        divider.setBorder(null);
+////        queryBuilder.splitPanelOne.getComponents()[0].setBackground(Color.BLACK);
+////        queryBuilder.splitPanelOne.getComponents()[0].set(Color.BLACK);
+//        frame.setContentPane(queryBuilder.panel1);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//
+////        queryBuilder.panel1.add(new Tree());
+//        frame.pack();
+//        frame.setLocationRelativeTo(null);
+//        frame.setVisible(true);
 
-//        queryBuilder.panel1.add(new Tree());
+        final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+        JFrame frame = new JFrame("QueryBuilder");
+        frame.setContentPane(tabs);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
