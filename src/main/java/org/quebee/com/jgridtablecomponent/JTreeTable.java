@@ -32,7 +32,9 @@ import java.awt.*;
 
 public class JTreeTable extends JTable {
     protected TreeTableCellRenderer tree;
+    private void createUIComponents() {
 
+    }
     public JTreeTable(TreeTableModel treeTableModel) {
         super();
 

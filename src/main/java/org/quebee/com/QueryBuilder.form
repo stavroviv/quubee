@@ -80,13 +80,6 @@
                               </component>
                             </children>
                           </toolbar>
-                          <component id="51472" class="javax.swing.JTree" binding="tree2" default-binding="true">
-                            <constraints border-constraint="Center"/>
-                            <properties>
-                              <name value="tables"/>
-                              <opaque value="true"/>
-                            </properties>
-                          </component>
                         </children>
                       </grid>
                       <grid id="5ecca" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -240,7 +233,9 @@
                 <properties>
                   <background color="-12513521"/>
                   <borderPainted value="false"/>
+                  <floatable value="true"/>
                   <foreground color="-4511390"/>
+                  <opaque value="false"/>
                 </properties>
                 <border type="none"/>
                 <children>
