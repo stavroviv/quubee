@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.quebee.com.Test">
+  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties>
+      <background color="-16446911"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="8a010" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="fc8f8" class="javax.swing.JButton" binding="button1" default-binding="true">
+            <constraints border-constraint="Center"/>
+            <properties>
+              <background color="-12507636"/>
+              <enabled value="false"/>
+              <text value="Button"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>
