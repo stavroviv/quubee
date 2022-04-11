@@ -9,6 +9,7 @@ import com.intellij.ui.JBSplitter;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import org.jetbrains.annotations.NotNull;
+import org.quebee.com.jgridtablecomponent.DatabaseTablesModel;
 import org.quebee.com.jgridtablecomponent.FileSystemModel;
 import org.quebee.com.jgridtablecomponent.JTreeTable;
 
@@ -218,8 +219,11 @@ public class MainAction extends AnAction {
         JTable component = new JTable(array, columnsHeader);
 
         JBSplitter splitter = new JBSplitter();
-        splitter.setFirstComponent(TreeTableExample0());
-        splitter.setSecondComponent(component);
+        splitter.setFirstComponent(databaseTableExample0());
+        JBSplitter splitter2 = new JBSplitter();
+        splitter2.setFirstComponent(databaseTableExample0());
+        splitter2.setSecondComponent(TreeTableExample0());
+        splitter.setSecondComponent(splitter2);
         TabInfo info = new TabInfo(splitter);
         tabs.addTab(info).setText("Tables and fields").setActions(new DefaultActionGroup(), null);
 
@@ -279,6 +283,11 @@ public class MainAction extends AnAction {
 
     public JScrollPane TreeTableExample0() {
         JTreeTable treeTable = new JTreeTable(new FileSystemModel());
+        return new JScrollPane(treeTable);
+    }
+
+    public JScrollPane databaseTableExample0() {
+        JTreeTable treeTable = new JTreeTable(new DatabaseTablesModel());
         return new JScrollPane(treeTable);
     }
 

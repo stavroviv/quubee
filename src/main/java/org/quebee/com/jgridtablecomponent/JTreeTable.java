@@ -1,5 +1,7 @@
 package org.quebee.com.jgridtablecomponent;
 
+import com.intellij.ui.treeStructure.Tree;
+
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -30,7 +32,7 @@ public class JTreeTable extends JTable {
         return (getColumnClass(editingColumn) == TreeTableModel.class) ? -1 : editingRow;
     }
 
-    public class TreeTableCellRenderer extends JTree implements TableCellRenderer {
+    public class TreeTableCellRenderer extends Tree implements TableCellRenderer {
 
         protected int visibleRow;
 
