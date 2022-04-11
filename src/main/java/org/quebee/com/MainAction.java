@@ -1,18 +1,21 @@
 package org.quebee.com;
 
+import com.intellij.application.options.codeStyle.OptionTableWithPreviewPanel;
+import com.intellij.application.options.codeStyle.SpeedSearchHelper;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.ui.JBColor;
-import com.intellij.ui.JBSplitter;
+import com.intellij.ui.*;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.util.ui.ColumnInfo;
+import icons.DatabaseIcons;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -98,8 +101,18 @@ public class MainAction extends AnAction {
         ListTreeTableModel dd = new ListTreeTableModel(root, new ColumnInfo[]{getTitleColumnInfo()});
 //        dd.set
         TreeTable treeTable = new TreeTable(dd);
-
+        treeTable.setTreeCellRenderer(new MyTitleRenderer());
         return new JBScrollPane(treeTable);
+    }
+
+    private static class MyTitleRenderer extends ColoredTreeCellRenderer {
+
+        @Override
+        public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected,
+                                          boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            setIcon(DatabaseIcons.Table);
+            append(value.toString());
+        }
     }
 
     static ColumnInfo<Object, String> getTitleColumnInfo() {
