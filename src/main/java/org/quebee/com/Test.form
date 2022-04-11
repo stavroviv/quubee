@@ -9,44 +9,28 @@
     </properties>
     <border type="none"/>
     <children>
-      <grid id="a4bc" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+      <grid id="a4bc" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="Center"/>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="1bf2f" class="javax.swing.JLabel">
-            <constraints/>
-            <properties>
-              <text value="Label"/>
-            </properties>
-          </component>
-          <component id="22bc9" class="javax.swing.JLabel">
-            <constraints/>
-            <properties>
-              <text value="Label"/>
-            </properties>
-          </component>
-          <component id="93c29" class="javax.swing.JTable" binding="table1" default-binding="true">
-            <constraints/>
-            <properties/>
-          </component>
-          <scrollpane id="6467a">
-            <constraints/>
+          <splitpane id="224b6">
+            <constraints border-constraint="Center"/>
             <properties/>
             <border type="none"/>
             <children>
-              <component id="4b29a" class="javax.swing.JTable" binding="table2" default-binding="true">
-                <constraints/>
-                <properties/>
-              </component>
+              <splitpane id="a5e98">
+                <constraints>
+                  <splitpane position="right"/>
+                </constraints>
+                <properties>
+                  <orientation value="0"/>
+                </properties>
+                <border type="none"/>
+                <children/>
+              </splitpane>
             </children>
-          </scrollpane>
-          <toolbar id="bee9c">
-            <constraints/>
-            <properties/>
-            <border type="none"/>
-            <children/>
-          </toolbar>
+          </splitpane>
         </children>
       </grid>
     </children>
