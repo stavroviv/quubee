@@ -4,9 +4,9 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.psi.codeStyle.extractor.ui.ExtractedSettingsDialog;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
@@ -14,18 +14,20 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.util.ui.ColumnInfo;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
 public class MainAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        showQueBui();
+    }
+
+    private void showQueBui() {
         final JFrame frame = new JFrame();
         frame.getContentPane().setLayout(new BorderLayout(0, 0));
         final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
@@ -48,15 +50,7 @@ public class MainAction extends AnAction {
 
         frame.getContentPane().add(south, BorderLayout.SOUTH);
 
-        JBSplitter splitter = new JBSplitter();
-        splitter.setFirstComponent(databaseTableExample0());
-        JBSplitter splitter2 = new JBSplitter();
-        splitter2.setFirstComponent(databaseTableExample0());
-        splitter2.setSecondComponent(databaseTableExample0());
-        splitter.setSecondComponent(splitter2);
-
-        TabInfo info = new TabInfo(splitter);
-        tabs.addTab(info).setText("Tables and fields").setActions(new DefaultActionGroup(), null);
+        tabs.addTab(getTablesFields()).setText("Tables and fields").setActions(new DefaultActionGroup(), null);
         tabs.addTab(new TabInfo(getLinksTable())).setText("Links").setActions(new DefaultActionGroup(), null);
         tabs.addTab(new TabInfo(new JTable())).setText("Grouping").setActions(new DefaultActionGroup(), null);
         tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
@@ -67,6 +61,17 @@ public class MainAction extends AnAction {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    private TabInfo getTablesFields() {
+        JBSplitter splitter = new JBSplitter();
+        splitter.setProportion(0.3f);
+        splitter.setFirstComponent(databaseTableExample0());
+        JBSplitter splitter2 = new JBSplitter();
+        splitter2.setFirstComponent(databaseTableExample0());
+        splitter2.setSecondComponent(databaseTableExample0());
+        splitter.setSecondComponent(splitter2);
+        return new TabInfo(splitter);
     }
 
     private JTable getLinksTable() {
@@ -89,30 +94,29 @@ public class MainAction extends AnAction {
         root.add(new DefaultMutableTreeTableNode("test 2"));
         root.add(new DefaultMutableTreeTableNode("test 3"));
         root.add(new DefaultMutableTreeTableNode("test 4"));
-        DefaultTreeTableModel defaultTreeTableModel = new DefaultTreeTableModel(root, List.of("Database"));
-//        defaultTreeTableModel.get
 
-        final ColumnInfo[] COLUMNS = new ColumnInfo[]{getTitleColumnInfo()};
-        ListTreeTableModel dd = new ListTreeTableModel(root, COLUMNS);
+        ListTreeTableModel dd = new ListTreeTableModel(root, new ColumnInfo[]{getTitleColumnInfo()});
+//        dd.set
         TreeTable treeTable = new TreeTable(dd);
-//        treeTable.getro
-        return new JScrollPane(treeTable);
+
+        return new JBScrollPane(treeTable);
     }
 
-    protected static ColumnInfo getTitleColumnInfo() {
-        return new ColumnInfo("TITLE") {
+    static ColumnInfo<Object, String> getTitleColumnInfo() {
+        return new ColumnInfo<>("Database") {
+//            @Override
+//            public @Nullable Icon getIcon() {
+//                return AllIcons.Actions.MenuSaveall;
+//            }
+
             @Nullable
             @Override
-            public Object valueOf(Object o) {
-                if (o instanceof ExtractedSettingsDialog.SettingsTreeNode) {
-                    return ((ExtractedSettingsDialog.SettingsTreeNode) o).getTitle();
-                } else {
-                    return o.toString();
-                }
+            public String valueOf(Object o) {
+                return o.toString();
             }
 
             @Override
-            public Class getColumnClass() {
+            public Class<?> getColumnClass() {
                 return TreeTableModel.class;
             }
         };
