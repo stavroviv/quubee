@@ -1,7 +1,15 @@
 package org.quebee.com;
 
+import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.impl.ActionButton;
+import com.intellij.openapi.actionSystem.impl.ActionButtonWithText;
+import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
+import com.intellij.openapi.actionSystem.impl.ActionToolbarSpacer;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.playback.commands.ActionCommand;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
@@ -19,6 +27,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static com.intellij.openapi.actionSystem.ActionPlaces.TOOLBAR;
 
 public class MainQuiBuiForm {
     final JFrame frame = new JFrame("Qui Bui");
@@ -50,8 +60,8 @@ public class MainQuiBuiForm {
         south.setOpaque(true);
 //        south.setBackground(JBColor.WHITE);
 
-        final JButton okButton = new JButton();
-//        okButton.setBackground(JBColor.BLUE);
+        final JButton okButton = new JButton(Messages.getOkButton());
+        okButton.setActionCommand(Messages.getOkButton());
         okButton.addActionListener(event -> hide());
 //        okButton.setDefaultCapable(true);
         south.add(okButton);
@@ -66,6 +76,7 @@ public class MainQuiBuiForm {
     private TabInfo getTablesFields() {
         JBSplitter splitter = new JBSplitter();
         splitter.setProportion(0.3f);
+
         splitter.setFirstComponent(treeTable("Database"));
         JBSplitter splitter2 = new JBSplitter();
         splitter2.setFirstComponent(treeTable("Tables"));
@@ -84,7 +95,8 @@ public class MainQuiBuiForm {
         return new JTable(array, columnsHeader);
     }
 
-    public JScrollPane treeTable(String tableName) {
+    public JComponent treeTable(String tableName) {
+
         DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode("test");
 
         DefaultMutableTreeTableNode child = new DefaultMutableTreeTableNode("test 1");
@@ -100,7 +112,25 @@ public class MainQuiBuiForm {
         ListTreeTableModel dd = new ListTreeTableModel(root, new ColumnInfo[]{getTitleColumnInfo(tableName)});
         TreeTable treeTable = new TreeTable(dd);
         treeTable.setTreeCellRenderer(new TableRenderer());
-        return new JBScrollPane(treeTable);
+        JBScrollPane jbScrollPane = new JBScrollPane(treeTable);
+
+        ActionToolbarImpl toolbar = new ActionToolbarImpl(TOOLBAR, new DefaultActionGroup(), true);
+//        toolbar.setTargetComponent(treeTable);
+//        Action act  = new ActionButton();
+//        ActionButton add = new ActionButtonWithText(
+//                this, presentation, place, ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+//        );
+        ActionToolbarSpacer actionToolbarSpacer = new ActionToolbarSpacer(true);
+//        add.setActionCommand("Test");
+        toolbar.add(actionToolbarSpacer);
+        toolbar.add(new Button("Delete"));
+//        jbScrollPane.add(toolbar);
+//        jbScrollPane.add(treeTable);
+
+        SimpleToolWindowPanel panel = new SimpleToolWindowPanel(true);
+        panel.setContent(jbScrollPane);
+        panel.setToolbar(toolbar);
+        return panel;
     }
 
     public void show() {
