@@ -1,30 +1,19 @@
 package org.quebee.com;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.ui.DialogPanel;
-import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.ui.tabs.JBTabsPosition;
+import com.intellij.ui.JBColor;
+import com.intellij.ui.JBSplitter;
 import com.intellij.ui.tabs.TabInfo;
-import com.intellij.ui.tabs.TabsListener;
-import com.intellij.ui.tabs.UiDecorator;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
-import com.intellij.ui.treeStructure.Tree;
 import org.jetbrains.annotations.NotNull;
+import org.quebee.com.jgridtablecomponent.FileSystemModel;
+import org.quebee.com.jgridtablecomponent.JTreeTable;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 public class MainAction extends AnAction {
 
@@ -37,20 +26,21 @@ public class MainAction extends AnAction {
 //        f.pack();
 //        f.setVisible(true);
 
-//        final JFrame frame = new JFrame();
-//        frame.getContentPane().setLayout(new BorderLayout(0, 0));
+        final JFrame frame = new JFrame();
+        frame.getContentPane().setLayout(new BorderLayout(0, 0));
 //        final int[] count = new int[1];
         final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
 //
-//        //final JPanel flow = new JPanel(new FlowLayout(FlowLayout.CENTER));
-//        //frame.getContentPane().add(flow);
-//        //flow.add(tabs.getComponent());
+        final JPanel flow = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        frame.getContentPane().add(flow);
+        flow.add(tabs.getComponent());
 //
-//        frame.getContentPane().add(tabs.getComponent(), BorderLayout.CENTER);
+        frame.getContentPane().add(tabs.getComponent(), BorderLayout.CENTER);
 //
-//        JPanel south = new JPanel(new FlowLayout());
-//        south.setOpaque(true);
-//        south.setBackground(Color.white);
+//        NonOpaquePanel panel = new NonOpaquePanel();
+        JPanel south = new JPanel(new FlowLayout());
+        south.setOpaque(true);
+        south.setBackground(JBColor.WHITE);
 //
 //        final JComboBox pos = new JComboBox(new Object[]{JBTabsPosition.top, JBTabsPosition.left, JBTabsPosition.right, JBTabsPosition.bottom});
 //        pos.setSelectedIndex(0);
@@ -84,14 +74,13 @@ public class MainAction extends AnAction {
 //        south.add(f);
 //
 //
-//        final JCheckBox v = new JCheckBox("Vertical");
-//        v.addItemListener(new ItemListener() {
-//            @Override
-//            public void itemStateChanged(final ItemEvent e) {
-//                tabs.setSideComponentVertical(v.isSelected());
-//            }
-//        });
-//        south.add(v);
+        final JButton v = new JButton("OK");
+        v.addItemListener(e1 -> tabs.setSideComponentVertical(v.isSelected()));
+        v.setDefaultCapable(true);
+        south.add(v);
+        final JButton v1 = new JButton("Cancel");
+        v1.addItemListener(e1 -> tabs.setSideComponentVertical(v.isSelected()));
+        south.add(v1);
 //
 //        final JCheckBox before = new JCheckBox("Before", true);
 //        before.addItemListener(new ItemListener() {
@@ -120,7 +109,7 @@ public class MainAction extends AnAction {
 //        });
 //        south.add(hide);
 //
-//        frame.getContentPane().add(south, BorderLayout.SOUTH);
+        frame.getContentPane().add(south, BorderLayout.SOUTH);
 //
 //        tabs.addListener(new TabsListener() {
 //            @Override
@@ -220,9 +209,29 @@ public class MainAction extends AnAction {
 //        tabs.addTab(new TabInfo(ScrollPaneFactory.createScrollPane(text)).setSideComponent(tb)).setText("Text text text");
 //        tabs.addTab(toAnimate1).append("Tree2", new SimpleTextAttributes(SimpleTextAttributes.STYLE_WAVED, Color.black, Color.red));
 //        tabs.addTab(new TabInfo(new JTable())).setText("Table 1").setActions(new DefaultActionGroup(), null);
-//        tabs.addTab(new TabInfo(new JTable())).setText("Table 2").setActions(new DefaultActionGroup(), null);
-//        tabs.addTab(new TabInfo(new JTable())).setText("Table 3").setActions(new DefaultActionGroup(), null);
-//        tabs.addTab(new TabInfo(new JTable())).setText("Table 4").setActions(new DefaultActionGroup(), null);
+        Object[][] array = new String[][] {{ "Test" , "dd", "1.5" },
+                { "Kkkk"  , "dd", "4.0" },
+                { "Mmmm", "f" , "2.2" }};
+
+        Object[] columnsHeader = new String[] {"Name", "UOM",
+                "Quantity"};
+        JTable component = new JTable(array, columnsHeader);
+
+        JBSplitter splitter = new JBSplitter();
+        splitter.setFirstComponent(TreeTableExample0());
+        splitter.setSecondComponent(component);
+        TabInfo info = new TabInfo(splitter);
+        tabs.addTab(info).setText("Tables and fields").setActions(new DefaultActionGroup(), null);
+
+
+//        component.add()
+
+        tabs.addTab(new TabInfo(component)).setText("Links").setActions(new DefaultActionGroup(), null);
+
+        tabs.addTab(new TabInfo(new JTable())).setText("Grouping").setActions(new DefaultActionGroup(), null);
+        tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
+        tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
+        tabs.addTab(new TabInfo(new JTable())).setText("Order").setActions(new DefaultActionGroup(), null);
 //        tabs.addTab(new TabInfo(new JTable())).setText("Table 5").setActions(new DefaultActionGroup(), null);
 //        tabs.addTab(new TabInfo(new JTable())).setText("Table 6").setActions(new DefaultActionGroup(), null);
 //        tabs.addTab(new TabInfo(new JTable())).setText("Table 7").setActions(new DefaultActionGroup(), null);
@@ -245,10 +254,11 @@ public class MainAction extends AnAction {
 //            }
 //        });
 //
-//       // frame.setBounds(1400, 200, 1000, 800);
-//        frame.pack();
-//        frame.setLocationRelativeTo(null);
-//        frame.setVisible(true);
+//        frame.setBounds(1400, 200, 1000, 800);
+        frame.setPreferredSize(new Dimension(1200, 700));
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
 
 //        JFrame f = new JFrame();
 //        f.setLayout(new BorderLayout());
@@ -257,14 +267,19 @@ public class MainAction extends AnAction {
 //        f.pack();
 //        f.setVisible(true);
 
-        JFrame frame = new JFrame("QueryBuilder");
-        frame.setPreferredSize(new Dimension(1200, 700));
-        frame.setContentPane(new QueryBuilder().panel1);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+//        JFrame frame = new JFrame("QueryBuilder");
+//
+//        frame.setContentPane(new QueryBuilder().panel1);
+//        frame.pack();
+//        frame.setLocationRelativeTo(null);
+//        frame.setVisible(true);
 
 //        messagebus()
+    }
+
+    public JScrollPane TreeTableExample0() {
+        JTreeTable treeTable = new JTreeTable(new FileSystemModel());
+        return new JScrollPane(treeTable);
     }
 
     @Override
