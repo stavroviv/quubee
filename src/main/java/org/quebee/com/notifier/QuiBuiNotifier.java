@@ -1,4 +1,4 @@
-package org.quebee.com;
+package org.quebee.com.notifier;
 
 import com.intellij.util.messages.Topic;
 

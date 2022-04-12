@@ -1,4 +1,4 @@
-package org.quebee.com;
+package org.quebee.com.panel;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBSplitter;
@@ -13,11 +13,12 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
+import org.quebee.com.MainQuiBuiForm;
 
 import javax.swing.*;
 import java.util.Random;
 
-import static org.quebee.com.QuiBuiNotifier.QUI_BUI_TOPIC;
+import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
 
 public class OrderPanel extends JBSplitter {
     public static final String HEADER = "Order";
