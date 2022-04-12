@@ -8,6 +8,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogPanel;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.wm.ToolWindowAnchor;
+import com.intellij.openapi.wm.impl.AnchoredButton;
+import com.intellij.openapi.wm.impl.StripeButtonUI;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.tabs.JBTabsPosition;
 import com.intellij.ui.tabs.TabInfo;
@@ -43,20 +46,56 @@ public class MainQuiBuiForm {
             @Override
             protected @NotNull JComponent createCenterPanel() {
 
-                for (int i = 0; i < 200; i++) {
+                for (int i = 0; i < 10; i++) {
+
+
                     if (i < 10) {
                         final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
                         addFromTables(tabs);
                         addLinksTable(tabs);
-                        tabs.addTab(new TabInfo(new JTable())).setText("Grouping").setActions(new DefaultActionGroup(), null);
+
+                        AnchoredButton myMinimizeButton = new AnchoredButton("Test " +i, DatabaseIcons.ObjectGroup) {
+                            @Override
+                            public void updateUI() {
+                                setUI(StripeButtonUI.createUI(this));
+                                setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
+                            }
+
+                            @Override
+                            public int getMnemonic2() {
+                                return 0;
+                            }
+
+                            @Override
+                            public ToolWindowAnchor getAnchor() {
+                                return ToolWindowAnchor.RIGHT;
+                            }
+                        };
+                        myMinimizeButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+//                        myMinimizeButton.setFocusable(false);
+
+                        myMinimizeButton.setRolloverEnabled(true);
+                        myMinimizeButton.setOpaque(false);
+
+
+//                        component.add(myMinimizeButton);
+
+                        tabs.addTab(new TabInfo(new JPanel())).setText("Grouping").setActions(new DefaultActionGroup(), null);
                         tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
                         tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
                         addOrderTab(tabs);
-                        tabsCte.addTab(new TabInfo(tabs.getComponent())).setText("Grouping " + i);
+                       // tabs.getComponent().add(myMinimizeButton);
+//                        JComponent component1 = tabs.getComponent();
+                       
+                        JPanel component1 = new JPanel();
+                        component1.add(tabs.getComponent());
+                        component1.add(myMinimizeButton);
+                        tabsCte.addTab(new TabInfo(component1)).setText("Grouping " + i);
                     } else {
                         tabsCte.addTab(new TabInfo(new JPanel())).setText("Grouping " + i);
                     }
                 }
+
 //                tabsCte.getPresentation().sett
                 tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
                 tabsCte.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
