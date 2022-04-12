@@ -2,6 +2,9 @@ package org.quebee.com.panel;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.wm.ToolWindowAnchor;
+import com.intellij.openapi.wm.impl.AnchoredButton;
+import com.intellij.openapi.wm.impl.StripeButtonUI;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
@@ -11,6 +14,8 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.IconUtil;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.UIUtil;
+import icons.DatabaseIcons;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +24,7 @@ import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.QuiBuiNotifier;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -44,6 +50,9 @@ public class FromTables {
         splitter2.setFirstComponent(selectedTables());
         splitter2.setSecondComponent(selectedFields());
         splitter.setSecondComponent(splitter2);
+
+
+
         this.element = splitter;
         init(ApplicationManager.getApplication().getMessageBus());
     }

@@ -45,61 +45,39 @@ public class MainQuiBuiForm {
 
             @Override
             protected @NotNull JComponent createCenterPanel() {
+                final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+                addFromTables(tabs);
+                addLinksTable(tabs);
 
+                JPanel component = new JPanel();
                 for (int i = 0; i < 10; i++) {
+                    AnchoredButton myMinimizeButton = new AnchoredButton("Test " +1, DatabaseIcons.ObjectGroup) {
+                        @Override
+                        public void updateUI() {
+                            setUI(StripeButtonUI.createUI(this));
+                            setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
+                        }
 
+                        @Override
+                        public int getMnemonic2() {
+                            return 0;
+                        }
 
-                    if (i < 10) {
-                        final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-                        addFromTables(tabs);
-                        addLinksTable(tabs);
-
-                        AnchoredButton myMinimizeButton = new AnchoredButton("Test " +i, DatabaseIcons.ObjectGroup) {
-                            @Override
-                            public void updateUI() {
-                                setUI(StripeButtonUI.createUI(this));
-                                setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
-                            }
-
-                            @Override
-                            public int getMnemonic2() {
-                                return 0;
-                            }
-
-                            @Override
-                            public ToolWindowAnchor getAnchor() {
-                                return ToolWindowAnchor.RIGHT;
-                            }
-                        };
-                        myMinimizeButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
-//                        myMinimizeButton.setFocusable(false);
-
-                        myMinimizeButton.setRolloverEnabled(true);
-                        myMinimizeButton.setOpaque(false);
-
-
-//                        component.add(myMinimizeButton);
-
-                        tabs.addTab(new TabInfo(new JPanel())).setText("Grouping").setActions(new DefaultActionGroup(), null);
-                        tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
-                        tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
-                        addOrderTab(tabs);
-                       // tabs.getComponent().add(myMinimizeButton);
-//                        JComponent component1 = tabs.getComponent();
-                       
-                        JPanel component1 = new JPanel();
-                        component1.add(tabs.getComponent());
-                        component1.add(myMinimizeButton);
-                        tabsCte.addTab(new TabInfo(component1)).setText("Grouping " + i);
-                    } else {
-                        tabsCte.addTab(new TabInfo(new JPanel())).setText("Grouping " + i);
-                    }
+                        @Override
+                        public ToolWindowAnchor getAnchor() {
+                            return ToolWindowAnchor.RIGHT;
+                        }
+                    };
+                    myMinimizeButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+                    myMinimizeButton.setRolloverEnabled(true);
+                    myMinimizeButton.setOpaque(false);
+                    component.add(myMinimizeButton);
                 }
-
-//                tabsCte.getPresentation().sett
-                tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
-                tabsCte.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-                return tabsCte;
+                tabs.addTab(new TabInfo(component)).setText("Grouping").setActions(new DefaultActionGroup(), null);
+                tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
+                tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
+                addOrderTab(tabs);
+                return tabs;
             }
 
             @Override
