@@ -1,8 +1,10 @@
 package org.quebee.com;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
@@ -12,15 +14,19 @@ import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
+import com.intellij.util.IconUtil;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.quebee.com.database.DBTables;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class MainQuiBuiForm {
@@ -70,7 +76,7 @@ public class MainQuiBuiForm {
         JBSplitter splitter = new JBSplitter();
         splitter.setProportion(0.3f);
 
-        splitter.setFirstComponent(treeTable("Database"));
+        splitter.setFirstComponent(databaseTables());
         JBSplitter splitter2 = new JBSplitter();
         splitter2.setFirstComponent(treeTable("Tables"));
         splitter2.setSecondComponent(treeTable("Fields"));
@@ -85,7 +91,7 @@ public class MainQuiBuiForm {
         ToolbarDecorator decorator = ToolbarDecorator.createDecorator(table);
         decorator.setAddAction(button -> {
             model.addRow(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()));
-        //    model.reload();
+            //    model.reload();
         });
         decorator.setRemoveAction(button -> {
             System.out.println(button);
@@ -129,12 +135,53 @@ public class MainQuiBuiForm {
         return decorator.createPanel();
     }
 
+    private DefaultMutableTreeTableNode databaseRoot;
+    private ListTreeTableModel databaseModel;
+
+    public JComponent databaseTables() {
+
+        databaseRoot = new DefaultMutableTreeTableNode("tables");
+
+        databaseModel = new ListTreeTableModel(databaseRoot, new ColumnInfo[]{getTitleColumnInfo("Database")});
+        TreeTable treeTable = new TreeTable(databaseModel);
+        treeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        treeTable.setTreeCellRenderer(new TableRenderer());
+
+        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(treeTable);
+        decorator.addExtraAction(new AnActionButton("Find", IconUtil.getRemoveIcon()) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                System.out.println("test");
+            }
+        });
+//        decorator.setAddAction(button -> {
+//            databaseRoot.add(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()));
+//            databaseModel.reload();
+//        });
+//        decorator.setRemoveAction(button -> {
+//            System.out.println(button);
+//            // myTableModel.addRow();
+//        });
+        return decorator.createPanel();
+    }
+
     public void show() {
         frame.setVisible(true);
     }
 
     public void hide() {
         frame.setVisible(false);
+    }
+
+    public void setDatabaseTables(DBTables dbStructure) {
+        for (Map.Entry<String, List<String>> stringListEntry : dbStructure.getDbElements().entrySet()) {
+            DefaultMutableTreeTableNode child = new DefaultMutableTreeTableNode(stringListEntry.getKey());
+            databaseRoot.add(child);
+            for (String s : stringListEntry.getValue()) {
+                child.add(new DefaultMutableTreeTableNode(s));
+            }
+        }
+        databaseModel.reload();
     }
 
     private static class TableRenderer extends ColoredTreeCellRenderer {
