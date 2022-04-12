@@ -6,6 +6,7 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.Objects;
 import java.util.UUID;
 
 public class TableElement {
@@ -19,22 +20,6 @@ public class TableElement {
     private boolean nested;
     private boolean cte;
     private boolean cteRoot;
-
-    public boolean isTable() {
-        return table;
-    }
-
-    public void setTable(boolean table) {
-        this.table = table;
-    }
-
-    public boolean isColumn() {
-        return column;
-    }
-
-    public void setColumn(boolean column) {
-        this.column = column;
-    }
 
     private boolean table;
     private boolean column;
@@ -50,6 +35,9 @@ public class TableElement {
         public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected,
                                           boolean expanded, boolean leaf, int row, boolean hasFocus) {
             Object userObject = ((MutableTreeTableNode) value).getUserObject();
+            if (!(userObject instanceof TableElement)) {
+                return;
+            }
             TableElement value1 = (TableElement) userObject;
             if (value1.isTable()) {
                 setIcon(DatabaseIcons.Table);
@@ -60,6 +48,22 @@ public class TableElement {
             }
             append(value1.getName());
         }
+    }
+
+    public boolean isTable() {
+        return table;
+    }
+
+    public void setTable(boolean table) {
+        this.table = table;
+    }
+
+    public boolean isColumn() {
+        return column;
+    }
+
+    public void setColumn(boolean column) {
+        this.column = column;
     }
 
     public UUID getId() {
