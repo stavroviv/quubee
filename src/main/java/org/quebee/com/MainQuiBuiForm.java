@@ -81,15 +81,6 @@ public class MainQuiBuiForm {
         frame.setVisible(false);
     }
 
-    public static class TableRenderer extends ColoredTreeCellRenderer {
-
-        @Override
-        public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected,
-                                          boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            setIcon(DatabaseIcons.Table);
-            append(value.toString());
-        }
-    }
 
     static ColumnInfo<Object, String> getTitleColumnInfo(String name) {
         return new ColumnInfo<>(name) {

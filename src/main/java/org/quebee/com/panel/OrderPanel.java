@@ -13,7 +13,7 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
-import org.quebee.com.MainQuiBuiForm;
+import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
 import java.util.Random;
@@ -60,7 +60,7 @@ public class OrderPanel extends JBSplitter {
         DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode("test");
         ListTreeTableModel model = new ListTreeTableModel(root, new ColumnInfo[]{getTitleColumnInfo("Fields")});
         TreeTable table = new TreeTable(model);
-        table.setTreeCellRenderer(new MainQuiBuiForm.TableRenderer());
+        table.setTreeCellRenderer(new TableElement.Renderer());
         JBScrollPane jbScrollPane = new JBScrollPane(table);
 //
 //        ListTableModel model = new ListTableModel(new ColumnInfo[]{getTitleColumnInfo("Fields")});

@@ -6,13 +6,16 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
+import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
+import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.util.IconUtil;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColumnInfo;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
-import org.quebee.com.MainQuiBuiForm;
+import org.jetbrains.annotations.Nullable;
+import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.QuiBuiNotifier;
 import org.quebee.com.database.DBTables;
 
@@ -49,24 +52,25 @@ public class FromTables {
         bus.connect().subscribe(RELOAD_TABLES_TOPIC, this::setDatabaseTables);
     }
 
-    //    private DefaultMutableTreeTableNode root;
     public JComponent treeTable(String tableName) {
 
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode("test");
+        DefaultMutableTreeTableNode root = getTest("test");
 
-        final DefaultMutableTreeTableNode child = new DefaultMutableTreeTableNode("test 1");
+        final DefaultMutableTreeTableNode child = getTest("test 1");
         for (int i = 0; i < 100; i++) {
-            child.add(new DefaultMutableTreeTableNode("test 1" + i));
+            child.add(getTest("test 1" + i));
         }
-        child.add(new DefaultMutableTreeTableNode("test 12"));
+        child.add(getTest("test 12"));
         root.add(child);
-        root.add(new DefaultMutableTreeTableNode("test 2"));
-        root.add(new DefaultMutableTreeTableNode("test 3"));
-        root.add(new DefaultMutableTreeTableNode("test 4"));
+        root.add(getTest("test 2"));
+        root.add(getTest("test 3"));
+        root.add(getTest("test 4"));
 
-        ListTreeTableModel model = new ListTreeTableModel(root, new ColumnInfo[]{getTitleColumnInfo(tableName)});
+        ListTreeTableModel model = new ListTreeTableModel(root, new ColumnInfo[]{
+                getTitleColumnInfo(tableName)
+        });
         TreeTable treeTable = new TreeTable(model);
-        treeTable.setTreeCellRenderer(new MainQuiBuiForm.TableRenderer());
+        treeTable.setTreeCellRenderer(new TableElement.Renderer());
         //  JBScrollPane jbScrollPane = new JBScrollPane(treeTable);
 
         ToolbarDecorator decorator = ToolbarDecorator.createDecorator(treeTable);
@@ -74,7 +78,7 @@ public class FromTables {
         decorator.setAddAction(button -> {
 //            root.insert(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()), i.get());
 //            model.nodesWereInserted(root, new int[]{i.get()});
-            root.add(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()));
+            root.add(getTest("test" + new Random(1000).nextInt()));
             model.reload();
         });
         decorator.setRemoveAction(button -> {
@@ -84,19 +88,26 @@ public class FromTables {
         return decorator.createPanel();
     }
 
+    @NotNull
+    private DefaultMutableTreeTableNode getTest(String test) {
+        return new DefaultMutableTreeTableNode(new TableElement(test));
+    }
+
     private DefaultMutableTreeTableNode databaseRoot;
     private ListTreeTableModel databaseModel;
 
     public JComponent databaseTables() {
 
-        databaseRoot = new DefaultMutableTreeTableNode("tables");
+        databaseRoot = new DefaultMutableTreeTableNode(new TableElement("tables"));
 
-        databaseModel = new ListTreeTableModel(databaseRoot, new ColumnInfo[]{getTitleColumnInfo("Database")});
+        databaseModel = new ListTreeTableModel(databaseRoot, new ColumnInfo[]{
+                new TreeColumnInfo("Database")
+        });
         TreeTable treeTable = new TreeTable(databaseModel);
         treeTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
-                TreeTable table =(TreeTable) mouseEvent.getSource();
+                TreeTable table = (TreeTable) mouseEvent.getSource();
                 Point point = mouseEvent.getPoint();
                 if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
                     MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
@@ -106,32 +117,29 @@ public class FromTables {
             }
         });
         treeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        treeTable.setTreeCellRenderer(new MainQuiBuiForm.TableRenderer());
+        treeTable.setTreeCellRenderer(new TableElement.Renderer());
 
         ToolbarDecorator decorator = ToolbarDecorator.createDecorator(treeTable);
-        decorator.addExtraAction(new AnActionButton("Find", IconUtil.getRemoveIcon()) {
+        decorator.addExtraAction(new AnActionButton("empty", IconUtil.getEmptyIcon(false)) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 System.out.println("test");
             }
         });
-//        decorator.setAddAction(button -> {
-//            databaseRoot.add(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()));
-//            databaseModel.reload();
-//        });
-//        decorator.setRemoveAction(button -> {
-//            System.out.println(button);
-//            // myTableModel.addRow();
-//        });
+
         return decorator.createPanel();
     }
 
     public void setDatabaseTables(DBTables dbStructure) {
         for (Map.Entry<String, List<String>> stringListEntry : dbStructure.getDbElements().entrySet()) {
-            DefaultMutableTreeTableNode child = new DefaultMutableTreeTableNode(stringListEntry.getKey());
+            TableElement table = new TableElement(stringListEntry.getKey());
+            table.setTable(true);
+            var child = new DefaultMutableTreeTableNode(table);
             databaseRoot.add(child);
-            for (String s : stringListEntry.getValue()) {
-                child.add(new DefaultMutableTreeTableNode(s));
+            for (String columnName : stringListEntry.getValue()) {
+                TableElement column = new TableElement(columnName);
+                column.setColumn(true);
+                child.add(new DefaultMutableTreeTableNode(column));
             }
         }
         databaseModel.reload();

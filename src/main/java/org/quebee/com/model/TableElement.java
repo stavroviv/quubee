@@ -1,5 +1,11 @@
 package org.quebee.com.model;
 
+import com.intellij.ui.ColoredTreeCellRenderer;
+import icons.DatabaseIcons;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
 import java.util.UUID;
 
 public class TableElement {
@@ -14,6 +20,47 @@ public class TableElement {
     private boolean cte;
     private boolean cteRoot;
 
+    public boolean isTable() {
+        return table;
+    }
+
+    public void setTable(boolean table) {
+        this.table = table;
+    }
+
+    public boolean isColumn() {
+        return column;
+    }
+
+    public void setColumn(boolean column) {
+        this.column = column;
+    }
+
+    private boolean table;
+    private boolean column;
+
+    public TableElement(String name) {
+        this.name = name;
+        this.id = UUID.randomUUID();
+    }
+
+    public static class Renderer extends ColoredTreeCellRenderer {
+
+        @Override
+        public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected,
+                                          boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            Object userObject = ((MutableTreeTableNode) value).getUserObject();
+            TableElement value1 = (TableElement) userObject;
+            if (value1.isTable()) {
+                setIcon(DatabaseIcons.Table);
+            } else if (value1.isColumn()) {
+                setIcon(DatabaseIcons.Col);
+            } else {
+                setIcon(DatabaseIcons.ObjectGroup);
+            }
+            append(value1.getName());
+        }
+    }
 
     public UUID getId() {
         return id;
