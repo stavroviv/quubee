@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 public class DebugGUI implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
-        MainQuiBuiForm form = new MainQuiBuiForm();
+        MainQuiBuiForm form = new MainQuiBuiForm(project);
         form.show();
     }
 }

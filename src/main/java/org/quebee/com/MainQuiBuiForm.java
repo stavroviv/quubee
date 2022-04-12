@@ -1,13 +1,25 @@
 package org.quebee.com;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogPanel;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.wm.impl.SquareStripeButton;
+import com.intellij.openapi.wm.impl.StripeButton;
 import com.intellij.ui.ColoredTreeCellRenderer;
+import com.intellij.ui.tabs.JBTabsPosition;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
+import com.intellij.util.ArrayUtil;
 import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.JBDimension;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import icons.DatabaseIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,30 +29,56 @@ import org.quebee.com.panel.OrderPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+
+import static javax.swing.SwingConstants.TOP;
 
 public class MainQuiBuiForm {
     final JFrame frame = new JFrame("Qui Bui");
+    final DialogWrapper dialog;
 
-    public MainQuiBuiForm() {
-        frame.getContentPane().setLayout(new BorderLayout(0, 0));
-        final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-        final JPanel flow = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        frame.getContentPane().add(flow);
-        flow.add(tabs.getComponent());
-        frame.getContentPane().add(tabs.getComponent(), BorderLayout.CENTER);
 
-        addButtons(tabs);
+    public MainQuiBuiForm(Project project) {
+        final JBTabsImpl tabsCte = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+        dialog = new DialogWrapper(project, false, DialogWrapper.IdeModalityType.PROJECT) {
 
-        addFromTables(tabs);
-        addLinksTable(tabs);
-        tabs.addTab(new TabInfo(new JTable())).setText("Grouping").setActions(new DefaultActionGroup(), null);
-        tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
-        tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
-        addOrderTab(tabs);
+            @Override
+            protected @NotNull JComponent createCenterPanel() {
+//                StripeButton bu = new SquareStripeButton();
+                for (int i = 0; i < 120; i++) {
+                    final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+                    addFromTables(tabs);
+                    addLinksTable(tabs);
+                    tabs.addTab(new TabInfo(new JTable())).setText("Grouping").setActions(new DefaultActionGroup(), null);
+                    tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
+                    tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
+                    addOrderTab(tabs);
+                    tabsCte.addTab(new TabInfo(tabs.getComponent())).setText("Grouping " + i);
+                }
+//                tabsCte.getPresentation().sett
+                tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
 
-        frame.setPreferredSize(new Dimension(900, 550));
-        frame.pack();
-        frame.setLocationRelativeTo(null);
+                return tabsCte;
+            }
+
+            @Override
+            protected Action @NotNull [] createActions() {
+                return ArrayUtil.append(super.createActions(), new AbstractAction("hide") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        tabsCte.setHideTabs(!tabsCte.isHideTabs());
+                    }
+                });
+            }
+
+            @Override
+            protected void createDefaultActions() {
+                super.createDefaultActions();
+                init();
+            }
+        };
+        dialog.setTitle("Qui Bui");
+        dialog.setSize(900, 550);
     }
 
     private void addFromTables(JBTabsImpl tabs) {
@@ -55,47 +93,7 @@ public class MainQuiBuiForm {
         tabs.addTab(new TabInfo(new OrderPanel())).setText(OrderPanel.HEADER);
     }
 
-    private void addButtons(JBTabsImpl tabs) {
-        JPanel south = new JPanel(new FlowLayout());
-        south.setOpaque(true);
-//        south.setBackground(JBColor.WHITE);
-
-        final JButton okButton = new JButton(Messages.getOkButton());
-        okButton.setActionCommand(Messages.getOkButton());
-        okButton.addActionListener(event -> hide());
-//        okButton.setDefaultCapable(true);
-        south.add(okButton);
-
-        final JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(event -> hide());
-        south.add(cancelButton);
-
-        frame.getContentPane().add(south, BorderLayout.SOUTH);
-    }
-
     public void show() {
-        frame.setVisible(true);
+        dialog.show();
     }
-
-    public void hide() {
-        frame.setVisible(false);
-    }
-
-
-    static ColumnInfo<Object, String> getTitleColumnInfo(String name) {
-        return new ColumnInfo<>(name) {
-
-            @Nullable
-            @Override
-            public String valueOf(Object o) {
-                return o.toString();
-            }
-
-            @Override
-            public Class<?> getColumnClass() {
-                return TreeTableModel.class;
-            }
-        };
-    }
-
 }

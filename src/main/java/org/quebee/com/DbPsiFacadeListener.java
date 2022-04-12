@@ -11,10 +11,10 @@ import java.util.Objects;
 public class DbPsiFacadeListener implements DbPsiFacade.Listener {
     @Override
     public void onChanged(@Nullable DbDataSource dbDataSource) {
-        System.out.println(dbDataSource);
+//        System.out.println(dbDataSource);
         if (Objects.nonNull(dbDataSource)) {
             String name = dbDataSource.getModel().getCurrentRootNamespace().getName();
-            System.out.println(dbDataSource.getDasChildren(ObjectKind.TABLE).toList());
+//            System.out.println(dbDataSource.getDasChildren(ObjectKind.TABLE).toList());
         }
 
 //        for (DasObject modelRoot : dbDataSource.getModel().getModelRoots()) {

@@ -17,7 +17,7 @@ public class MainAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent action) {
-        MainQuiBuiForm form = new MainQuiBuiForm();
+        MainQuiBuiForm form = new MainQuiBuiForm(action.getProject());
         setDatabaseTables(action);
         form.show();
     }
