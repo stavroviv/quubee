@@ -8,8 +8,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogPanel;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.wm.impl.SquareStripeButton;
-import com.intellij.openapi.wm.impl.StripeButton;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.tabs.JBTabsPosition;
 import com.intellij.ui.tabs.TabInfo;
@@ -44,20 +42,24 @@ public class MainQuiBuiForm {
 
             @Override
             protected @NotNull JComponent createCenterPanel() {
-//                StripeButton bu = new SquareStripeButton();
-                for (int i = 0; i < 120; i++) {
-                    final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-                    addFromTables(tabs);
-                    addLinksTable(tabs);
-                    tabs.addTab(new TabInfo(new JTable())).setText("Grouping").setActions(new DefaultActionGroup(), null);
-                    tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
-                    tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
-                    addOrderTab(tabs);
-                    tabsCte.addTab(new TabInfo(tabs.getComponent())).setText("Grouping " + i);
+
+                for (int i = 0; i < 200; i++) {
+                    if (i < 10) {
+                        final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+                        addFromTables(tabs);
+                        addLinksTable(tabs);
+                        tabs.addTab(new TabInfo(new JTable())).setText("Grouping").setActions(new DefaultActionGroup(), null);
+                        tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
+                        tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
+                        addOrderTab(tabs);
+                        tabsCte.addTab(new TabInfo(tabs.getComponent())).setText("Grouping " + i);
+                    } else {
+                        tabsCte.addTab(new TabInfo(new JPanel())).setText("Grouping " + i);
+                    }
                 }
 //                tabsCte.getPresentation().sett
                 tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
-
+                tabsCte.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
                 return tabsCte;
             }
 
@@ -77,6 +79,8 @@ public class MainQuiBuiForm {
                 init();
             }
         };
+        dialog.setResizable(true);
+//        dialog.setUndecorated(true);
         dialog.setTitle("Qui Bui");
         dialog.setSize(900, 550);
     }

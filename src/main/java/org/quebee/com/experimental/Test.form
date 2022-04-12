@@ -18,7 +18,7 @@
         <children>
           <grid id="f7228" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="Untitled"/>
+              <tabbedpane title="&lt;HTML&gt;H&lt;br&gt;E&lt;br&gt;L&lt;br&gt;L&lt;br&gt;O&lt;br&gt; &lt;&amp;nbsp&gt;&lt;/HTML&gt;"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -31,7 +31,7 @@
           </grid>
           <grid id="3dca7" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="Untitled"/>
+              <tabbedpane title="&lt;HTML&gt;H&lt;br&gt;E&lt;br&gt;L&lt;br&gt;L&lt;br&gt;O&lt;/HTML&gt;"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -39,11 +39,45 @@
           </grid>
           <grid id="bcc15" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints>
-              <tabbedpane title="Untitled"/>
+              <tabbedpane title="&lt;HTML&gt;H&lt;br&gt;E&lt;br&gt;L&lt;br&gt;L&lt;br&gt;O&lt;/HTML&gt;"/>
             </constraints>
             <properties/>
             <border type="none"/>
-            <children/>
+            <children>
+              <toolbar id="cf96f">
+                <constraints border-constraint="East"/>
+                <properties>
+                  <orientation value="1"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="894d5" class="javax.swing.JButton" binding="cte1Button" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="cte 1"/>
+                    </properties>
+                  </component>
+                  <component id="9b9be" class="javax.swing.JButton" binding="cte2Button" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="cte 2"/>
+                    </properties>
+                  </component>
+                  <component id="ea947" class="javax.swing.JButton" binding="button1" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Button"/>
+                    </properties>
+                  </component>
+                  <component id="2040a" class="javax.swing.JButton" binding="button2" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Button"/>
+                    </properties>
+                  </component>
+                </children>
+              </toolbar>
+            </children>
           </grid>
         </children>
       </tabbedpane>
