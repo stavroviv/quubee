@@ -1,13 +1,14 @@
 package org.quebee.com;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.TableView;
-import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
+import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
@@ -16,6 +17,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Random;
 
+import static org.quebee.com.QuiBuiNotifier.QUI_BUI_TOPIC;
+
 public class OrderPanel extends JBSplitter {
     public static final String HEADER = "Order";
 
@@ -23,6 +26,14 @@ public class OrderPanel extends JBSplitter {
         this.setProportion(0.3f);
         this.setFirstComponent(getFieldsTable());
         this.setSecondComponent(getOrderTable());
+        init(ApplicationManager.getApplication().getMessageBus());
+    }
+
+    public void init(MessageBus bus) {
+        bus.connect().subscribe(QUI_BUI_TOPIC, context -> {
+            System.out.println(context);
+            System.out.println(context);
+        });
     }
 
     private JComponent getOrderTable() {

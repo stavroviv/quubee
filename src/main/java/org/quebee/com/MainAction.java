@@ -3,6 +3,7 @@ package org.quebee.com;
 import com.intellij.database.console.JdbcConsole;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.Application;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBStructure;
 import org.quebee.com.database.DBStructureImpl;

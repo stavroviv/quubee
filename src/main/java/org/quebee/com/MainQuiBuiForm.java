@@ -15,6 +15,7 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.util.IconUtil;
+import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
@@ -25,9 +26,13 @@ import org.quebee.com.database.DBTables;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import static org.quebee.com.QuiBuiNotifier.QUI_BUI_TOPIC;
 
 public class MainQuiBuiForm {
     final JFrame frame = new JFrame("Qui Bui");
@@ -148,6 +153,18 @@ public class MainQuiBuiForm {
 
         databaseModel = new ListTreeTableModel(databaseRoot, new ColumnInfo[]{getTitleColumnInfo("Database")});
         TreeTable treeTable = new TreeTable(databaseModel);
+        treeTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+                TreeTable table =(TreeTable) mouseEvent.getSource();
+                Point point = mouseEvent.getPoint();
+                if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
+                    MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
+                    QuiBuiNotifier publisher = messageBus.syncPublisher(QUI_BUI_TOPIC);
+                    publisher.onAction(table.getSelectedRow());
+                }
+            }
+        });
         treeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         treeTable.setTreeCellRenderer(new TableRenderer());
 
