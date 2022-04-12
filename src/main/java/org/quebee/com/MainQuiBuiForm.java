@@ -6,12 +6,14 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.table.TableView;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
@@ -76,14 +78,20 @@ public class MainQuiBuiForm {
         return new TabInfo(splitter);
     }
 
-    private JTable getLinksTable() {
-        Object[][] array = new String[][]{
-                {"Test", "dd", "1.5"},
-                {"Kkkk", "dd", "4.0"},
-                {"Mmmm", "f", "2.2"}
-        };
-        Object[] columnsHeader = new String[]{"Name", "UOM", "Quantity"};
-        return new JTable(array, columnsHeader);
+    private JComponent getLinksTable() {
+        ListTableModel model = new ListTableModel(new ColumnInfo[]{getTitleColumnInfo("Test")});
+        TableView table = new TableView(model);
+
+        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(table);
+        decorator.setAddAction(button -> {
+            model.addRow(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()));
+        //    model.reload();
+        });
+        decorator.setRemoveAction(button -> {
+            System.out.println(button);
+            // myTableModel.addRow();
+        });
+        return decorator.createPanel();
     }
 
     //    private DefaultMutableTreeTableNode root;
