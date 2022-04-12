@@ -47,11 +47,15 @@ public class MainQuiBuiForm {
         tabs.addTab(new TabInfo(new JTable())).setText("Grouping").setActions(new DefaultActionGroup(), null);
         tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
         tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
-        tabs.addTab(new TabInfo(new JTable())).setText("Order").setActions(new DefaultActionGroup(), null);
+        addOrderTab(tabs);
 
         frame.setPreferredSize(new Dimension(1200, 700));
         frame.pack();
         frame.setLocationRelativeTo(null);
+    }
+
+    private void addOrderTab(JBTabsImpl tabs) {
+        tabs.addTab(new TabInfo(new OrderPanel())).setText(OrderPanel.HEADER);
     }
 
     private void addButtons(JBTabsImpl tabs) {
@@ -184,7 +188,7 @@ public class MainQuiBuiForm {
         databaseModel.reload();
     }
 
-    private static class TableRenderer extends ColoredTreeCellRenderer {
+    public static class TableRenderer extends ColoredTreeCellRenderer {
 
         @Override
         public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected,
