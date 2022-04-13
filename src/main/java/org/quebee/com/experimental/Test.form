@@ -9,82 +9,36 @@
     </properties>
     <border type="none"/>
     <children>
-      <tabbedpane id="e036e" binding="tabbedPane1" default-binding="true">
-        <constraints border-constraint="After"/>
-        <properties>
-          <tabPlacement value="4"/>
-        </properties>
+      <grid id="1bec9" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="Center"/>
+        <properties/>
         <border type="none"/>
         <children>
-          <grid id="f7228" layout-manager="BorderLayout" hgap="0" vgap="0">
-            <constraints>
-              <tabbedpane title="&lt;HTML&gt;H&lt;br&gt;E&lt;br&gt;L&lt;br&gt;L&lt;br&gt;O&lt;br&gt; &lt;&amp;nbsp&gt;&lt;/HTML&gt;"/>
-            </constraints>
+          <component id="fdbf2" class="javax.swing.JTree" binding="tree1" default-binding="true">
+            <constraints border-constraint="Center"/>
+            <properties/>
+          </component>
+          <grid id="108a9" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints border-constraint="South"/>
             <properties/>
             <border type="none"/>
             <children>
-              <component id="472dd" class="javax.swing.JTable" binding="table1" default-binding="true">
+              <tabbedpane id="7666f" binding="tabbedPane1" default-binding="true">
                 <constraints border-constraint="North"/>
                 <properties/>
-              </component>
-            </children>
-          </grid>
-          <grid id="3dca7" layout-manager="BorderLayout" hgap="0" vgap="0">
-            <constraints>
-              <tabbedpane title="&lt;HTML&gt;H&lt;br&gt;E&lt;br&gt;L&lt;br&gt;L&lt;br&gt;O&lt;/HTML&gt;"/>
-            </constraints>
-            <properties/>
-            <border type="none"/>
-            <children/>
-          </grid>
-          <grid id="bcc15" layout-manager="BorderLayout" hgap="0" vgap="0">
-            <constraints>
-              <tabbedpane title="&lt;HTML&gt;H&lt;br&gt;E&lt;br&gt;L&lt;br&gt;L&lt;br&gt;O&lt;/HTML&gt;"/>
-            </constraints>
-            <properties/>
-            <border type="none"/>
-            <children>
-              <toolbar id="cf96f">
-                <constraints border-constraint="East"/>
-                <properties>
-                  <orientation value="1"/>
-                </properties>
                 <border type="none"/>
-                <children>
-                  <component id="894d5" class="javax.swing.JButton" binding="cte1Button" default-binding="true">
-                    <constraints/>
-                    <properties>
-                      <text value="cte 1"/>
-                    </properties>
-                  </component>
-                  <component id="9b9be" class="javax.swing.JButton" binding="cte2Button" default-binding="true">
-                    <constraints/>
-                    <properties>
-                      <text value="cte 2"/>
-                    </properties>
-                  </component>
-                  <component id="ea947" class="javax.swing.JButton" binding="button1" default-binding="true">
-                    <constraints/>
-                    <properties>
-                      <text value="Button"/>
-                    </properties>
-                  </component>
-                  <component id="2040a" class="javax.swing.JButton" binding="button2" default-binding="true">
-                    <constraints/>
-                    <properties>
-                      <text value="Button"/>
-                    </properties>
-                  </component>
-                </children>
-              </toolbar>
+                <children/>
+              </tabbedpane>
+              <grid id="28a7d" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Center"/>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
             </children>
           </grid>
         </children>
-      </tabbedpane>
-      <component id="9525" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
-        <constraints border-constraint="West"/>
-        <properties/>
-      </component>
+      </grid>
     </children>
   </grid>
 </form>
