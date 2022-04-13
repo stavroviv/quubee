@@ -9,34 +9,34 @@
     </properties>
     <border type="none"/>
     <children>
-      <grid id="1bec9" layout-manager="BorderLayout" hgap="0" vgap="0">
+      <component id="3c589" class="javax.swing.JTree" binding="tree1" default-binding="true">
         <constraints border-constraint="Center"/>
-        <properties/>
+        <properties>
+          <preferredSize width="95" height="0"/>
+        </properties>
+      </component>
+      <grid id="f0512" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints border-constraint="East"/>
+        <properties>
+          <minimumSize width="104" height="54"/>
+          <opaque value="true"/>
+          <preferredSize width="94" height="0"/>
+          <requestFocusEnabled value="true"/>
+        </properties>
         <border type="none"/>
         <children>
-          <component id="fdbf2" class="javax.swing.JTree" binding="tree1" default-binding="true">
-            <constraints border-constraint="Center"/>
-            <properties/>
-          </component>
-          <grid id="108a9" layout-manager="BorderLayout" hgap="0" vgap="0">
-            <constraints border-constraint="South"/>
-            <properties/>
-            <border type="none"/>
-            <children>
-              <tabbedpane id="7666f" binding="tabbedPane1" default-binding="true">
-                <constraints border-constraint="North"/>
-                <properties/>
-                <border type="none"/>
-                <children/>
-              </tabbedpane>
-              <grid id="28a7d" layout-manager="BorderLayout" hgap="0" vgap="0">
-                <constraints border-constraint="Center"/>
-                <properties/>
-                <border type="none"/>
-                <children/>
+          <component id="50096" class="javax.swing.JTree" binding="tree2" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="50"/>
               </grid>
-            </children>
-          </grid>
+            </constraints>
+            <properties>
+              <maximumSize width="30" height="30"/>
+              <minimumSize width="30" height="30"/>
+            </properties>
+          </component>
         </children>
       </grid>
     </children>

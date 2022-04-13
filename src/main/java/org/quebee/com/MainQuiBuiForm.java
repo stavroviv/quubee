@@ -24,14 +24,16 @@ public class MainQuiBuiForm {
     final DialogWrapper dialog;
 
     public MainQuiBuiForm(Project project) {
-        final JBTabsImpl tabsCte = new JBTabsImpl(project, null, ApplicationManager.getApplication());
-        final JBTabsImpl tabsUnion = new JBTabsImpl(project, null, ApplicationManager.getApplication());
+        var tabsCte = new JBTabsImpl(project, null, ApplicationManager.getApplication());
+        var tabsUnion = new JBTabsImpl(project, null, ApplicationManager.getApplication());
+        var unionPanel =  new JPanel(new BorderLayout());
+        var ctePanel =  new JPanel(new BorderLayout());
         dialog = new DialogWrapper(project, false, DialogWrapper.IdeModalityType.PROJECT) {
 
             @Override
             protected @NotNull JComponent createCenterPanel() {
 
-                for (int i = 0; i < 200; i++) {
+                for (int i = 0; i < 99; i++) {
                     tabsUnion.addTab(new TabInfo(new JPanel()))
                             .setText(String.valueOf(i))
                             .setIcon(DatabaseIcons.Table);
@@ -41,13 +43,11 @@ public class MainQuiBuiForm {
                 }
 
                 tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
-
+                tabsCte.setPreferredSize(JBUI.size(55, 200));
                 tabsUnion.getPresentation().setTabsPosition(JBTabsPosition.right);
-                tabsUnion.setBorder(JBUI.Borders.emptyLeft(0));
-//                tabsUnion.setBorder(JBUI.Borders.emptyTop(90));
 
-                JPanel panel = new JPanel();
-                panel.setLayout(new BorderLayout());
+                JPanel mainPanel = new JPanel();
+                mainPanel.setLayout(new BorderLayout());
 
                 JPanel panelCurrent = new JPanel();
                 panelCurrent.setLayout(new BorderLayout());
@@ -60,16 +60,27 @@ public class MainQuiBuiForm {
                 addOrderTab(tabs);
 
                 panelCurrent.add(tabs, BorderLayout.CENTER);
-                JPanel unionPanel = new JPanel(new BorderLayout());
-                unionPanel.setBorder(JBUI.Borders.emptyLeft(0));
-                JPanel comp = new JPanel();
-                comp.setBorder(JBUI.Borders.emptyTop(17));
-                unionPanel.add(comp, BorderLayout.NORTH);
+
+                unionPanel.add(getEmptyPanel(), BorderLayout.NORTH);
                 unionPanel.add(tabsUnion, BorderLayout.CENTER);
+                unionPanel.setPreferredSize(JBUI.size(55, 200));
                 panelCurrent.add(unionPanel, BorderLayout.EAST);
-                panel.add(panelCurrent, BorderLayout.CENTER);
-                panel.add(tabsCte, BorderLayout.EAST);
-                return panel;
+
+                mainPanel.add(panelCurrent, BorderLayout.CENTER);
+
+                ctePanel.add(getEmptyPanel(), BorderLayout.NORTH);
+                ctePanel.add(tabsCte, BorderLayout.CENTER);
+//                ctePanel.setPreferredSize(JBUI.size(55, 200));
+
+                mainPanel.add(ctePanel, BorderLayout.EAST);
+                return mainPanel;
+            }
+
+            @NotNull
+            private JPanel getEmptyPanel() {
+                JPanel emptyPanel = new JPanel();
+                emptyPanel.setBorder(JBUI.Borders.emptyTop(17));
+                return emptyPanel;
             }
 
             @Override
@@ -77,7 +88,8 @@ public class MainQuiBuiForm {
                 return ArrayUtil.append(super.createActions(), new AbstractAction("hide") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        tabsCte.setVisible(!tabsCte.isVisible());
+                        ctePanel.setVisible(!ctePanel.isVisible());
+                        unionPanel.setVisible(!unionPanel.isVisible());
                     }
                 });
             }
