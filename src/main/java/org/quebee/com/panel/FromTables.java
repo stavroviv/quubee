@@ -51,8 +51,6 @@ public class FromTables {
         splitter2.setSecondComponent(selectedFields());
         splitter.setSecondComponent(splitter2);
 
-
-
         this.element = splitter;
         init(ApplicationManager.getApplication().getMessageBus());
     }
