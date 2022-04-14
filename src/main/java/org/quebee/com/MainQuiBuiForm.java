@@ -11,6 +11,7 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.ui.JBUI;
 import icons.DatabaseIcons;
 import org.jetbrains.annotations.NotNull;
+import org.quebee.com.panel.ConditionsPanel;
 import org.quebee.com.panel.FromTables;
 import org.quebee.com.panel.LinksPanel;
 import org.quebee.com.panel.OrderPanel;
@@ -55,7 +56,7 @@ public class MainQuiBuiForm {
                 addFromTables(tabs);
                 addLinksTable(tabs);
                 tabs.addTab(new TabInfo(new JPanel())).setText("Grouping").setActions(new DefaultActionGroup(), null);
-                tabs.addTab(new TabInfo(new JTable())).setText("Conditions").setActions(new DefaultActionGroup(), null);
+                addConditionsTable(tabs);
                 tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
                 addOrderTab(tabs);
 
@@ -76,6 +77,7 @@ public class MainQuiBuiForm {
                 return mainPanel;
             }
 
+
             @NotNull
             private JPanel getEmptyPanel() {
                 JPanel emptyPanel = new JPanel();
@@ -88,8 +90,7 @@ public class MainQuiBuiForm {
                 return ArrayUtil.append(super.createActions(), new AbstractAction("hide") {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        ctePanel.setVisible(!ctePanel.isVisible());
-                        unionPanel.setVisible(!unionPanel.isVisible());
+                        showHideEastPanels(ctePanel, unionPanel);
                     }
                 });
             }
@@ -103,6 +104,12 @@ public class MainQuiBuiForm {
         dialog.setResizable(true);
         dialog.setTitle("Qui Bui");
         dialog.setSize(900, 550);
+        showHideEastPanels(ctePanel, unionPanel);
+    }
+
+    private void showHideEastPanels(JPanel ctePanel, JPanel unionPanel) {
+        ctePanel.setVisible(!ctePanel.isVisible());
+        unionPanel.setVisible(!unionPanel.isVisible());
     }
 
     private void addFromTables(JBTabsImpl tabs) {
@@ -115,6 +122,10 @@ public class MainQuiBuiForm {
 
     private void addOrderTab(JBTabsImpl tabs) {
         tabs.addTab(new TabInfo(new OrderPanel())).setText(OrderPanel.HEADER);
+    }
+
+    private void addConditionsTable(JBTabsImpl tabs) {
+        tabs.addTab(new TabInfo(new ConditionsPanel().getComponent())).setText(ConditionsPanel.HEADER);
     }
 
     public void show() {
