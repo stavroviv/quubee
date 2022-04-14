@@ -1,16 +1,7 @@
 package org.quebee.com.experimental;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.UIManager;
+import javax.swing.*;
+import java.awt.*;
 
 public class VerticalLabel extends JLabel {
     public final static int ROTATE_RIGHT = 1;

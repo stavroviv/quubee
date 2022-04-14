@@ -1,7 +1,5 @@
 package org.quebee.com;
 
-import com.intellij.database.model.DasObject;
-import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbDataSource;
 import com.intellij.database.psi.DbPsiFacade;
 import org.jetbrains.annotations.Nullable;

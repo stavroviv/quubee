@@ -1,19 +1,10 @@
 package org.quebee.com.panel;
 
-import com.intellij.execution.ExecutionBundle;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.AnActionHolder;
-import com.intellij.openapi.actionSystem.DataProvider;
-import com.intellij.openapi.actionSystem.PlatformCoreDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TreeComboBox;
-import com.intellij.openapi.ui.popup.JBPopup;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.openapi.ui.popup.ListPopup;
-import com.intellij.openapi.ui.popup.util.BaseTreePopupStep;
-import com.intellij.openapi.ui.popup.util.PopupUtil;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
@@ -29,21 +20,15 @@ import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.model.TreeComboTableElement;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.Objects;
 
 import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
 

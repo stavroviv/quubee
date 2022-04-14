@@ -6,7 +6,6 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.Objects;
 import java.util.UUID;
 
 public class TableElement {

@@ -3,7 +3,6 @@ package org.quebee.com.model;
 import com.intellij.openapi.ui.TreeComboBox;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.SimpleTextAttributes;
-import icons.DatabaseIcons;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
