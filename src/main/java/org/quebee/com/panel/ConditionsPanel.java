@@ -26,13 +26,16 @@ import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import icons.DatabaseIcons;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.model.TreeComboTableElement;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -40,6 +43,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Objects;
 
 import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
 
@@ -111,6 +115,7 @@ public class ConditionsPanel implements QueryComponent {
                 conditionElement.setCondition(value.getCondition());
                 conditionElement.setConditionComparison(value.getConditionComparison());
                 conditionElement.setConditionRight(value.getConditionRight());
+                conditionElement.setConditionLeft(value.getConditionLeft());
             }
 
             @Override
@@ -125,13 +130,10 @@ public class ConditionsPanel implements QueryComponent {
                 }
                 return (table, value, isSelected, hasFocus, row, column) -> {
                     Box hBox = Box.createHorizontalBox();
-                    hBox.add(new JButton("First") {
-                        {
-                            setSize(250, 75);
-                            setMaximumSize(getSize());
-                        }
-                    });
-//                    hBox.add(Box.createHorizontalGlue());
+                    JTextField comp = new JTextField(variable.getConditionLeft());
+                    comp.setPreferredSize(new Dimension(200, 15));
+                    comp.setBorder(new LineBorder(Color.red,1));
+                    hBox.add(comp);
                     hBox.add(new JTextField(variable.getConditionComparison()));
                     hBox.add(new JTextField(variable.getConditionRight()));
                     return hBox; //NON-NLS
@@ -143,14 +145,14 @@ public class ConditionsPanel implements QueryComponent {
                 return new AbstractTableCellEditor() {
                     private final TreeComboBox conditionLeftCombo = getTreeComboBox();
                     @NotNull
-                    private DefaultMutableTreeTableNode getTest(String test) {
-                        return new DefaultMutableTreeTableNode(new TableElement(test));
+                    private TreeComboTableElement getTest(String test) {
+                        return new TreeComboTableElement(test, DatabaseIcons.Table);
                     }
                     @NotNull
                     private TreeComboBox getTreeComboBox() {
-                        DefaultMutableTreeTableNode root = getTest("test");
+                        TreeComboTableElement root = getTest("test");
 
-                        final DefaultMutableTreeTableNode child = getTest("test 1");
+                        final TreeComboTableElement child = getTest("test 1");
                         for (int i = 0; i < 100; i++) {
                             child.add(getTest("test 1" + i));
                         }
@@ -165,10 +167,8 @@ public class ConditionsPanel implements QueryComponent {
                                 new ColumnInfo[]{
                                 new TreeColumnInfo("Tables")
                         });
-                        TreeComboBox treeComboBox = new TreeComboBox(
-                                model);
-//                        treeComboBox.setRenderer(new TableElement.Renderer());
-                        return treeComboBox;
+
+                        return new TreeComboBox(model, false);
                     }
 
                     private final JTextField conditionRight = new JTextField();
@@ -178,25 +178,12 @@ public class ConditionsPanel implements QueryComponent {
 
                     @Override
                     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-                        // var val = (ConditionElement) value;
                         if (variable.isCustom()) {
                             conditionCustom.setText(variable.getCondition());
                             return conditionCustom;
                         }
                         Box hBox = Box.createHorizontalBox();
-                        conditionLeftCombo.setPreferredSize(new Dimension(200, 75));
-//                        conditionLeftCombo.addActionListener(eggg -> {
-////                            System.out.println(e);
-////                            JBPopupFactory.getInstance().createActionGroupPopup(
-////                                    "Test"
-////                            ).show(conditionLeftCombo.getComponent(0));
-//                            JBPopupFactory.getInstance().createTree(
-//                                    new BaseTreePopupStep(ApplicationManager.getApplication(),
-//                                            "Test",
-//                                            new TreeGrid())
-//                            );
-//                        });
-                     //   conditionLeftCombo.setItem(variable.getConditionLeft());
+                        conditionLeftCombo.setPreferredSize(new Dimension(200, 15));
                         hBox.add(conditionLeftCombo);
                         comparisonCombo.setItem(variable.getConditionComparison());
                         hBox.add(comparisonCombo);
@@ -208,7 +195,9 @@ public class ConditionsPanel implements QueryComponent {
                     @Override
                     public Object getCellEditorValue() {
                         ConditionElement elem = new ConditionElement();
-//                        elem.setConditionLeft(conditionLeftCombo.getItem());
+                        if (conditionLeftCombo.getSelectedItem()!=null) {
+                            elem.setConditionLeft(conditionLeftCombo.getSelectedItem().toString());
+                        }
                         elem.setConditionRight(conditionRight.getText());
                         elem.setConditionComparison(comparisonCombo.getItem());
                         elem.setCondition(conditionCustom.getText());
@@ -235,10 +224,10 @@ public class ConditionsPanel implements QueryComponent {
                 System.out.println("test");
             }
         });
-        decorator.setRemoveAction(button -> {
-            System.out.println(button);
-            // myTableModel.addRow();
-        });
+//        decorator.setRemoveAction(button -> {
+//            System.out.println(button);
+//            // myTableModel.addRow();
+//        });
         return decorator.createPanel();
     }
 
