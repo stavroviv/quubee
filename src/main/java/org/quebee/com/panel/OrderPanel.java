@@ -11,6 +11,7 @@ import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import lombok.Getter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.TableElement;
@@ -20,13 +21,15 @@ import java.util.Random;
 
 import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
 
-public class OrderPanel extends JBSplitter {
-    public static final String HEADER = "Order";
+@Getter
+public class OrderPanel implements QueryComponent {
+    private final String header = "Order";
+    private final JBSplitter component = new JBSplitter();
 
     public OrderPanel() {
-        this.setProportion(0.3f);
-        this.setFirstComponent(getFieldsTable());
-        this.setSecondComponent(getOrderTable());
+        component.setProportion(0.3f);
+        component.setFirstComponent(getFieldsTable());
+        component.setSecondComponent(getOrderTable());
         init(ApplicationManager.getApplication().getMessageBus());
     }
 

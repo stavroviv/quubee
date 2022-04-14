@@ -18,6 +18,7 @@ import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
+import lombok.Getter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.model.ConditionElement;
@@ -32,19 +33,15 @@ import java.awt.*;
 
 import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
 
+@Getter
 public class ConditionsPanel implements QueryComponent {
-    public static final String HEADER = "Conditions";
-    private final JBSplitter splitter = new JBSplitter();
-
-    @Override
-    public JComponent getComponent() {
-        return splitter;
-    }
+    private final String header = "Conditions";
+    private final JBSplitter component = new JBSplitter();
 
     public ConditionsPanel() {
-        splitter.setProportion(0.3f);
-        splitter.setFirstComponent(getFieldsTree());
-        splitter.setSecondComponent(getConditionsTable());
+        component.setProportion(0.3f);
+        component.setFirstComponent(getFieldsTree());
+        component.setSecondComponent(getConditionsTable());
         init(ApplicationManager.getApplication().getMessageBus());
     }
 
@@ -240,4 +237,5 @@ public class ConditionsPanel implements QueryComponent {
 //        });
         return jbScrollPane;
     }
+
 }

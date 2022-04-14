@@ -11,6 +11,7 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.IconUtil;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColumnInfo;
+import lombok.Getter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
@@ -28,9 +29,10 @@ import java.util.Random;
 import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 
-public class FromTables {
-    public static final String HEADER = "Tables and Fields";
-    public JComponent element;
+@Getter
+public class FromTables implements QueryComponent {
+    private final String header = "Tables and Fields";
+    private final JComponent component;
 
     private DefaultMutableTreeTableNode databaseRoot;
     private ListTreeTableModel databaseModel;
@@ -45,7 +47,7 @@ public class FromTables {
         splitter2.setSecondComponent(selectedFields());
         splitter.setSecondComponent(splitter2);
 
-        this.element = splitter;
+        this.component = splitter;
         init(ApplicationManager.getApplication().getMessageBus());
     }
 
@@ -176,4 +178,5 @@ public class FromTables {
         }
         databaseModel.reload();
     }
+
 }

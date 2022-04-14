@@ -11,24 +11,22 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.ui.JBUI;
 import icons.DatabaseIcons;
 import org.jetbrains.annotations.NotNull;
-import org.quebee.com.panel.ConditionsPanel;
-import org.quebee.com.panel.FromTables;
-import org.quebee.com.panel.LinksPanel;
-import org.quebee.com.panel.OrderPanel;
+import org.quebee.com.panel.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 public class MainQuiBuiForm {
 
-    final DialogWrapper dialog;
+    private final DialogWrapper dialog;
 
     public MainQuiBuiForm(Project project) {
         var tabsCte = new JBTabsImpl(project, null, ApplicationManager.getApplication());
         var tabsUnion = new JBTabsImpl(project, null, ApplicationManager.getApplication());
-        var unionPanel =  new JPanel(new BorderLayout());
-        var ctePanel =  new JPanel(new BorderLayout());
+        var unionPanel = new JPanel(new BorderLayout());
+        var ctePanel = new JPanel(new BorderLayout());
         dialog = new DialogWrapper(project, false, DialogWrapper.IdeModalityType.PROJECT) {
 
             @Override
@@ -53,15 +51,7 @@ public class MainQuiBuiForm {
                 JPanel panelCurrent = new JPanel();
                 panelCurrent.setLayout(new BorderLayout());
                 final JBTabsImpl tabs = new JBTabsImpl(project, null, ApplicationManager.getApplication());
-                // show in union
-                addFromTables(tabs);
-                addLinksTable(tabs);
-                tabs.addTab(new TabInfo(new JPanel())).setText("Grouping");
-                addConditionsTable(tabs);
-                // not show in union
-                tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases");
-                addOrderTab(tabs);
-
+                addQueryTabs(tabs);
                 panelCurrent.add(tabs, BorderLayout.CENTER);
 
                 unionPanel.add(getEmptyPanel(), BorderLayout.NORTH);
@@ -109,25 +99,22 @@ public class MainQuiBuiForm {
         showHideEastPanels(ctePanel, unionPanel);
     }
 
+    private void addQueryTabs(JBTabsImpl tabs) {
+        List.of(
+                new FromTables(),
+                new LinksPanel(),
+                new GroupingPanel(),
+                new ConditionsPanel(),
+                new UnionAliasesPanel(),
+                new OrderPanel()
+        ).forEach(queryTab ->
+                tabs.addTab(new TabInfo(queryTab.getComponent()).setText(queryTab.getHeader()))
+        );
+    }
+
     private void showHideEastPanels(JPanel ctePanel, JPanel unionPanel) {
         ctePanel.setVisible(!ctePanel.isVisible());
         unionPanel.setVisible(!unionPanel.isVisible());
-    }
-
-    private void addFromTables(JBTabsImpl tabs) {
-        tabs.addTab(new TabInfo(new FromTables().element).setText(FromTables.HEADER));
-    }
-
-    private void addLinksTable(JBTabsImpl tabs) {
-        tabs.addTab(new TabInfo(new LinksPanel().element)).setText(LinksPanel.HEADER);
-    }
-
-    private void addOrderTab(JBTabsImpl tabs) {
-        tabs.addTab(new TabInfo(new OrderPanel())).setText(OrderPanel.HEADER);
-    }
-
-    private void addConditionsTable(JBTabsImpl tabs) {
-        tabs.addTab(new TabInfo(new ConditionsPanel().getComponent())).setText(ConditionsPanel.HEADER);
     }
 
     public void show() {

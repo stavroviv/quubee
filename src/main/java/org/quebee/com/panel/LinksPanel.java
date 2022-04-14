@@ -4,6 +4,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import lombok.Getter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
@@ -11,10 +12,11 @@ import java.util.Random;
 
 import static org.quebee.com.panel.OrderPanel.getTitleColumnInfo;
 
-public class LinksPanel extends JPanel {
+@Getter
+public class LinksPanel implements QueryComponent {
 
-    public static final String HEADER = "Links";
-    public JComponent element;
+    private final String header = "Links";
+    private final JComponent component;
 
     public LinksPanel() {
         ListTableModel model = new ListTableModel(new ColumnInfo[]{getTitleColumnInfo("Test")});
@@ -29,6 +31,7 @@ public class LinksPanel extends JPanel {
             System.out.println(button);
             // myTableModel.addRow();
         });
-        this.element = decorator.createPanel();
+        this.component = decorator.createPanel();
     }
+
 }
