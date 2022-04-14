@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DBStructureImpl implements DBStructure {
+public class PostgresStructureImpl implements DBStructure {
     private Map<String, List<String>> dbElements;
 
     @Override
@@ -49,9 +49,9 @@ public class DBStructureImpl implements DBStructure {
             var path = ObjectPaths.of(database);
             var schemas = dataSource.getModel()
                     .traverser()
-                    .expandAndSkip(
-                            x -> x.getKind() == ObjectKind.DATABASE && x.getName().equals(path.getName()))
-                    .filter(DasUtil.byKind(ObjectKind.SCHEMA)).traverse();
+                    .expandAndSkip(x -> x.getKind() == ObjectKind.DATABASE && x.getName().equals(path.getName()))
+                    .filter(DasUtil.byKind(ObjectKind.SCHEMA))
+                    .traverse();
 
             for (DasObject schema : schemas) {
                 if (!DataSourceSchemaMapping.isIntrospected(scope, schema)) {

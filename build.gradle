@@ -16,6 +16,8 @@ dependencies {
     implementation "com.github.jsqlparser:jsqlparser:4.4"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compileOnly 'org.projectlombok:lombok:1.18.10'
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/

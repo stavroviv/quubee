@@ -7,7 +7,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBStructure;
-import org.quebee.com.database.DBStructureImpl;
+import org.quebee.com.database.PostgresStructureImpl;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.notifier.ReloadDbTablesNotifier;
 
@@ -24,7 +24,7 @@ public class MainAction extends AnAction {
 
     private void setDatabaseTables(@NotNull AnActionEvent action) {
         JdbcConsole console = JdbcConsole.findConsole(action);
-        DBStructure structure = new DBStructureImpl();
+        DBStructure structure = new PostgresStructureImpl();
         DBTables dbStructure = structure.getDBStructure(console);
         MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
         ReloadDbTablesNotifier publisher = messageBus.syncPublisher(RELOAD_TABLES_TOPIC);

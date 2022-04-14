@@ -53,11 +53,13 @@ public class MainQuiBuiForm {
                 JPanel panelCurrent = new JPanel();
                 panelCurrent.setLayout(new BorderLayout());
                 final JBTabsImpl tabs = new JBTabsImpl(project, null, ApplicationManager.getApplication());
+                // show in union
                 addFromTables(tabs);
                 addLinksTable(tabs);
-                tabs.addTab(new TabInfo(new JPanel())).setText("Grouping").setActions(new DefaultActionGroup(), null);
+                tabs.addTab(new TabInfo(new JPanel())).setText("Grouping");
                 addConditionsTable(tabs);
-                tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases").setActions(new DefaultActionGroup(), null);
+                // not show in union
+                tabs.addTab(new TabInfo(new JTable())).setText("Union/Aliases");
                 addOrderTab(tabs);
 
                 panelCurrent.add(tabs, BorderLayout.CENTER);
