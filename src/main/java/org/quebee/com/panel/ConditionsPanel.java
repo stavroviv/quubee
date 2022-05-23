@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TreeComboBox;
 import com.intellij.ui.AnActionButton;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBScrollPane;
@@ -112,11 +113,11 @@ public class ConditionsPanel implements QueryComponent {
                     Box hBox = Box.createHorizontalBox();
                     JTextField comp = new JTextField(variable.getConditionLeft());
                     comp.setPreferredSize(new Dimension(200, 15));
-                    comp.setBorder(new LineBorder(Color.red,1));
+                    comp.setBorder(new LineBorder(JBColor.RED, 1));
                     hBox.add(comp);
                     hBox.add(new JTextField(variable.getConditionComparison()));
                     hBox.add(new JTextField(variable.getConditionRight()));
-                    return hBox; //NON-NLS
+                    return hBox;
                 };
             }
 
@@ -124,10 +125,12 @@ public class ConditionsPanel implements QueryComponent {
             public @NotNull TableCellEditor getEditor(final ConditionElement variable) {
                 return new AbstractTableCellEditor() {
                     private final TreeComboBox conditionLeftCombo = getTreeComboBox();
+
                     @NotNull
                     private TreeComboTableElement getTest(String test) {
                         return new TreeComboTableElement(test, DatabaseIcons.Table);
                     }
+
                     @NotNull
                     private TreeComboBox getTreeComboBox() {
                         TreeComboTableElement root = getTest("test");
@@ -145,8 +148,8 @@ public class ConditionsPanel implements QueryComponent {
                         ListTreeTableModel model = new ListTreeTableModel(
                                 root,
                                 new ColumnInfo[]{
-                                new TreeColumnInfo("Tables")
-                        });
+                                        new TreeColumnInfo("Tables")
+                                });
 
                         return new TreeComboBox(model, false);
                     }
@@ -175,7 +178,7 @@ public class ConditionsPanel implements QueryComponent {
                     @Override
                     public Object getCellEditorValue() {
                         ConditionElement elem = new ConditionElement();
-                        if (conditionLeftCombo.getSelectedItem()!=null) {
+                        if (conditionLeftCombo.getSelectedItem() != null) {
                             elem.setConditionLeft(conditionLeftCombo.getSelectedItem().toString());
                         }
                         elem.setConditionRight(conditionRight.getText());
