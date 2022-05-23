@@ -19,8 +19,6 @@ import org.quebee.com.model.TableElement;
 import javax.swing.*;
 import java.util.Random;
 
-import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
-
 @Getter
 public class OrderPanel implements QueryComponent {
     private final String header = "Order";
@@ -34,10 +32,10 @@ public class OrderPanel implements QueryComponent {
     }
 
     public void init(MessageBus bus) {
-        bus.connect().subscribe(QUI_BUI_TOPIC, context -> {
-            System.out.println(context);
-            System.out.println(context);
-        });
+//        bus.connect().subscribe(QUI_BUI_TOPIC, context -> {
+//            System.out.println(context);
+//            System.out.println(context);
+//        });
     }
 
     private JComponent getOrderTable() {

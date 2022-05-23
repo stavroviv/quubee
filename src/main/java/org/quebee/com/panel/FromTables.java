@@ -14,16 +14,17 @@ import com.intellij.util.ui.ColumnInfo;
 import lombok.Getter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.model.TableElement;
-import org.quebee.com.notifier.QuiBuiNotifier;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
@@ -56,9 +57,41 @@ public class FromTables implements QueryComponent {
         bus.connect().subscribe(QUI_BUI_TOPIC, this::addSelectedTable);
     }
 
-    private void addSelectedTable(TableElement o) {
-        selectedTablesRoot.add(new DefaultMutableTreeTableNode(o));
-        selectedTablesModel.reload();
+    private void addSelectedTable(MutableTreeTableNode node) {
+        if (Objects.isNull(node.getParent())) {
+            return;
+        }
+        if (Objects.isNull(node.getParent().getParent())) {
+            addSelectedTableNode(node);
+            return;
+        }
+        var parent = node.getParent();
+        var parentUserObject = (TableElement) parent.getUserObject();
+        boolean exists = false;
+        var children = selectedTablesRoot.children();
+        while (children.hasMoreElements()) {
+            MutableTreeTableNode mutableTreeTableNode = children.nextElement();
+            TableElement userObject = (TableElement) mutableTreeTableNode.getUserObject();
+            if (userObject.getId() == parentUserObject.getId()) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            addSelectedTableNode(parent);
+        }
+    }
+
+    private void addSelectedTableNode(TreeTableNode node) {
+        var child = new DefaultMutableTreeTableNode(node.getUserObject());
+        node.children().asIterator()
+                .forEachRemaining(x -> child.add(new DefaultMutableTreeTableNode(x.getUserObject())));
+        selectedTablesRoot.add(child);
+        if (selectedTablesRoot.getChildCount() == 1) {
+            selectedTablesModel.reload();
+        } else {
+            selectedTablesModel.nodesWereInserted(selectedTablesRoot, new int[]{selectedTablesRoot.getChildCount() - 1});
+        }
     }
 
     DefaultMutableTreeTableNode selectedTablesRoot;
@@ -140,14 +173,14 @@ public class FromTables implements QueryComponent {
         treeTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
-                TreeTable table = (TreeTable) mouseEvent.getSource();
-                if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-                    MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
-                    QuiBuiNotifier publisher = messageBus.syncPublisher(QUI_BUI_TOPIC);
-                    Object userObject = ((MutableTreeTableNode) treeTable.getValueAt(table.getSelectedRow(), 0)).getUserObject();
-                    TableElement value1 = (TableElement) userObject;
-                   publisher.onAction(value1);
+                var table = (TreeTable) mouseEvent.getSource();
+                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
+                    return;
                 }
+                var messageBus = ApplicationManager.getApplication().getMessageBus();
+                var publisher = messageBus.syncPublisher(QUI_BUI_TOPIC);
+                var valueAt = (MutableTreeTableNode) treeTable.getValueAt(table.getSelectedRow(), 0);
+                publisher.onSelectedTableAdded(valueAt);
             }
         });
         treeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -177,6 +210,7 @@ public class FromTables implements QueryComponent {
             }
         }
         databaseModel.reload();
+//        selectedTablesModel.reload();
     }
 
 }

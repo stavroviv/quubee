@@ -7,8 +7,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBStructure;
-import org.quebee.com.database.PostgresStructureImpl;
 import org.quebee.com.database.DBTables;
+import org.quebee.com.database.PostgresStructureImpl;
 import org.quebee.com.notifier.ReloadDbTablesNotifier;
 
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
@@ -30,9 +30,9 @@ public class MainAction extends AnAction {
         ReloadDbTablesNotifier publisher = messageBus.syncPublisher(RELOAD_TABLES_TOPIC);
         publisher.onAction(dbStructure);
     }
-
-    @Override
-    public boolean isDumbAware() {
-        return super.isDumbAware();
-    }
+//
+//    @Override
+//    public boolean isDumbAware() {
+//        return super.isDumbAware();
+//    }
 }

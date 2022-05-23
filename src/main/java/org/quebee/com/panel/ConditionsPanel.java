@@ -31,8 +31,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-import static org.quebee.com.notifier.QuiBuiNotifier.QUI_BUI_TOPIC;
-
 @Getter
 public class ConditionsPanel implements QueryComponent {
     private final String header = "Conditions";
@@ -46,10 +44,10 @@ public class ConditionsPanel implements QueryComponent {
     }
 
     public void init(MessageBus bus) {
-        bus.connect().subscribe(QUI_BUI_TOPIC, context -> {
-            System.out.println(context);
-            System.out.println(context);
-        });
+//        bus.connect().subscribe(QUI_BUI_TOPIC, context -> {
+//            System.out.println(context);
+//            System.out.println(context);
+//        });
     }
 
     private JComponent getConditionsTable() {
