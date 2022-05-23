@@ -2,15 +2,20 @@ package org.quebee.com.model;
 
 import com.intellij.ui.ColoredTreeCellRenderer;
 import icons.DatabaseIcons;
+import lombok.Getter;
+import lombok.Setter;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.UUID;
 
+@Getter
+@Setter
 public class TableElement {
 
     private UUID id;
+    private UUID parentId;
     private String name;
     private String alias;
 
@@ -26,6 +31,12 @@ public class TableElement {
     public TableElement(String name) {
         this.name = name;
         this.id = UUID.randomUUID();
+
+    }
+
+    public TableElement(String name, UUID parentId) {
+        this(name);
+        this.parentId = parentId;
     }
 
     public static class Renderer extends ColoredTreeCellRenderer {
@@ -49,83 +60,83 @@ public class TableElement {
         }
     }
 
-    public boolean isTable() {
-        return table;
-    }
+//    public boolean isTable() {
+//        return table;
+//    }
+//
+//    public void setTable(boolean table) {
+//        this.table = table;
+//    }
+//
+//    public boolean isColumn() {
+//        return column;
+//    }
+//
+//    public void setColumn(boolean column) {
+//        this.column = column;
+//    }
 
-    public void setTable(boolean table) {
-        this.table = table;
-    }
+//    public UUID getId() {
+//        return id;
+//    }
+//
+//    public void setId(UUID id) {
+//        this.id = id;
+//    }
+//
+//    public String getName() {
+//        return name;
+//    }
+//
+//    public void setName(String name) {
+//        this.name = name;
+//    }
 
-    public boolean isColumn() {
-        return column;
-    }
-
-    public void setColumn(boolean column) {
-        this.column = column;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAlias() {
-        return alias;
-    }
-
-    public void setAlias(String alias) {
-        this.alias = alias;
-    }
-
-    public boolean isRoot() {
-        return root;
-    }
-
-    public void setRoot(boolean root) {
-        this.root = root;
-    }
-
-    public boolean isNotSelectable() {
-        return notSelectable;
-    }
-
-    public void setNotSelectable(boolean notSelectable) {
-        this.notSelectable = notSelectable;
-    }
-
-    public boolean isNested() {
-        return nested;
-    }
-
-    public void setNested(boolean nested) {
-        this.nested = nested;
-    }
-
-    public boolean isCte() {
-        return cte;
-    }
-
-    public void setCte(boolean cte) {
-        this.cte = cte;
-    }
-
-    public boolean isCteRoot() {
-        return cteRoot;
-    }
-
-    public void setCteRoot(boolean cteRoot) {
-        this.cteRoot = cteRoot;
-    }
+//    public String getAlias() {
+//        return alias;
+//    }
+//
+//    public void setAlias(String alias) {
+//        this.alias = alias;
+//    }
+//
+//    public boolean isRoot() {
+//        return root;
+//    }
+//
+//    public void setRoot(boolean root) {
+//        this.root = root;
+//    }
+//
+//    public boolean isNotSelectable() {
+//        return notSelectable;
+//    }
+//
+//    public void setNotSelectable(boolean notSelectable) {
+//        this.notSelectable = notSelectable;
+//    }
+//
+//    public boolean isNested() {
+//        return nested;
+//    }
+//
+//    public void setNested(boolean nested) {
+//        this.nested = nested;
+//    }
+//
+//    public boolean isCte() {
+//        return cte;
+//    }
+//
+//    public void setCte(boolean cte) {
+//        this.cte = cte;
+//    }
+//
+//    public boolean isCteRoot() {
+//        return cteRoot;
+//    }
+//
+//    public void setCteRoot(boolean cteRoot) {
+//        this.cteRoot = cteRoot;
+//    }
 }

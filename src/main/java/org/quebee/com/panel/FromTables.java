@@ -43,16 +43,17 @@ public class FromTables implements QueryComponent {
     private ListTreeTableModel databaseModel;
 
     public FromTables() {
-        var splitter = new JBSplitter();
-        splitter.setProportion(0.3f);
+        var splitterLeft = new JBSplitter();
+        splitterLeft.setProportion(0.3f);
 
-        splitter.setFirstComponent(databaseTables());
-        var splitter2 = new JBSplitter();
-        splitter2.setFirstComponent(selectedTables());
-        splitter2.setSecondComponent(selectedFields());
-        splitter.setSecondComponent(splitter2);
+        splitterLeft.setFirstComponent(databaseTables());
 
-        this.component = splitter;
+        var splitterRight = new JBSplitter();
+        splitterRight.setFirstComponent(selectedTables());
+        splitterRight.setSecondComponent(selectedFields());
+        splitterLeft.setSecondComponent(splitterRight);
+
+        this.component = splitterLeft;
         initListeners();
     }
 
@@ -71,6 +72,16 @@ public class FromTables implements QueryComponent {
         var index = selectedTablesRoot.getIndex(node);
         selectedTablesRoot.remove(node);
         selectedTablesModel.nodesWereRemoved(selectedTablesRoot, new int[]{index}, new Object[]{node});
+        removeSelectedFieldsByTable(node, selectedFieldsModel);
+    }
+
+    private void removeSelectedFieldsByTable(TreeTableNode node, ListTableModel<TableElement> model) {
+        for (int i = model.getItems().size() - 1; i >= 0; i--) {
+            var userObject = (TableElement) node.getUserObject();
+            if (model.getItem(i).getParentId().equals(userObject.getId())) {
+                model.removeRow(i);
+            }
+        }
     }
 
     private void addSelectedTable(MutableTreeTableNode node) {
@@ -102,7 +113,7 @@ public class FromTables implements QueryComponent {
     private void addSelectedField(MutableTreeTableNode node) {
         var parent = (TableElement) node.getParent().getUserObject();
         var userObject = (TableElement) node.getUserObject();
-        selectedFieldsModel.addRow(new TableElement(parent.getName() + "." + userObject.getName()));
+        selectedFieldsModel.addRow(new TableElement(parent.getName() + "." + userObject.getName(), parent.getId()));
     }
 
     private void addSelectedTableNode(TreeTableNode node) {
