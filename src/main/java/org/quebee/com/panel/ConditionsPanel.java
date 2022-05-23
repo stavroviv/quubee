@@ -80,7 +80,7 @@ public class ConditionsPanel implements QueryComponent {
 
             @Override
             public @NotNull String getTooltipText() {
-                return "Custom super condition";
+                return "Custom condition";
             }
         };
 

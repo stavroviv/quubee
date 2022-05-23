@@ -6,12 +6,14 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.CommonActionsPanel;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.IconUtil;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
@@ -29,9 +31,9 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
+import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
 import static org.quebee.com.notifier.SelectedTableAddNotifier.SELECTED_TABLE_ADD;
 import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
 
@@ -62,6 +64,7 @@ public class FromTables implements QueryComponent {
         bus.connect().subscribe(RELOAD_TABLES_TOPIC, this::setDatabaseTables);
         bus.connect().subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
         bus.connect().subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
+        bus.connect().subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
     }
 
     private void removeSelectedTable(MutableTreeTableNode node) {
@@ -96,6 +99,13 @@ public class FromTables implements QueryComponent {
         if (!exists) {
             addSelectedTableNode(parent);
         }
+        Messages.getPublisher(SELECTED_FIELD_ADD).onSelectedFieldAdded(node);
+    }
+
+    private void addSelectedField(MutableTreeTableNode node) {
+        TableElement parent = (TableElement) node.getParent().getUserObject();
+        TableElement userObject = (TableElement) node.getUserObject();
+        selectedFieldsModel.addRow(new TableElement(parent.getName() + "." + userObject.getName()));
     }
 
     private void addSelectedTableNode(TreeTableNode node) {
@@ -123,6 +133,7 @@ public class FromTables implements QueryComponent {
         selectedTablesTree = new TreeTable(selectedTablesModel);
 //        treeTable.getTree().setToggleClickCount(0);
         selectedTablesTree.setRootVisible(false);
+        selectedTablesTree.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         selectedTablesTree.setTreeCellRenderer(new TableElement.Renderer());
         //  JBScrollPane jbScrollPane = new JBScrollPane(treeTable);
 
@@ -151,43 +162,58 @@ public class FromTables implements QueryComponent {
                     return Objects.isNull(value.getParent().getParent());
                 }
         );
+        selectedTablesTree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+                var table = (TreeTable) mouseEvent.getSource();
+                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1 || mouseEvent.getX() < 40) {
+                    return;
+                }
+                MutableTreeTableNode value = (MutableTreeTableNode) selectedTablesTree.getValueAt(table.getSelectedRow(), 0);
+                if (Objects.isNull(value.getParent().getParent())) {
+                    return;
+                }
+                Messages.getPublisher(SELECTED_FIELD_ADD).onSelectedFieldAdded(value);
+            }
+        });
         return panel;
     }
 
+    ListTableModel<TableElement> selectedFieldsModel;
+
     public JComponent selectedFields() {
+        var isCustomInfo = new ColumnInfo<TableElement, String>("Fields") {
 
-        DefaultMutableTreeTableNode root = getTest("test");
+            @Override
+            public @NotNull String valueOf(TableElement o) {
+                return o.getName();
+            }
 
-        final DefaultMutableTreeTableNode child = getTest("test 1");
-        for (int i = 0; i < 100; i++) {
-            child.add(getTest("test 1" + i));
-        }
-        child.add(getTest("test 12"));
-        root.add(child);
-        root.add(getTest("test 2"));
-        root.add(getTest("test 3"));
-        root.add(getTest("test 4"));
-
-        ListTreeTableModel model = new ListTreeTableModel(root, new ColumnInfo[]{
-                new TreeColumnInfo("Fields")
+            @Override
+            public Class<TableElement> getColumnClass() {
+                return TableElement.class;
+            }
+        };
+        selectedFieldsModel = new ListTableModel<>(new ColumnInfo[]{
+                isCustomInfo,
         });
-        TreeTable treeTable = new TreeTable(model);
-        treeTable.setTreeCellRenderer(new TableElement.Renderer());
-        //  JBScrollPane jbScrollPane = new JBScrollPane(treeTable);
+        TableView<TableElement> table = new TableView<>(selectedFieldsModel);
 
-        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(treeTable);
-
+        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(table);
         decorator.setAddAction(button -> {
-//            root.insert(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()), i.get());
-//            model.nodesWereInserted(root, new int[]{i.get()});
-            root.add(getTest("test" + new Random(1000).nextInt()));
-            model.reload();
+//            model.addRow(new TableElement());
+            //    model.reload();
         });
-        decorator.setRemoveAction(button -> {
-            //extracted(SELECTED_TABLE_REMOVE, null);
-            System.out.println(button);
-            // myTableModel.addRow();
-        });
+//        decorator.addExtraAction(new AnActionButton("Copy", AllIcons.Actions.Copy) {
+//            @Override
+//            public void actionPerformed(@NotNull AnActionEvent e) {
+//                System.out.println("test");
+//            }
+//        });
+//        decorator.setRemoveAction(button -> {
+//            System.out.println(button);
+//            // myTableModel.addRow();
+//        });
         return decorator.createPanel();
     }
 
@@ -214,17 +240,7 @@ public class FromTables implements QueryComponent {
 //
 //            }
 //        });
-        treeTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-                var table = (TreeTable) mouseEvent.getSource();
-                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1 || mouseEvent.getX() < 40) {
-                    return;
-                }
-                Messages.getPublisher(SELECTED_TABLE_ADD)
-                        .onSelectedTableAdded((MutableTreeTableNode) treeTable.getValueAt(table.getSelectedRow(), 0));
-            }
-        });
+        treeTable.addMouseListener(fieldsMouseListener(treeTable));
         treeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         treeTable.setTreeCellRenderer(new TableElement.Renderer());
 
@@ -237,6 +253,21 @@ public class FromTables implements QueryComponent {
         });
 
         return decorator.createPanel();
+    }
+
+    @NotNull
+    private MouseAdapter fieldsMouseListener(TreeTable treeTable) {
+        return new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+                var table = (TreeTable) mouseEvent.getSource();
+                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1 || mouseEvent.getX() < 40) {
+                    return;
+                }
+                Messages.getPublisher(SELECTED_TABLE_ADD)
+                        .onSelectedTableAdded((MutableTreeTableNode) treeTable.getValueAt(table.getSelectedRow(), 0));
+            }
+        };
     }
 
     public void setDatabaseTables(DBTables dbStructure) {
