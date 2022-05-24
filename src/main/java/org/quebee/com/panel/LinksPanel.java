@@ -8,13 +8,16 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.quebee.com.notifier.SelectedTableAddNotifier.SELECTED_TABLE_ADD;
 import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
@@ -25,7 +28,9 @@ public class LinksPanel implements QueryComponent {
     private final String header = "Links";
     private final JComponent component;
 
-    private final ComboBox<String> tableComboBox = new ComboBox<>();
+//    private final ComboBox<String> tableComboBox = new ComboBox<>();
+
+    private final Set<TreeTableNode> tables = new HashSet<>();
 
     public LinksPanel() {
         var table1Info = new ColumnInfo<LinkElement, String>("Table 1") {
@@ -41,7 +46,7 @@ public class LinksPanel implements QueryComponent {
 
             @Override
             public @NotNull TableCellEditor getEditor(LinkElement linkElement) {
-                return new DefaultCellEditor(tableComboBox);
+                return availableTablesEditor();
             }
 
             @Override
@@ -59,6 +64,7 @@ public class LinksPanel implements QueryComponent {
                 return LinkElement.class;
             }
         };
+
         var allTable1Info = new ColumnInfo<LinkElement, Boolean>("All") {
             @Override
             public int getWidth(JTable table) {
@@ -100,7 +106,7 @@ public class LinksPanel implements QueryComponent {
 
             @Override
             public @NotNull TableCellEditor getEditor(LinkElement linkElement) {
-                return new DefaultCellEditor(tableComboBox);
+                return availableTablesEditor();
             }
 
             @Override
@@ -176,6 +182,11 @@ public class LinksPanel implements QueryComponent {
         };
         var linkingConditionInfo = new ColumnInfo<LinkElement, String>("Linking Condition") {
 
+//            @Override
+//            public @NotNull TableCellEditor getEditor(LinkElement linkElement) {
+//                return availableTablesEditor();
+//            }
+
             @Override
             public @NotNull String valueOf(LinkElement o) {
                 return "Test";
@@ -215,6 +226,15 @@ public class LinksPanel implements QueryComponent {
         initListeners();
     }
 
+    @NotNull
+    private DefaultCellEditor availableTablesEditor() {
+        return new DefaultCellEditor(
+                new ComboBox<>(tables.stream()
+                        .map(x -> ((TableElement) x.getUserObject()).getName())
+                        .toArray(String[]::new))
+        );
+    }
+
     private void initListeners() {
         var bus = ApplicationManager.getApplication().getMessageBus();
         bus.connect().subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
@@ -222,7 +242,7 @@ public class LinksPanel implements QueryComponent {
     }
 
     private void removeSelectedTable(MutableTreeTableNode node) {
-
+        tables.remove(node);
     }
 
     private void addSelectedTable(MutableTreeTableNode node) {
@@ -230,17 +250,9 @@ public class LinksPanel implements QueryComponent {
             return;
         }
         if (Objects.isNull(node.getParent().getParent())) {
-            addTableToCombobox((TableElement) node.getUserObject());
+            tables.add(node);
             return;
         }
-        addTableToCombobox((TableElement) node.getParent().getUserObject());
-    }
-
-    private void addTableToCombobox(TableElement userObject) {
-        var name = userObject.getName();
-        var model = (DefaultComboBoxModel<String>) tableComboBox.getModel();
-        if (model.getIndexOf(name) == -1) {
-            tableComboBox.addItem(name);
-        }
+        tables.add(node.getParent());
     }
 }
