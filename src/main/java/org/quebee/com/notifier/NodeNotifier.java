@@ -1,7 +1,7 @@
 package org.quebee.com.notifier;
 
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
+import org.quebee.com.model.QBTreeNode;
 
 public interface NodeNotifier {
-    void onAction(MutableTreeTableNode element);
+    void onAction(QBTreeNode element);
 }

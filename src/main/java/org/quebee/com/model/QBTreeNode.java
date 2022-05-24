@@ -4,11 +4,10 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import java.util.Objects;
 
-public class QBTreeNode  {
-    private final DefaultMutableTreeTableNode node;
+public class QBTreeNode extends DefaultMutableTreeTableNode {
 
-    public QBTreeNode(DefaultMutableTreeTableNode node) {
-        this.node = node;
+    public QBTreeNode(Object userObject) {
+        super(userObject);
     }
 
     @Override
@@ -18,11 +17,17 @@ public class QBTreeNode  {
 
         QBTreeNode that = (QBTreeNode) o;
 
-        return Objects.equals(node, that.node);
+        Object userObject = getUserObject();
+        if (userObject instanceof TableElement) {
+            TableElement thisUserObject = (TableElement) userObject;
+            TableElement thatUserObject = (TableElement) that.getUserObject();
+            return thisUserObject.getId().equals(thatUserObject.getId());
+        }
+        return Objects.equals(this, that);
     }
 
     @Override
     public int hashCode() {
-        return node != null ? node.hashCode() : 0;
+        return getUserObject().hashCode();
     }
 }

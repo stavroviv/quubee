@@ -15,11 +15,11 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
+import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.util.Messages;
 
@@ -28,10 +28,12 @@ import javax.swing.tree.TreeNode;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
 import static org.quebee.com.notifier.SelectedTableAddNotifier.SELECTED_TABLE_ADD;
+import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
 import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
 
 @Getter
@@ -39,7 +41,7 @@ public class FromTables implements QueryComponent {
     private final String header = "Tables and Fields";
     private final JComponent component;
 
-    private DefaultMutableTreeTableNode databaseRoot;
+    private QBTreeNode databaseRoot;
     private ListTreeTableModel databaseModel;
 
     public FromTables() {
@@ -84,7 +86,7 @@ public class FromTables implements QueryComponent {
         }
     }
 
-    private void addSelectedTable(MutableTreeTableNode node) {
+    private void addSelectedTable(QBTreeNode node) {
         if (Objects.isNull(node.getParent())) {
             return;
         }
@@ -110,30 +112,47 @@ public class FromTables implements QueryComponent {
         Messages.getPublisher(SELECTED_FIELD_ADD).onAction(node);
     }
 
-    private void addSelectedField(MutableTreeTableNode node) {
+    private void addSelectedField(TreeTableNode node) {
         var parent = (TableElement) node.getParent().getUserObject();
         var userObject = (TableElement) node.getUserObject();
         selectedFieldsModel.addRow(new TableElement(parent.getName() + "." + userObject.getName(), parent.getId()));
     }
 
     private void addSelectedTableNode(TreeTableNode node) {
-        var child = new DefaultMutableTreeTableNode(node.getUserObject());
+        TableElement userObject = (TableElement) node.getUserObject();
+        UUID newNodeId = userObject.getId();
+        boolean exists = false;
+        for (int i = 0; i < selectedTablesRoot.getChildCount(); i++) {
+            TreeTableNode childAt = selectedTablesRoot.getChildAt(i);
+            if (((TableElement) childAt.getUserObject()).getId().equals(newNodeId)) {
+                exists = true;
+                break;
+            }
+        }
+
+        TableElement newUserObject = new TableElement(userObject.getName());
+        newUserObject.setTable(true);
+        if (!exists) {
+            newUserObject.setId(newNodeId);
+        }
+        var newTableNode = new QBTreeNode(newUserObject);
         node.children().asIterator()
-                .forEachRemaining(x -> child.add(new DefaultMutableTreeTableNode(x.getUserObject())));
-        selectedTablesRoot.add(child);
+                .forEachRemaining(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
+        selectedTablesRoot.add(newTableNode);
         if (selectedTablesRoot.getChildCount() == 1) {
             selectedTablesModel.reload();
         } else {
             selectedTablesModel.nodesWereInserted(selectedTablesRoot, new int[]{selectedTablesRoot.getChildCount() - 1});
         }
+        Messages.getPublisher(SELECTED_TABLE_AFTER_ADD).onAction(newTableNode);
     }
 
-    DefaultMutableTreeTableNode selectedTablesRoot;
-    ListTreeTableModel selectedTablesModel;
-    TreeTable selectedTablesTree;
+    private QBTreeNode selectedTablesRoot;
+    private ListTreeTableModel selectedTablesModel;
+    private TreeTable selectedTablesTree;
 
     public JComponent selectedTables() {
-        selectedTablesRoot = new DefaultMutableTreeTableNode(new TableElement("empty"));
+        selectedTablesRoot = new QBTreeNode(new TableElement("empty"));
         selectedTablesModel = new ListTreeTableModel(selectedTablesRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Tables")
         });
@@ -158,7 +177,7 @@ public class FromTables implements QueryComponent {
 //        });
 
         decorator.setRemoveAction(button -> Messages.getPublisher(SELECTED_TABLE_REMOVE)
-                .onAction((MutableTreeTableNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0)));
+                .onAction((QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0)));
 
         var panel = decorator.createPanel();
         decorator.getActionsPanel().getAnActionButton(CommonActionsPanel.Buttons.REMOVE).addCustomUpdater(
@@ -177,7 +196,7 @@ public class FromTables implements QueryComponent {
                 if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1 || mouseEvent.getX() < 40) {
                     return;
                 }
-                MutableTreeTableNode value = (MutableTreeTableNode) selectedTablesTree.getValueAt(table.getSelectedRow(), 0);
+                var value = (QBTreeNode) selectedTablesTree.getValueAt(table.getSelectedRow(), 0);
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
                 }
@@ -187,7 +206,7 @@ public class FromTables implements QueryComponent {
         return panel;
     }
 
-    ListTableModel<TableElement> selectedFieldsModel;
+    private ListTableModel<TableElement> selectedFieldsModel;
 
     public JComponent selectedFields() {
         var fieldInfo = new ColumnInfo<TableElement, String>("Fields") {
@@ -227,7 +246,7 @@ public class FromTables implements QueryComponent {
     }
 
     public JComponent databaseTables() {
-        databaseRoot = new DefaultMutableTreeTableNode(new TableElement("tables"));
+        databaseRoot = new QBTreeNode(new TableElement("tables"));
         databaseModel = new ListTreeTableModel(databaseRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Database")
         });
@@ -269,7 +288,7 @@ public class FromTables implements QueryComponent {
                     return;
                 }
                 Messages.getPublisher(SELECTED_TABLE_ADD)
-                        .onAction((MutableTreeTableNode) treeTable.getValueAt(table.getSelectedRow(), 0));
+                        .onAction((QBTreeNode) treeTable.getValueAt(table.getSelectedRow(), 0));
             }
         };
     }
@@ -278,12 +297,12 @@ public class FromTables implements QueryComponent {
         for (var stringListEntry : dbStructure.getDbElements().entrySet()) {
             var table = new TableElement(stringListEntry.getKey());
             table.setTable(true);
-            var child = new DefaultMutableTreeTableNode(table);
+            var child = new QBTreeNode(table);
             databaseRoot.add(child);
             for (String columnName : stringListEntry.getValue()) {
                 var column = new TableElement(columnName);
                 column.setColumn(true);
-                child.add(new DefaultMutableTreeTableNode(column));
+                child.add(new QBTreeNode(column));
             }
         }
         databaseModel.reload();

@@ -7,10 +7,10 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.model.LinkElement;
+import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import static org.quebee.com.notifier.SelectedTableAddNotifier.SELECTED_TABLE_ADD;
+import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
 import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
 
 @Getter
@@ -31,6 +31,7 @@ public class LinksPanel implements QueryComponent {
 //    private final ComboBox<String> tableComboBox = new ComboBox<>();
 
     private final Set<TreeTableNode> tables = new HashSet<>();
+    private final ListTableModel<LinkElement> linkTableModel;
 
     public LinksPanel() {
         var table1Info = new ColumnInfo<LinkElement, String>("Table 1") {
@@ -180,6 +181,7 @@ public class LinksPanel implements QueryComponent {
                 return true;
             }
         };
+
         var linkingConditionInfo = new ColumnInfo<LinkElement, String>("Linking Condition") {
 
 //            @Override
@@ -208,14 +210,15 @@ public class LinksPanel implements QueryComponent {
                 return true;
             }
         };
-        var model = new ListTableModel<>(
+
+        linkTableModel = new ListTableModel<>(
                 table1Info, allTable1Info, table2Info, allTable2Info, customInfo, linkingConditionInfo
         );
-        var table = new TableView<>(model);
+        var table = new TableView<>(linkTableModel);
 
         ToolbarDecorator decorator = ToolbarDecorator.createDecorator(table);
         decorator.setAddAction(button -> {
-            model.addRow(new LinkElement());
+            linkTableModel.addRow(new LinkElement());
             //    model.reload();
         });
 //        decorator.setRemoveAction(button -> {
@@ -237,15 +240,22 @@ public class LinksPanel implements QueryComponent {
 
     private void initListeners() {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        bus.connect().subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
+        bus.connect().subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
         bus.connect().subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
     }
 
-    private void removeSelectedTable(MutableTreeTableNode node) {
+    private void removeSelectedTable(QBTreeNode node) {
+        TableElement tableElement = (TableElement) node.getUserObject();
+        for (int i = linkTableModel.getItems().size() - 1; i >= 0; i--) {
+            if (linkTableModel.getItem(i).getTable1().equals(tableElement.getName())
+                    || linkTableModel.getItem(i).getTable2().equals(tableElement.getName())) {
+                linkTableModel.removeRow(i);
+            }
+        }
         tables.remove(node);
     }
 
-    private void addSelectedTable(MutableTreeTableNode node) {
+    private void addSelectedTable(QBTreeNode node) {
         if (Objects.isNull(node.getParent())) {
             return;
         }
