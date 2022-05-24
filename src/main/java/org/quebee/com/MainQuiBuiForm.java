@@ -93,7 +93,7 @@ public class MainQuiBuiForm {
             }
         };
         dialog.setResizable(true);
-        dialog.setTitle("Qui Bui");
+        dialog.setTitle("Jet Select");
         dialog.setSize(900, 550);
         showHideEastPanels(ctePanel, unionPanel);
     }
