@@ -196,11 +196,6 @@ public class FromTables implements QueryComponent {
             public @NotNull String valueOf(TableElement o) {
                 return o.getName();
             }
-//
-//            @Override
-//            public @NotNull Icon getIcon() {
-//                return DatabaseIcons.Col;
-//            }
 
             @Override
             public Class<TableElement> getColumnClass() {
@@ -208,49 +203,10 @@ public class FromTables implements QueryComponent {
             }
         };
 
-//        typeColumn.setCellRenderer(new IconTableCellRenderer<Icon>() {
-//            @NotNull
-//            @Override
-//            protected Icon getIcon(@NotNull Icon value, JTable table, int row) {
-//                return value;
-//            }
-//
-//            @Override
-//            public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focus, int row, int column) {
-//                super.getTableCellRendererComponent(table, value, selected, focus, row, column);
-//                setText("");
-//                return this;
-//            }
-//
-//            @Override
-//            protected boolean isCenterAlignment() {
-//                return true;
-//            }
-//        });
-
         selectedFieldsModel = new ListTableModel<>(new ColumnInfo[]{
-                fieldInfo,
+                fieldInfo
         });
         var table = new TableView<>(selectedFieldsModel);
-//        TableColumn severitiesColumn = table.getColumnModel().getColumn(0);
-//        severitiesColumn.setCellRenderer(new IconTableCellRenderer<Icon>() {
-//            public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focus, int row, int column) {
-//                Component component = super.getTableCellRendererComponent(table, value, false, focus, row, column);
-//                this.setBorder(JBUI.Borders.empty(1, 2));
-//                Color bg = RenderingUtil.getBackground(table, selected);
-//                component.setBackground(bg);
-//                ((JLabel)component).setText("");
-//                return component;
-//            }
-//
-//            protected Icon getIcon(@NotNull Icon value, JTable table, int row) {
-////                if (value == null) {
-////                    $$$reportNull$$$0(0);
-////                }
-//
-//                return DatabaseIcons.Col;
-//            }
-//        });
 
         var decorator = ToolbarDecorator.createDecorator(table);
         decorator.setAddAction(button -> {

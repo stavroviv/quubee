@@ -27,8 +27,8 @@ public class DebugGUI implements StartupActivity {
         MainQuiBuiForm form = new MainQuiBuiForm(project);
         DBTables dbStructure = new DBTables();
         HashMap<String, List<String>> dbElements = new HashMap<>();
-        for (int i = 0; i < 100; i++) {
-            dbElements.put("test " + i, List.of("test 1", "test 2", "test 3"));
+        for (int i = 0; i < 700; i++) {
+            dbElements.put("test_" + i, List.of("test_1", "test_2", "test_3"));
         }
         dbStructure.setDbElements(dbElements);
         MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();

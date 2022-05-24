@@ -1,10 +1,25 @@
 package org.quebee.com.model;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class LinkElement {
-//    private MainController controller;
+    private String name;
+    private boolean allTable1;
+    private boolean allTable2;
+    private boolean custom;
+
+    private String table1;
+    private String table2;
+
+    public LinkElement() {
+        this.name = "Test";
+        this.table1 = "";
+        this.table2 = "";
+    }
+    //    private MainController controller;
 //
 //    private SimpleStringProperty table1 = new SimpleStringProperty();
 //    private SimpleStringProperty table2 = new SimpleStringProperty();
