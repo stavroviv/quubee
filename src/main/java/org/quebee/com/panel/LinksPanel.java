@@ -36,15 +36,15 @@ public class LinksPanel implements QueryComponent {
     private final TableView<LinkElement> linkTable;
 
     public LinksPanel() {
-        var table1Info = new ColumnInfo<LinkElement, Object>("Table 1") {
+        var table1Info = new ColumnInfo<LinkElement, String>("Table 1") {
             @Override
             public int getWidth(JTable table) {
                 return 150;
             }
 
             @Override
-            public void setValue(LinkElement linkElement, Object value) {
-                linkElement.setTable1(((TableElement) value).getName());
+            public void setValue(LinkElement linkElement, String value) {
+                linkElement.setTable1(value);
             }
 
             @Override
@@ -91,15 +91,15 @@ public class LinksPanel implements QueryComponent {
             }
         };
 
-        var table2Info = new ColumnInfo<LinkElement, Object>("Table 2") {
+        var table2Info = new ColumnInfo<LinkElement, String>("Table 2") {
             @Override
             public int getWidth(JTable table) {
                 return 150;
             }
 
             @Override
-            public void setValue(LinkElement linkElement, Object value) {
-                linkElement.setTable2(((TableElement) value).getName());
+            public void setValue(LinkElement linkElement, String value) {
+                linkElement.setTable2(value);
             }
 
             @Override
@@ -201,9 +201,9 @@ public class LinksPanel implements QueryComponent {
                 }
                 return (table, value, isSelected, hasFocus, row, column) -> {
                     Box hBox = Box.createHorizontalBox();
-                    hBox.add(new JBTextField(variable.getField1()));
-                    hBox.add(new JBTextField(variable.getComparison()));
-                    hBox.add(new JBTextField(variable.getField2()));
+                    hBox.add(new ComboBox<>(new String[]{variable.getField1()}));
+                    hBox.add(new ComboBox<>(new String[]{variable.getComparison()}));
+                    hBox.add(new ComboBox<>(new String[]{variable.getField2()}));
                     return hBox;
                 };
             }
@@ -262,12 +262,12 @@ public class LinksPanel implements QueryComponent {
                         if (selectedObject == null) {
                             return;
                         }
-//                        tables.stream()
-//                                .filter(x -> ((TableElement) x.getUserObject()).getId().equals(selectedObject.getTable1Id()))
-//                                .forEach(x -> x.children().asIterator().forEachRemaining(y -> {
-//                                    var userObject = (TableElement) y.getUserObject();
-//                                    conditionField1.addItem(userObject.getName());
-//                                }));
+                        tables.stream()
+                                .filter(x -> ((TableElement) x.getUserObject()).getName().equals(selectedObject.getTable1()))
+                                .forEach(x -> x.children().asIterator().forEachRemaining(y -> {
+                                    var userObject = (TableElement) y.getUserObject();
+                                    conditionField1.addItem(userObject.getName());
+                                }));
                     }
                 };
             }
@@ -292,27 +292,27 @@ public class LinksPanel implements QueryComponent {
     @NotNull
     private DefaultCellEditor availableTablesEditor() {
         var comboBox = new ComboBox<>(tables.stream()
-                .map(x -> (TableElement) x.getUserObject())
-                .toArray(TableElement[]::new));
-        comboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index,
-                                                          boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                TableElement elementValue = (TableElement) value;
-                setText(elementValue.getName());
-                return this;
-            }
-        });
-        comboBox.addActionListener(e -> {
-            @SuppressWarnings("unchecked")
-            var comboBox1 = (ComboBox<TableElement>) e.getSource();
-            var item = (TableElement) comboBox1.getSelectedItem();
-            if (Objects.isNull(linkTable.getSelectedObject()) || Objects.isNull(item)) {
-                return;
-            }
-            linkTable.getSelectedObject().setTable1Id(item.getId());
-        });
+                .map(x -> ((TableElement) x.getUserObject()).getName())
+                .toArray(String[]::new));
+//        comboBox.setRenderer(new DefaultListCellRenderer() {
+//            @Override
+//            public Component getListCellRendererComponent(JList list, Object value, int index,
+//                                                          boolean isSelected, boolean cellHasFocus) {
+//                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//                TableElement elementValue = (TableElement) value;
+//                setText(elementValue.getName());
+//                return this;
+//            }
+//        });
+//        comboBox.addActionListener(e -> {
+//            @SuppressWarnings("unchecked")
+//            var comboBox1 = (ComboBox<TableElement>) e.getSource();
+//            var item = (TableElement) comboBox1.getSelectedItem();
+//            if (Objects.isNull(linkTable.getSelectedObject()) || Objects.isNull(item)) {
+//                return;
+//            }
+//            linkTable.getSelectedObject().setTable1Id(item.getId());
+//        });
 
         return new DefaultCellEditor(comboBox);
     }

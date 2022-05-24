@@ -28,7 +28,11 @@ public class DebugGUI implements StartupActivity {
         DBTables dbStructure = new DBTables();
         HashMap<String, List<String>> dbElements = new HashMap<>();
         for (int i = 0; i < 700; i++) {
-            dbElements.put("test_" + i, List.of("test_1", "test_2", "test_3"));
+            if (i % 2 == 0) {
+                dbElements.put("test_" + i, List.of("test_1", "test_2", "test_3", "test_4"));
+            } else {
+                dbElements.put("test_" + i, List.of("test_5", "test_6"));
+            }
         }
         dbStructure.setDbElements(dbElements);
         MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
