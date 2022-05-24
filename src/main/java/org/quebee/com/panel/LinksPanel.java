@@ -3,7 +3,9 @@ package org.quebee.com.panel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.table.TableView;
+import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
@@ -15,6 +17,8 @@ import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -27,22 +31,20 @@ public class LinksPanel implements QueryComponent {
 
     private final String header = "Links";
     private final JComponent component;
-
-//    private final ComboBox<String> tableComboBox = new ComboBox<>();
-
     private final Set<TreeTableNode> tables = new HashSet<>();
     private final ListTableModel<LinkElement> linkTableModel;
+    private final TableView<LinkElement> linkTable;
 
     public LinksPanel() {
-        var table1Info = new ColumnInfo<LinkElement, String>("Table 1") {
+        var table1Info = new ColumnInfo<LinkElement, Object>("Table 1") {
             @Override
             public int getWidth(JTable table) {
                 return 150;
             }
 
             @Override
-            public void setValue(LinkElement linkElement, String value) {
-                linkElement.setTable1(value);
+            public void setValue(LinkElement linkElement, Object value) {
+                linkElement.setTable1(((TableElement) value).getName());
             }
 
             @Override
@@ -58,11 +60,6 @@ public class LinksPanel implements QueryComponent {
             @Override
             public @NotNull String valueOf(LinkElement o) {
                 return o.getTable1();
-            }
-
-            @Override
-            public Class<LinkElement> getColumnClass() {
-                return LinkElement.class;
             }
         };
 
@@ -94,15 +91,15 @@ public class LinksPanel implements QueryComponent {
             }
         };
 
-        var table2Info = new ColumnInfo<LinkElement, String>("Table 2") {
+        var table2Info = new ColumnInfo<LinkElement, Object>("Table 2") {
             @Override
             public int getWidth(JTable table) {
                 return 150;
             }
 
             @Override
-            public void setValue(LinkElement linkElement, String value) {
-                linkElement.setTable2(value);
+            public void setValue(LinkElement linkElement, Object value) {
+                linkElement.setTable2(((TableElement) value).getName());
             }
 
             @Override
@@ -118,11 +115,6 @@ public class LinksPanel implements QueryComponent {
             @Override
             public @NotNull String valueOf(LinkElement o) {
                 return o.getTable2();
-            }
-
-            @Override
-            public Class<LinkElement> getColumnClass() {
-                return LinkElement.class;
             }
         };
 
@@ -182,60 +174,147 @@ public class LinksPanel implements QueryComponent {
             }
         };
 
-        var linkingConditionInfo = new ColumnInfo<LinkElement, String>("Linking Condition") {
-
-//            @Override
-//            public @NotNull TableCellEditor getEditor(LinkElement linkElement) {
-//                return availableTablesEditor();
-//            }
+        var linkingConditionInfo = new ColumnInfo<LinkElement, LinkElement>("Linking Condition") {
 
             @Override
-            public @NotNull String valueOf(LinkElement o) {
-                return "Test";
+            public @NotNull LinkElement valueOf(LinkElement o) {
+                return o;
             }
 
             @Override
-            public void setValue(LinkElement variable, String value) {
-                //  variable.setCustom(value);
-//                setModified();
-            }
-
-            @Override
-            public Class<String> getColumnClass() {
-                return String.class;
+            public void setValue(LinkElement variable, LinkElement value) {
+                variable.setCondition(value.getCondition());
+                variable.setField1(value.getField1());
+                variable.setComparison(value.getComparison());
+                variable.setField2(value.getField2());
             }
 
             @Override
             public boolean isCellEditable(LinkElement variable) {
                 return true;
             }
+
+            @Override
+            public TableCellRenderer getRenderer(LinkElement variable) {
+                if (variable.isCustom()) {
+                    return (table, value, isSelected, hasFocus, row, column) -> new JBTextField(variable.getCondition());
+                }
+                return (table, value, isSelected, hasFocus, row, column) -> {
+                    Box hBox = Box.createHorizontalBox();
+                    hBox.add(new JBTextField(variable.getField1()));
+                    hBox.add(new JBTextField(variable.getComparison()));
+                    hBox.add(new JBTextField(variable.getField2()));
+                    return hBox;
+                };
+            }
+
+            @Override
+            public @NotNull TableCellEditor getEditor(final LinkElement variable) {
+                return new AbstractTableCellEditor() {
+
+                    @Override
+                    public LinkElement getCellEditorValue() {
+                        LinkElement elem = new LinkElement();
+                        if (conditionField1.getSelectedItem() != null) {
+                            elem.setField1(conditionField1.getSelectedItem().toString());
+                        }
+                        if (conditionField2.getSelectedItem() != null) {
+                            elem.setField2(conditionField2.getSelectedItem().toString());
+                        }
+                        elem.setComparison(conditionComparison.getItem());
+                        elem.setCondition(conditionCustom.getText());
+                        return elem;
+                    }
+
+                    private final ComboBox<String> conditionField1 = new ComboBox<>();
+                    private final ComboBox<String> conditionField2 = new ComboBox<>(
+                            new String[]{"test_1", "test_2", "test_3"}
+                    );
+                    private final ComboBox<String> conditionComparison = new ComboBox<>(
+                            new String[]{"=", "!=", ">", "<", ">=", "<="}
+                    );
+                    private final JBTextField conditionCustom = new JBTextField();
+
+                    @Override
+                    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
+                                                                 int row, int column) {
+                        if (variable.isCustom()) {
+                            conditionCustom.setText(variable.getCondition());
+                            return conditionCustom;
+                        }
+                        Box hBox = Box.createHorizontalBox();
+//                        conditionLeftCombo.setPreferredSize(new Dimension(200, 15));
+                        setFieldCombo();
+                        conditionField1.setItem(variable.getField1());
+                        hBox.add(conditionField1);
+
+                        conditionComparison.setItem(variable.getComparison());
+                        hBox.add(conditionComparison);
+
+                        conditionField2.setItem(variable.getField2());
+                        hBox.add(conditionField2);
+                        return hBox;
+                    }
+
+                    private void setFieldCombo() {
+                        conditionField1.removeAllItems();
+                        var selectedObject = linkTable.getSelectedObject();
+                        if (selectedObject == null) {
+                            return;
+                        }
+//                        tables.stream()
+//                                .filter(x -> ((TableElement) x.getUserObject()).getId().equals(selectedObject.getTable1Id()))
+//                                .forEach(x -> x.children().asIterator().forEachRemaining(y -> {
+//                                    var userObject = (TableElement) y.getUserObject();
+//                                    conditionField1.addItem(userObject.getName());
+//                                }));
+                    }
+                };
+            }
         };
 
         linkTableModel = new ListTableModel<>(
                 table1Info, allTable1Info, table2Info, allTable2Info, customInfo, linkingConditionInfo
         );
-        var table = new TableView<>(linkTableModel);
 
-        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(table);
+        linkTable = new TableView<>(linkTableModel);
+        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(linkTable);
         decorator.setAddAction(button -> {
-            linkTableModel.addRow(new LinkElement());
-            //    model.reload();
+            LinkElement item = new LinkElement();
+            item.setComparison("=");
+            linkTableModel.addRow(item);
         });
-//        decorator.setRemoveAction(button -> {
-//            System.out.println(button);
-//            // myTableModel.addRow();
-//        });
+
         this.component = decorator.createPanel();
         initListeners();
     }
 
     @NotNull
     private DefaultCellEditor availableTablesEditor() {
-        return new DefaultCellEditor(
-                new ComboBox<>(tables.stream()
-                        .map(x -> ((TableElement) x.getUserObject()).getName())
-                        .toArray(String[]::new))
-        );
+        var comboBox = new ComboBox<>(tables.stream()
+                .map(x -> (TableElement) x.getUserObject())
+                .toArray(TableElement[]::new));
+        comboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                TableElement elementValue = (TableElement) value;
+                setText(elementValue.getName());
+                return this;
+            }
+        });
+        comboBox.addActionListener(e -> {
+            @SuppressWarnings("unchecked")
+            var comboBox1 = (ComboBox<TableElement>) e.getSource();
+            var item = (TableElement) comboBox1.getSelectedItem();
+            if (Objects.isNull(linkTable.getSelectedObject()) || Objects.isNull(item)) {
+                return;
+            }
+            linkTable.getSelectedObject().setTable1Id(item.getId());
+        });
+
+        return new DefaultCellEditor(comboBox);
     }
 
     private void initListeners() {

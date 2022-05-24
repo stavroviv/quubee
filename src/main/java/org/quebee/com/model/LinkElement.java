@@ -3,6 +3,8 @@ package org.quebee.com.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 public class LinkElement {
@@ -13,6 +15,8 @@ public class LinkElement {
 
     private String table1;
     private String table2;
+    private UUID table1Id;
+    private UUID table2ID;
 
     public LinkElement() {
         this.name = "Test";
@@ -26,13 +30,13 @@ public class LinkElement {
 //    private BooleanProperty allTable1 = new SimpleBooleanProperty();
 //    private BooleanProperty allTable2 = new SimpleBooleanProperty();
 //    private BooleanProperty custom = new SimpleBooleanProperty();
-//    private String condition;
+    private String condition;
 //    private ComboBox<String> conditionComboBox1 = new ComboBox<>();
 //    private ComboBox<String> conditionComboBox2 = new ComboBox<>();
 //
-//    private String field1;
-//    private String expression;
-//    private String field2;
+    private String field1;
+    private String comparison;
+    private String field2;
 //
 //    public LinkElement(MainController controller, String table1, String table2, boolean allTable1, boolean allTable2, boolean custom) {
 //        this.controller = controller;
