@@ -264,9 +264,9 @@ public class LinksPanel implements QueryComponent {
                         if (Objects.isNull(selectedObject)) {
                             return;
                         }
-                        var table1 = getter.apply(selectedObject);
+                        var table = getter.apply(selectedObject);
                         tables.stream()
-                                .filter(x -> ((TableElement) x.getUserObject()).getName().equals(table1))
+                                .filter(x -> ((TableElement) x.getUserObject()).getName().equals(table))
                                 .forEach(x -> x.children().asIterator().forEachRemaining(y -> {
                                     var userObject = (TableElement) y.getUserObject();
                                     comboBox.addItem(userObject.getName());
