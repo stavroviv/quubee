@@ -22,6 +22,7 @@ import java.awt.*;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
 import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
@@ -59,7 +60,7 @@ public class LinksPanel implements QueryComponent {
 
             @Override
             public @NotNull String valueOf(LinkElement o) {
-                return o.getTable1();
+                return Objects.isNull(o) ? "" : o.getTable1();
             }
         };
 
@@ -114,7 +115,7 @@ public class LinksPanel implements QueryComponent {
 
             @Override
             public @NotNull String valueOf(LinkElement o) {
-                return o.getTable2();
+                return Objects.isNull(o) ? "" : o.getTable2();
             }
         };
 
@@ -243,30 +244,32 @@ public class LinksPanel implements QueryComponent {
                             return conditionCustom;
                         }
                         Box hBox = Box.createHorizontalBox();
-//                        conditionLeftCombo.setPreferredSize(new Dimension(200, 15));
-                        setFieldCombo();
+                        setFieldCombo(conditionField1, LinkElement::getTable1);
                         conditionField1.setItem(variable.getField1());
                         hBox.add(conditionField1);
 
                         conditionComparison.setItem(variable.getComparison());
                         hBox.add(conditionComparison);
 
+                        setFieldCombo(conditionField2, LinkElement::getTable2);
                         conditionField2.setItem(variable.getField2());
                         hBox.add(conditionField2);
+
                         return hBox;
                     }
 
-                    private void setFieldCombo() {
-                        conditionField1.removeAllItems();
+                    private void setFieldCombo(ComboBox<String> comboBox, Function<LinkElement, String> getter) {
+                        comboBox.removeAllItems();
                         var selectedObject = linkTable.getSelectedObject();
-                        if (selectedObject == null) {
+                        if (Objects.isNull(selectedObject)) {
                             return;
                         }
+                        var table1 = getter.apply(selectedObject);
                         tables.stream()
-                                .filter(x -> ((TableElement) x.getUserObject()).getName().equals(selectedObject.getTable1()))
+                                .filter(x -> ((TableElement) x.getUserObject()).getName().equals(table1))
                                 .forEach(x -> x.children().asIterator().forEachRemaining(y -> {
                                     var userObject = (TableElement) y.getUserObject();
-                                    conditionField1.addItem(userObject.getName());
+                                    comboBox.addItem(userObject.getName());
                                 }));
                     }
                 };
