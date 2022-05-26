@@ -17,6 +17,8 @@ import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.Objects;
 
 import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
@@ -29,7 +31,7 @@ public class GroupingPanel implements QueryComponent {
 
     public GroupingPanel() {
         component.setProportion(0.3f);
-        component.setFirstComponent(getFieldsTable());
+        component.setFirstComponent(getAvailableGroupingFieldsTree());
         component.setSecondComponent(getGroupingAggregatesPanel());
         initListeners();
     }
@@ -46,7 +48,7 @@ public class GroupingPanel implements QueryComponent {
         var tableElement = new TableElement(parent.getName() + "." + userObject.getName(), parent.getId());
         tableElement.setColumn(true);
         groupingRoot.insert(new QBTreeNode(tableElement), groupingRoot.getChildCount() - 1);
-        groupingModel.nodesWereInserted(groupingRoot, new int[]{groupingRoot.getChildCount()-2});
+        groupingModel.nodesWereInserted(groupingRoot, new int[]{groupingRoot.getChildCount() - 2});
     }
 
     private void addSelectedTable(QBTreeNode node) {
@@ -58,18 +60,25 @@ public class GroupingPanel implements QueryComponent {
         node.children().asIterator()
                 .forEachRemaining(x -> newTableNode.add(new QBTreeNode((TableElement) x.getUserObject())));
         allFieldsRoot.add(newTableNode);
-//        if (allFieldsRoot.getChildCount() == 1) {
-//            groupingModel.reload();
-//        } else {
-            groupingModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
-//        }
+        groupingModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
     }
 
     private JComponent getGroupingAggregatesPanel() {
-        var splitter = new JBSplitter();
+        var splitter = new JBSplitter() {
+            @Override
+            protected void processMouseEvent(MouseEvent e) {
+                super.processMouseEvent(e);
+            }
+
+            @Override
+            protected void processMouseMotionEvent(MouseEvent e) {
+                super.processMouseMotionEvent(e);
+            }
+        };
         splitter.setFirstComponent(getGroupingTable());
         splitter.setSecondComponent(getAggregateTable());
         splitter.setOrientation(true);
+//        splitter.p
         return splitter;
     }
 
@@ -125,7 +134,7 @@ public class GroupingPanel implements QueryComponent {
     private QBTreeNode allFieldsRoot;
     private ListTreeTableModel groupingModel;
 
-    private JComponent getFieldsTable() {
+    private JComponent getAvailableGroupingFieldsTree() {
         groupingRoot = new QBTreeNode(new TableElement("empty"));
         allFieldsRoot = new QBTreeNode(new TableElement("All fields"));
         groupingRoot.add(allFieldsRoot);
@@ -137,6 +146,34 @@ public class GroupingPanel implements QueryComponent {
         table.setRootVisible(false);
 
         var decorator = ToolbarDecorator.createDecorator(table);
-        return decorator.createPanel();
+        JPanel panel = decorator.createPanel();
+        Box hBox = Box.createHorizontalBox();
+//        hBox.setMaximumSize(new Dimension(10,500));
+        hBox.add(panel);
+
+        Box comp = Box.createVerticalBox();
+//        comp.size
+//        comp.setMaximumSize(new Dimension(20, 100));
+        comp.add(Box.createVerticalStrut(10));
+        comp.add(getComp(">"));
+        comp.add(getComp(">>"));
+        comp.add(getComp("<"));
+        comp.add(getComp("<<"));
+        comp.add(Box.createVerticalStrut(30));
+        comp.add(getComp(">"));
+        comp.add(getComp(">>"));
+        comp.add(getComp("<"));
+        comp.add(getComp("<<"));
+        comp.add(Box.createVerticalStrut(10));
+
+        hBox.add(comp);
+        return hBox;
+    }
+
+    @NotNull
+    private JButton getComp(String text) {
+        JButton jButton = new JButton(text);
+        jButton.setMaximumSize(new Dimension(30, 30));
+        return jButton;
     }
 }
