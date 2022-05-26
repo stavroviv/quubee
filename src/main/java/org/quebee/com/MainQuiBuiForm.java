@@ -101,7 +101,7 @@ public class MainQuiBuiForm {
     private void addQueryTabs(JBTabsImpl tabs) {
         List.of(
                 new FromTables(),
-                new LinksPanel(),
+                new JoinsPanel(),
                 new GroupingPanel(),
                 new ConditionsPanel(),
                 new UnionAliasesPanel(),

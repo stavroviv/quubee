@@ -28,15 +28,15 @@ import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TAB
 import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
 
 @Getter
-public class LinksPanel implements QueryComponent {
+public class JoinsPanel implements QueryComponent {
 
-    private final String header = "Links";
+    private final String header = "Joins";
     private final JComponent component;
     private final Set<TreeTableNode> tables = new HashSet<>();
-    private final ListTableModel<LinkElement> linkTableModel;
-    private final TableView<LinkElement> linkTable;
+    private final ListTableModel<LinkElement> joinTableModel;
+    private final TableView<LinkElement> joinTable;
 
-    public LinksPanel() {
+    public JoinsPanel() {
         var table1Info = new ColumnInfo<LinkElement, String>("Table 1") {
             @Override
             public int getWidth(JTable table) {
@@ -260,7 +260,7 @@ public class LinksPanel implements QueryComponent {
 
                     private void setFieldCombo(ComboBox<String> comboBox, Function<LinkElement, String> getter) {
                         comboBox.removeAllItems();
-                        var selectedObject = linkTable.getSelectedObject();
+                        var selectedObject = joinTable.getSelectedObject();
                         if (Objects.isNull(selectedObject)) {
                             return;
                         }
@@ -276,16 +276,16 @@ public class LinksPanel implements QueryComponent {
             }
         };
 
-        linkTableModel = new ListTableModel<>(
+        joinTableModel = new ListTableModel<>(
                 table1Info, allTable1Info, table2Info, allTable2Info, customInfo, linkingConditionInfo
         );
 
-        linkTable = new TableView<>(linkTableModel);
-        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(linkTable);
+        joinTable = new TableView<>(joinTableModel);
+        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(joinTable);
         decorator.setAddAction(button -> {
             LinkElement item = new LinkElement();
             item.setComparison("=");
-            linkTableModel.addRow(item);
+            joinTableModel.addRow(item);
         });
 
         this.component = decorator.createPanel();
@@ -328,10 +328,10 @@ public class LinksPanel implements QueryComponent {
 
     private void removeSelectedTable(QBTreeNode node) {
         TableElement tableElement = (TableElement) node.getUserObject();
-        for (int i = linkTableModel.getItems().size() - 1; i >= 0; i--) {
-            if (linkTableModel.getItem(i).getTable1().equals(tableElement.getName())
-                    || linkTableModel.getItem(i).getTable2().equals(tableElement.getName())) {
-                linkTableModel.removeRow(i);
+        for (int i = joinTableModel.getItems().size() - 1; i >= 0; i--) {
+            if (joinTableModel.getItem(i).getTable1().equals(tableElement.getName())
+                    || joinTableModel.getItem(i).getTable2().equals(tableElement.getName())) {
+                joinTableModel.removeRow(i);
             }
         }
         tables.remove(node);
