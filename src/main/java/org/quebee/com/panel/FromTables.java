@@ -28,7 +28,6 @@ import javax.swing.tree.TreeNode;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
-import java.util.UUID;
 
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
@@ -119,9 +118,9 @@ public class FromTables implements QueryComponent {
     }
 
     private void addSelectedTableNode(TreeTableNode node) {
-        TableElement userObject = (TableElement) node.getUserObject();
-        UUID newNodeId = userObject.getId();
-        boolean exists = false;
+        var userObject = (TableElement) node.getUserObject();
+        var newNodeId = userObject.getId();
+        var exists = false;
         for (int i = 0; i < selectedTablesRoot.getChildCount(); i++) {
             TreeTableNode childAt = selectedTablesRoot.getChildAt(i);
             if (((TableElement) childAt.getUserObject()).getId().equals(newNodeId)) {
@@ -130,14 +129,14 @@ public class FromTables implements QueryComponent {
             }
         }
 
-        TableElement newUserObject = new TableElement(userObject.getName());
+        var newUserObject = new TableElement(userObject.getName());
         newUserObject.setTable(true);
         if (!exists) {
             newUserObject.setId(newNodeId);
         }
         var newTableNode = new QBTreeNode(newUserObject);
         node.children().asIterator()
-                .forEachRemaining(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
+                .forEachRemaining(x -> newTableNode.add(new QBTreeNode((TableElement) x.getUserObject())));
         selectedTablesRoot.add(newTableNode);
         if (selectedTablesRoot.getChildCount() == 1) {
             selectedTablesModel.reload();

@@ -3,26 +3,27 @@ package org.quebee.com.panel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
+import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.intellij.ui.treeStructure.treetable.TreeTableModel;
-import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
 import java.util.Objects;
 
+import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
+import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
+
 @Getter
-public class GroupingPanel  implements QueryComponent {
+public class GroupingPanel implements QueryComponent {
     private final String header = "Grouping";
     private final JBSplitter component = new JBSplitter();
 
@@ -30,14 +31,38 @@ public class GroupingPanel  implements QueryComponent {
         component.setProportion(0.3f);
         component.setFirstComponent(getFieldsTable());
         component.setSecondComponent(getGroupingAggregatesPanel());
-        init(ApplicationManager.getApplication().getMessageBus());
+        initListeners();
     }
 
-    public void init(MessageBus bus) {
-//        bus.connect().subscribe(QUI_BUI_TOPIC, context -> {
-//            System.out.println(context);
-//            System.out.println(context);
-//        });
+    public void initListeners() {
+        var bus = ApplicationManager.getApplication().getMessageBus();
+        bus.connect().subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
+        bus.connect().subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
+    }
+
+    private void addSelectedField(QBTreeNode node) {
+        var parent = (TableElement) node.getParent().getUserObject();
+        var userObject = (TableElement) node.getUserObject();
+        var tableElement = new TableElement(parent.getName() + "." + userObject.getName(), parent.getId());
+        tableElement.setColumn(true);
+        groupingRoot.insert(new QBTreeNode(tableElement), groupingRoot.getChildCount() - 1);
+        groupingModel.nodesWereInserted(groupingRoot, new int[]{groupingRoot.getChildCount()-2});
+    }
+
+    private void addSelectedTable(QBTreeNode node) {
+        var userObject = node.getUserObject();
+        var newUserObject = new TableElement(userObject.getName());
+        newUserObject.setTable(true);
+        newUserObject.setId(userObject.getId());
+        var newTableNode = new QBTreeNode(newUserObject);
+        node.children().asIterator()
+                .forEachRemaining(x -> newTableNode.add(new QBTreeNode((TableElement) x.getUserObject())));
+        allFieldsRoot.add(newTableNode);
+//        if (allFieldsRoot.getChildCount() == 1) {
+//            groupingModel.reload();
+//        } else {
+            groupingModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
+//        }
     }
 
     private JComponent getGroupingAggregatesPanel() {
@@ -68,15 +93,12 @@ public class GroupingPanel  implements QueryComponent {
                 columnInfoAggregate,
                 columnInfoFunction
         );
-        modelAggregate.addRow(new TableElement("test"));
-        modelAggregate.addRow(new TableElement("test2"));
-        modelAggregate.addRow(new TableElement("test3"));
+
         var aggregateTable = new TableView<>(modelAggregate);
-//        JTableHeader tableHeader = new JTableHeader();
-//        tableHeader.setColumnModel(new DefaultTableColumnModel());
-//        aggregateTable.setTableHeader(tableHeader);
-        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(aggregateTable);
-        return decorator.createPanel();
+        var decorator = ToolbarDecorator.createDecorator(aggregateTable);
+        var panel = decorator.createPanel();
+        decorator.getActionsPanel().setVisible(false);
+        return panel;
     }
 
     @NotNull
@@ -93,46 +115,28 @@ public class GroupingPanel  implements QueryComponent {
                 columnInfo
         );
         var groupingTable = new JBTable(model);
-        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(groupingTable);
-//        decorator.getActionsPanel().
-
-        JPanel panel = decorator.createPanel();
-        decorator.getActionsPanel().getToolbar().getActions().clear();
+        var decorator = ToolbarDecorator.createDecorator(groupingTable);
+        var panel = decorator.createPanel();
+        decorator.getActionsPanel().setVisible(false);
         return panel;
     }
 
+    private QBTreeNode groupingRoot;
+    private QBTreeNode allFieldsRoot;
+    private ListTreeTableModel groupingModel;
+
     private JComponent getFieldsTable() {
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode("test");
-        ListTreeTableModel model = new ListTreeTableModel(root, new ColumnInfo[]{new ColumnInfo<Object, String>("Fields") {
-
-            @Nullable
-            @Override
-            public String valueOf(Object o) {
-                return o.toString();
-            }
-
-            @Override
-            public Class<?> getColumnClass() {
-                return TreeTableModel.class;
-            }
-        }});
-        TreeTable table = new TreeTable(model);
+        groupingRoot = new QBTreeNode(new TableElement("empty"));
+        allFieldsRoot = new QBTreeNode(new TableElement("All fields"));
+        groupingRoot.add(allFieldsRoot);
+        groupingModel = new ListTreeTableModel(groupingRoot, new ColumnInfo[]{
+                new TreeColumnInfo("Fields")
+        });
+        var table = new TreeTable(groupingModel);
         table.setTreeCellRenderer(new TableElement.Renderer());
-        JBScrollPane jbScrollPane = new JBScrollPane(table);
-//
-//        ListTableModel model = new ListTableModel(new ColumnInfo[]{getTitleColumnInfo("Fields")});
-//        TableView table = new TableView(model);
+        table.setRootVisible(false);
 
-//        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(table);
-//        decorator.setAddAction(button -> {
-//            model.addRow(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()));
-//            //    model.reload();
-//        });
-//        decorator.setRemoveAction(button -> {
-//            System.out.println(button);
-//            // myTableModel.addRow();
-//        });
-        return jbScrollPane;
+        var decorator = ToolbarDecorator.createDecorator(table);
+        return decorator.createPanel();
     }
-
 }
