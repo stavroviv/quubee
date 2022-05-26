@@ -18,7 +18,6 @@ import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.util.Objects;
 
 import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
@@ -64,21 +63,10 @@ public class GroupingPanel implements QueryComponent {
     }
 
     private JComponent getGroupingAggregatesPanel() {
-        var splitter = new JBSplitter() {
-            @Override
-            protected void processMouseEvent(MouseEvent e) {
-                super.processMouseEvent(e);
-            }
-
-            @Override
-            protected void processMouseMotionEvent(MouseEvent e) {
-                super.processMouseMotionEvent(e);
-            }
-        };
+        var splitter = new JBSplitter();
         splitter.setFirstComponent(getGroupingTable());
         splitter.setSecondComponent(getAggregateTable());
         splitter.setOrientation(true);
-//        splitter.p
         return splitter;
     }
 
@@ -146,34 +134,36 @@ public class GroupingPanel implements QueryComponent {
         table.setRootVisible(false);
 
         var decorator = ToolbarDecorator.createDecorator(table);
-        JPanel panel = decorator.createPanel();
-        Box hBox = Box.createHorizontalBox();
-//        hBox.setMaximumSize(new Dimension(10,500));
-        hBox.add(panel);
+        var panel = decorator.createPanel();
 
-        Box comp = Box.createVerticalBox();
-//        comp.size
-//        comp.setMaximumSize(new Dimension(20, 100));
+        var hBox = Box.createHorizontalBox();
+
+        hBox.add(panel);
+        hBox.add(Box.createHorizontalStrut(5));
+
+        var comp = Box.createVerticalBox();
+      //  comp.setBorder(new LineBorder(JBColor.RED, 1));
+        comp.setPreferredSize(new Dimension(30, 300));
         comp.add(Box.createVerticalStrut(10));
-        comp.add(getComp(">"));
-        comp.add(getComp(">>"));
-        comp.add(getComp("<"));
-        comp.add(getComp("<<"));
+        comp.add(smallButton(">"));
+        comp.add(smallButton(">>"));
+        comp.add(smallButton("<"));
+        comp.add(smallButton("<<"));
         comp.add(Box.createVerticalStrut(30));
-        comp.add(getComp(">"));
-        comp.add(getComp(">>"));
-        comp.add(getComp("<"));
-        comp.add(getComp("<<"));
+        comp.add(smallButton(">"));
+        comp.add(smallButton(">>"));
+        comp.add(smallButton("<"));
+        comp.add(smallButton("<<"));
         comp.add(Box.createVerticalStrut(10));
 
         hBox.add(comp);
+
         return hBox;
     }
-
-    @NotNull
-    private JButton getComp(String text) {
-        JButton jButton = new JButton(text);
-        jButton.setMaximumSize(new Dimension(30, 30));
-        return jButton;
+    
+    private JButton smallButton(String text) {
+        JButton button = new JButton(text);
+        button.setMaximumSize(new Dimension(50, 30));
+        return button;
     }
 }
