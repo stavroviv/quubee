@@ -1,13 +1,10 @@
 package org.quebee.com.qpart;
 
-import com.intellij.ui.table.TableView;
 import lombok.SneakyThrows;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
-import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.LinkElement;
 
 import java.util.*;
@@ -17,9 +14,17 @@ import static org.quebee.com.util.Constants.EMPTY_SELECT;
 
 public class FullQuery {
 
+    public Map<String, OneCte> getCteMap() {
+        return cteMap;
+    }
+
     private final Map<String, OneCte> cteMap = new LinkedHashMap<>();
 
     public FullQuery() {
+        cteMap.put(CTE_0, new OneCte(CTE_0, 0));
+    }
+
+    public FullQuery(SelectBody selectBody) {
         cteMap.put(CTE_0, new OneCte(CTE_0, 0));
     }
 
