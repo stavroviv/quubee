@@ -70,7 +70,8 @@ public class GroupingPanel implements QueryComponent {
         return splitter;
     }
 
-    @NotNull
+    private ListTableModel<TableElement> aggregateTableModel;
+
     private JComponent getAggregateTable() {
         var columnInfoAggregate = new ColumnInfo<TableElement, String>("Aggregate Field") {
 
@@ -86,17 +87,19 @@ public class GroupingPanel implements QueryComponent {
                 return Objects.isNull(o) ? "" : o.getName();
             }
         };
-        var modelAggregate = new ListTableModel<TableElement>(
+        aggregateTableModel = new ListTableModel<>(
                 columnInfoAggregate,
                 columnInfoFunction
         );
 
-        var aggregateTable = new TableView<>(modelAggregate);
+        var aggregateTable = new TableView<>(aggregateTableModel);
         var decorator = ToolbarDecorator.createDecorator(aggregateTable);
         var panel = decorator.createPanel();
         decorator.getActionsPanel().setVisible(false);
         return panel;
     }
+
+    private ListTableModel<TableElement> groupingTableModel;
 
     @NotNull
     private JComponent getGroupingTable() {
@@ -108,10 +111,10 @@ public class GroupingPanel implements QueryComponent {
             }
         };
 
-        var model = new ListTableModel<TableElement>(
+        groupingTableModel = new ListTableModel<TableElement>(
                 columnInfo
         );
-        var groupingTable = new JBTable(model);
+        var groupingTable = new JBTable(groupingTableModel);
         var decorator = ToolbarDecorator.createDecorator(groupingTable);
         var panel = decorator.createPanel();
         decorator.getActionsPanel().setVisible(false);

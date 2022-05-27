@@ -1,31 +1,30 @@
 package org.quebee.com.qpart;
 
-import com.intellij.ui.dualView.TreeTableView;
-import com.intellij.ui.table.TableView;
+import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
 import lombok.Setter;
-import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.LinkElement;
-import org.quebee.com.model.TableRow;
+import org.quebee.com.model.QBTreeNode;
+import org.quebee.com.model.TableElement;
 
 @Getter
 @Setter
 public class Union implements Orderable {
     private Integer order;
-//    private TreeTableView<TableRow> tablesView = new TreeTableView<>();
-    private TableView<TableRow> fieldTable = new TableView<>();
 
-    private TableView<LinkElement> linkTable = new TableView<>();
+    // from tables
+    private QBTreeNode selectedTablesRoot;
+    private ListTableModel<TableElement> selectedFieldsModel;
 
-//    private TreeTableView<TableRow> groupFieldsTree = new TreeTableView<>();
-    private TableView<TableRow> groupTableResults = new TableView<>();
-    private TableView<TableRow> groupTableAggregates = new TableView<>();
+    // joins
+    private ListTableModel<LinkElement> joinTableModel;
 
-//    private TreeTableView<TableRow> conditionsTreeTable = new TreeTableView<>();
-    private TableView<ConditionElement> conditionTableResults = new TableView<>();
+    // grouping
+    private QBTreeNode groupingRoot;
+    private ListTableModel<TableElement> groupingTableModel;
+    private ListTableModel<TableElement> aggregateTableModel;
 
     public Union(Integer order) {
         this.order = order;
-//        tablesView.setRoot(new TreeItem<>());
     }
 }

@@ -17,6 +17,7 @@ import java.util.List;
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 
 public class DebugGUI implements StartupActivity {
+
     @Override
     public void runActivity(@NotNull Project project) {
         try {
