@@ -2,6 +2,9 @@ package org.quebee.com.model;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class QBTreeNode extends DefaultMutableTreeTableNode {
 
     private final TableElement usObject;
@@ -19,6 +22,12 @@ public class QBTreeNode extends DefaultMutableTreeTableNode {
     public QBTreeNode(QBTreeNode node) {
         super(node.getUserObject());
         this.usObject = node.getUserObject();
+    }
+
+    public static List<QBTreeNode> nodeToList(QBTreeNode node) {
+        var actualList = new ArrayList<QBTreeNode>();
+        node.children().asIterator().forEachRemaining(x -> actualList.add((QBTreeNode) x));
+        return actualList;
     }
 
     @Override

@@ -72,9 +72,9 @@ public class FromTables implements QueryComponent {
     private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
         var union = fullQuery.getCte(cteName).getUnion("UNION_" + i1);
         var selectedTablesRoot = union.getSelectedTablesRoot();
-        selectedTablesRoot.children().asIterator().forEachRemaining(x ->
-                databaseRoot.children().asIterator().forEachRemaining(y -> {
-                    var node = (QBTreeNode) y;
+
+        QBTreeNode.nodeToList(selectedTablesRoot).forEach(x ->
+                QBTreeNode.nodeToList(databaseRoot).forEach(node -> {
                     var userObject = (TableElement) x.getUserObject();
                     if (node.getUserObject().getName().equals(userObject.getName())) {
                         Messages.getPublisher(SELECTED_TABLE_ADD).onAction(node);
@@ -82,11 +82,9 @@ public class FromTables implements QueryComponent {
                 })
         );
         union.getSelectedFieldsModel().getItems().forEach(x -> {
-            databaseRoot.children().asIterator().forEachRemaining(y -> {
-                var node = (QBTreeNode) y;
+            QBTreeNode.nodeToList(databaseRoot).forEach(node -> {
                 if (node.getUserObject().getName().equals(x.getPsTable().getName())) {
-                    node.children().asIterator().forEachRemaining(z -> {
-                        var nodeZ = (QBTreeNode) z;
+                    QBTreeNode.nodeToList(node).forEach(nodeZ -> {
                         if (nodeZ.getUserObject().getName().equals(x.getColumnName())) {
                             Messages.getPublisher(SELECTED_FIELD_ADD).onAction(nodeZ);
                         }
