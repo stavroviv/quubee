@@ -13,7 +13,7 @@ public interface Constants {
     String CTE_0 = "CTE_0";
     String UNION_0 = "UNION_0";
     String UNION_1 = "UNION_1";
-
+    String BODY = "BODY";
     String NULL_VALUE = "NULL";
 
     String EMPTY_SELECT = "SELECT ";

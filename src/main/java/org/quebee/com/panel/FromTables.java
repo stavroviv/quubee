@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.Messages;
 
 import javax.swing.*;
@@ -29,6 +30,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
 
+import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
 import static org.quebee.com.notifier.SelectedTableAddNotifier.SELECTED_TABLE_ADD;
@@ -64,6 +66,17 @@ public class FromTables implements QueryComponent {
         bus.connect().subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
         bus.connect().subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
         bus.connect().subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
+        bus.connect().subscribe(LOAD_QUERY_DATA, this::loadQueryData);
+    }
+
+    private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
+        var union = fullQuery.getCte(cteName).getUnion("UNION_" + i1);
+       // selectedTablesRoot = union.getSelectedTablesRoot();
+        union.getSelectedFieldsModel().getItems().forEach(x -> {
+                    selectedFieldsModel.addRow(new TableElement(x.getName()));
+                }
+        );
+      //  selectedTablesModel.reload();
     }
 
     private void removeSelectedTable(MutableTreeTableNode node) {

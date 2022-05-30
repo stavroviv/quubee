@@ -14,18 +14,25 @@ import static org.quebee.com.util.Constants.EMPTY_SELECT;
 
 public class FullQuery {
 
-    public Map<String, OneCte> getCteMap() {
-        return cteMap;
-    }
-
     private final Map<String, OneCte> cteMap = new LinkedHashMap<>();
 
     public FullQuery() {
-        cteMap.put(CTE_0, new OneCte(CTE_0, 0));
+    }
+
+    public OneCte getCte(String cte) {
+        return cteMap.get(cte);
     }
 
     public FullQuery(SelectBody selectBody) {
-        cteMap.put(CTE_0, new OneCte(CTE_0, 0));
+        addCte(CTE_0, selectBody, 0);
+    }
+
+    public void addCte(String cteName, SelectBody selectBody, int order) {
+        cteMap.put(cteName, new OneCte(cteName, selectBody, order));
+    }
+
+    public String getFirstCte() {
+        return cteMap.entrySet().iterator().next().getKey();
     }
 
     public static <T extends Orderable> Map<String, T> sortByOrder(Map<String, T> map) {
@@ -346,4 +353,5 @@ public class FullQuery {
 //
 //        select.setOrderByElements(orderElements);
     }
+
 }

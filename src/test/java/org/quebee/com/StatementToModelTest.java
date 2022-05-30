@@ -31,7 +31,7 @@ class StatementToModelTest {
     @Test
     void dummyTest3() throws JSQLParserException {
         Statement parse = CCJSqlParserUtil.parse(
-                "with ss as (select table.id from table where table.id = 1), " +
+                "with ss as (select table.id, table.id from table where table.id = 1), " +
                         "ss2 as (" +
                         "select table.id from table where table.id = 1 union " +
                         "select table1.id from table1 where table1.id = 1 " +
@@ -41,6 +41,24 @@ class StatementToModelTest {
                         "union all " +
                         "select table.id " +
                         "from table where table.id = 1"
+        );
+        System.out.println(parse);
+        FullQuery fullQuery = StatementProcessor.statementToModel(parse);
+    }
+
+    @Test
+    void dummyTest4() throws JSQLParserException {
+        Statement parse = CCJSqlParserUtil.parse(
+                "with ss as (select table.id from table where table.id = 1), " +
+                        "ss2 as (" +
+                        "select table.id from table where table.id = 1 union " +
+                        "select table1.id from table1 where table1.id = 1 " +
+                        ") " +
+                        "select ss.id,ss2.id " +
+                        "from ss " +
+                        "join ss2 on ss.id=ss2.id and ss.id=ss2.id " +
+                        "join ss2 as ss3 on ss.id=ss3.id and ss.id=ss3.id " +
+                        "where ss.id = 1"
         );
         System.out.println(parse);
         FullQuery fullQuery = StatementProcessor.statementToModel(parse);
