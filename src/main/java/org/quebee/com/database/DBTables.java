@@ -16,5 +16,4 @@ public class DBTables {
     public void setDbElements(Map<String, List<String>> dbElements) {
         this.dbElements = dbElements;
     }
-    //private TreeItem<TableRow> root = new TreeItem<>();
 }

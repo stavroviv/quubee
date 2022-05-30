@@ -12,7 +12,7 @@ class StatementToModelTest {
     void dummyTest() throws JSQLParserException {
         Statement parse = CCJSqlParserUtil.parse("select table.id from table where table.id = 1");
         System.out.println(parse);
-        FullQuery fullQuery = StatementProcessor.statementToModel(parse);
+        FullQuery fullQuery = new FullQuery(parse);
     }
 
     @Test
@@ -25,7 +25,7 @@ class StatementToModelTest {
                         "from table where table.id = 1"
         );
         System.out.println(parse);
-        FullQuery fullQuery = StatementProcessor.statementToModel(parse);
+        FullQuery fullQuery = new FullQuery(parse);
     }
 
     @Test
@@ -43,7 +43,7 @@ class StatementToModelTest {
                         "from table where table.id = 1"
         );
         System.out.println(parse);
-        FullQuery fullQuery = StatementProcessor.statementToModel(parse);
+        FullQuery fullQuery = new FullQuery(parse);
     }
 
     @Test
@@ -61,6 +61,6 @@ class StatementToModelTest {
                         "where ss.id = 1"
         );
         System.out.println(parse);
-        FullQuery fullQuery = StatementProcessor.statementToModel(parse);
+        FullQuery fullQuery = new FullQuery(parse);
     }
 }

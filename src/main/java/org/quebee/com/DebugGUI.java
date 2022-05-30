@@ -30,8 +30,11 @@ public class DebugGUI implements StartupActivity {
     private void testActivity2(Project project) {
         FullQuery fullQuery;
         try {
-            Statement parse = CCJSqlParserUtil.parse("with ss as (" +
-                    "select table.id, table.test_2, table.test_3 from table where table.id = 1" +
+            Statement statement = CCJSqlParserUtil.parse("with ss as (" +
+                    "select table.id, table.test_2, table.test_3, table1.test_4 " +
+                    "from table " +
+                    "join table1 on table.id=table1.id " +
+                    "where table.id = 1" +
                     "), " +
                     "ss2 as (" +
                     "select table.id from table where table.id = 1 union " +
@@ -43,7 +46,7 @@ public class DebugGUI implements StartupActivity {
                     "join ss2 as ss3 on ss.id=ss3.id and ss.id=ss3.id " +
                     "where ss.id = 1"
             );
-            fullQuery = StatementProcessor.statementToModel(parse);
+            fullQuery = new FullQuery(statement);
         } catch (JSQLParserException e) {
             Messages.showMessageDialog(e.getMessage(), "Warning", Messages.getErrorIcon());
             return;

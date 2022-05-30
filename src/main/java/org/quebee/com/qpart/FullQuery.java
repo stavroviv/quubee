@@ -9,22 +9,33 @@ import org.quebee.com.model.LinkElement;
 
 import java.util.*;
 
-import static org.quebee.com.util.Constants.CTE_0;
-import static org.quebee.com.util.Constants.EMPTY_SELECT;
+import static org.quebee.com.util.Constants.*;
 
 public class FullQuery {
 
     private final Map<String, OneCte> cteMap = new LinkedHashMap<>();
 
-    public FullQuery() {
+    public FullQuery(Statement statement) {
+        if (!(statement instanceof Select)) {
+            throw new IllegalStateException("Only select queries supported");
+        }
+
+        Select select = (Select) statement;
+        List<WithItem> withItemsList = select.getWithItemsList();
+        if (Objects.nonNull(withItemsList)) {
+            int i = 0;
+            for (WithItem x : withItemsList) {
+                SubSelect subSelect = x.getSubSelect();
+                addCte(x.getName(), subSelect.getSelectBody(), i++);
+            }
+            addCte(BODY, select.getSelectBody(), i);
+        } else {
+            addCte(CTE_0, select.getSelectBody(), 0);
+        }
     }
 
     public OneCte getCte(String cte) {
         return cteMap.get(cte);
-    }
-
-    public FullQuery(SelectBody selectBody) {
-        addCte(CTE_0, selectBody, 0);
     }
 
     public void addCte(String cteName, SelectBody selectBody, int order) {
@@ -138,6 +149,7 @@ public class FullQuery {
 
         return select;
     }
+
     public static void saveLinks(PlainSelect selectBody, OneCte cte, String union) {
         Union union1 = cte.getUnionMap().get(union);
 //        TableView<LinkElement> linkTable = union1.getLinkTable();

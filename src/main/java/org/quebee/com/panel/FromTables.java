@@ -71,12 +71,15 @@ public class FromTables implements QueryComponent {
 
     private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
         var union = fullQuery.getCte(cteName).getUnion("UNION_" + i1);
-       // selectedTablesRoot = union.getSelectedTablesRoot();
+        QBTreeNode selectedTablesRoot1 = union.getSelectedTablesRoot();
+        selectedTablesRoot1.children().asIterator().forEachRemaining(x -> {
+            selectedTablesRoot.add(new QBTreeNode(x.getUserObject()));
+        });
         union.getSelectedFieldsModel().getItems().forEach(x -> {
                     selectedFieldsModel.addRow(new TableElement(x.getName()));
                 }
         );
-      //  selectedTablesModel.reload();
+        selectedTablesModel.reload();
     }
 
     private void removeSelectedTable(MutableTreeTableNode node) {
