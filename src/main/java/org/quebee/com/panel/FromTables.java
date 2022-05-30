@@ -71,14 +71,29 @@ public class FromTables implements QueryComponent {
 
     private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
         var union = fullQuery.getCte(cteName).getUnion("UNION_" + i1);
-        QBTreeNode selectedTablesRoot1 = union.getSelectedTablesRoot();
-        selectedTablesRoot1.children().asIterator().forEachRemaining(x -> {
-            selectedTablesRoot.add(new QBTreeNode(x.getUserObject()));
-        });
-        union.getSelectedFieldsModel().getItems().forEach(x -> {
-                    selectedFieldsModel.addRow(new TableElement(x.getName()));
-                }
+        var selectedTablesRoot = union.getSelectedTablesRoot();
+        selectedTablesRoot.children().asIterator().forEachRemaining(x ->
+                databaseRoot.children().asIterator().forEachRemaining(y -> {
+                    var node = (QBTreeNode) y;
+                    var userObject = (TableElement) x.getUserObject();
+                    if (node.getUserObject().getName().equals(userObject.getName())) {
+                        Messages.getPublisher(SELECTED_TABLE_ADD).onAction(node);
+                    }
+                })
         );
+        union.getSelectedFieldsModel().getItems().forEach(x -> {
+            databaseRoot.children().asIterator().forEachRemaining(y -> {
+                var node = (QBTreeNode) y;
+                if (node.getUserObject().getName().equals(x.getPsTable().getName())) {
+                    node.children().asIterator().forEachRemaining(z -> {
+                        var nodeZ = (QBTreeNode) z;
+                        if (nodeZ.getUserObject().getName().equals(x.getColumnName())) {
+                            Messages.getPublisher(SELECTED_FIELD_ADD).onAction(nodeZ);
+                        }
+                    });
+                }
+            });
+        });
         selectedTablesModel.reload();
     }
 
@@ -114,8 +129,8 @@ public class FromTables implements QueryComponent {
         var exists = false;
         var children = selectedTablesRoot.children();
         while (children.hasMoreElements()) {
-            MutableTreeTableNode mutableTreeTableNode = children.nextElement();
-            TableElement userObject = (TableElement) mutableTreeTableNode.getUserObject();
+            var mutableTreeTableNode = children.nextElement();
+            var userObject = (TableElement) mutableTreeTableNode.getUserObject();
             if (userObject.getId() == parentUserObject.getId()) {
                 exists = true;
                 break;
@@ -127,14 +142,14 @@ public class FromTables implements QueryComponent {
         Messages.getPublisher(SELECTED_FIELD_ADD).onAction(node);
     }
 
-    private void addSelectedField(TreeTableNode node) {
-        var parent = (TableElement) node.getParent().getUserObject();
-        var userObject = (TableElement) node.getUserObject();
+    private void addSelectedField(QBTreeNode node) {
+        var parent = node.getParent().getUserObject();
+        var userObject = node.getUserObject();
         selectedFieldsModel.addRow(new TableElement(parent.getName() + "." + userObject.getName(), parent.getId()));
     }
 
-    private void addSelectedTableNode(TreeTableNode node) {
-        var userObject = (TableElement) node.getUserObject();
+    private void addSelectedTableNode(QBTreeNode node) {
+        var userObject = node.getUserObject();
         var newNodeId = userObject.getId();
         var exists = false;
         for (int i = 0; i < selectedTablesRoot.getChildCount(); i++) {

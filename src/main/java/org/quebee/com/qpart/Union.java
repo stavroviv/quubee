@@ -3,8 +3,10 @@ package org.quebee.com.qpart;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
 import lombok.Setter;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
@@ -36,7 +38,14 @@ public class Union implements Orderable {
 
     private void fillSelectedFieldsModels(PlainSelect select) {
         for (var selectItem : select.getSelectItems()) {
-            selectedFieldsModel.addRow(new TableElement(selectItem.toString()));
+            if (!(selectItem instanceof SelectExpressionItem)) {
+                continue;
+            }
+            var expression = ((SelectExpressionItem) selectItem).getExpression();
+            if (expression instanceof Column) {
+                Column column = (Column) expression;
+                selectedFieldsModel.addRow(new TableElement(column.getTable(), column.getColumnName()));
+            }
         }
     }
 

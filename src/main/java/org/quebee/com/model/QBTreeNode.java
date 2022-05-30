@@ -16,6 +16,16 @@ public class QBTreeNode extends DefaultMutableTreeTableNode {
         this.usObject = (TableElement) userObject;
     }
 
+    public QBTreeNode(QBTreeNode node) {
+        super(node.getUserObject());
+        this.usObject = node.getUserObject();
+    }
+
+    @Override
+    public QBTreeNode getParent() {
+        return (QBTreeNode) this.parent;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

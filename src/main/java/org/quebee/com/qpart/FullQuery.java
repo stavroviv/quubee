@@ -157,8 +157,6 @@ public class FullQuery {
 //            return;
 //        }
 //
-//        // 1. если JOIN есть - то надо указать связи всех таблиц
-//        // 2. RIGHT JOIN изменить на LEFT и упорядочить все строки кроме первой
 //        String tableFrom = linkTable.getItems().get(0).getTable1();
 //        selectBody.setFromItem(new Table(tableFrom));
 //        List<Join> joins = new ArrayList<>();

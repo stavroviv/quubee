@@ -4,6 +4,7 @@ import com.intellij.ui.ColoredTreeCellRenderer;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import lombok.Setter;
+import net.sf.jsqlparser.schema.Table;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,12 +32,25 @@ public class TableElement {
     public TableElement(String name) {
         this.name = name;
         this.id = UUID.randomUUID();
-
     }
+
+//    @SuppressWarnings("unused")
+//    public TableElement(TableElement element) {
+//        this.name = element.getName();
+//        this.id = element.getId();
+//    }
 
     public TableElement(String name, UUID parentId) {
         this(name);
         this.parentId = parentId;
+    }
+
+    private Table psTable;
+    private String columnName;
+
+    public TableElement(Table table, String columnName) {
+        this.psTable = table;
+        this.columnName = columnName;
     }
 
     public static class Renderer extends ColoredTreeCellRenderer {
