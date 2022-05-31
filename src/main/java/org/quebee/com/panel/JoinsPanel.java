@@ -334,7 +334,7 @@ public class JoinsPanel implements QueryComponent {
     }
 
     private void removeSelectedTable(QBTreeNode node) {
-        TableElement tableElement = node.getUserObject();
+        var tableElement = node.getUserObject();
         for (int i = joinTableModel.getItems().size() - 1; i >= 0; i--) {
             if (joinTableModel.getItem(i).getTable1().equals(tableElement.getName())
                     || joinTableModel.getItem(i).getTable2().equals(tableElement.getName())) {

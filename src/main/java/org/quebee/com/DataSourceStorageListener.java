@@ -5,11 +5,8 @@ import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.model.DasModel;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
-import com.intellij.util.containers.JBIterable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public class DataSourceStorageListener implements DataSourceStorage.Listener {
 
@@ -18,13 +15,13 @@ public class DataSourceStorageListener implements DataSourceStorage.Listener {
         DataSourceStorage.Listener.super.dataSourceModelLoaded(dataSource, model);
         for (DasObject modelRoot : model.getModelRoots()) {
           //  System.out.println(modelRoot);
-            JBIterable<? extends DasObject> dasChildren = modelRoot.getDasChildren(ObjectKind.TABLE);
+            var dasChildren = modelRoot.getDasChildren(ObjectKind.TABLE);
          //   System.out.println(dasChildren);
-            List<? extends DasObject> dasObjects = dasChildren.toList();
+            var dasObjects = dasChildren.toList();
 
-            for (DasObject dasObject : dasObjects) {
-                JBIterable<? extends DasObject> columns = dasObject.getDasChildren(ObjectKind.COLUMN);
-                for (DasObject column : columns) {
+            for (var dasObject : dasObjects) {
+                var columns = dasObject.getDasChildren(ObjectKind.COLUMN);
+                for (var column : columns) {
                     System.out.println(column);
                 }
             }

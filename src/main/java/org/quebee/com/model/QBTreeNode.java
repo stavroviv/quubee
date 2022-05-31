@@ -14,15 +14,15 @@ public class QBTreeNode extends DefaultMutableTreeTableNode {
         this.usObject = userObject;
     }
 
-    public QBTreeNode(Object userObject) {
-        super(userObject);
-        this.usObject = (TableElement) userObject;
-    }
-
-    public QBTreeNode(QBTreeNode node) {
-        super(node.getUserObject());
-        this.usObject = node.getUserObject();
-    }
+//    public QBTreeNode(Object userObject) {
+//        super(userObject);
+//        this.usObject = (TableElement) userObject;
+//    }
+//
+//    public QBTreeNode(QBTreeNode node) {
+//        super(node.getUserObject());
+//        this.usObject = node.getUserObject();
+//    }
 
     public List<QBTreeNode> nodeToList() {
         var actualList = new ArrayList<QBTreeNode>();

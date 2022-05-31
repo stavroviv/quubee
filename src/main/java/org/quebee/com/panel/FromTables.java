@@ -117,7 +117,7 @@ public class FromTables implements QueryComponent {
     }
 
     private void removeSelectedFieldsByTable(TreeTableNode node, ListTableModel<TableElement> model) {
-        for (int i = model.getItems().size() - 1; i >= 0; i--) {
+        for (var i = model.getItems().size() - 1; i >= 0; i--) {
             var userObject = (TableElement) node.getUserObject();
             if (model.getItem(i).getParentId().equals(userObject.getId())) {
                 model.removeRow(i);

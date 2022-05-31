@@ -13,21 +13,13 @@ import java.util.List;
 import java.util.Map;
 
 public class PostgresStructureImpl implements DBStructure {
-    private Map<String, List<String>> dbElements;
+    private final Map<String, List<String>> dbElements = new HashMap<>();
 
     @Override
     public DBTables getDBStructure(JdbcConsole console) {
-        dbElements = new HashMap<>();
-
-//        TableRow tablesRoot = new TableRow(DATABASE_TABLE_ROOT);
-//        tablesRoot.setRoot(true);
-//        TreeItem<TableRow> root = new TreeItem<>(tablesRoot);
-//        root.setExpanded(true);
-
         var data = new DBTables();
         if (console == null) {
             data.setDbElements(dbElements);
-//            data.setRoot(root);
             return data;
         }
 
@@ -45,7 +37,7 @@ public class PostgresStructureImpl implements DBStructure {
         var scope = console.getDataSource().getIntrospectionScope();
         var databases = dataSource.getModel().traverser().expand(DasUtil.byKind(ObjectKind.DATABASE));
 
-        for (DasObject database : databases) {
+        for (var database : databases) {
             var path = ObjectPaths.of(database);
             var schemas = dataSource.getModel()
                     .traverser()
@@ -53,12 +45,12 @@ public class PostgresStructureImpl implements DBStructure {
                     .filter(DasUtil.byKind(ObjectKind.SCHEMA))
                     .traverse();
 
-            for (DasObject schema : schemas) {
+            for (var schema : schemas) {
                 if (!DataSourceSchemaMapping.isIntrospected(scope, schema)) {
                     continue;
                 }
-                var dasChildren1 = schema.getDasChildren(ObjectKind.TABLE);
-                for (DasObject object : dasChildren1) {
+                var dasChildren = schema.getDasChildren(ObjectKind.TABLE);
+                for (var object : dasChildren) {
                     addToStructure(object);
                 }
                 break;
@@ -66,20 +58,12 @@ public class PostgresStructureImpl implements DBStructure {
         }
 
         data.setDbElements(dbElements);
-//        data.setRoot(root);
         return data;
     }
 
     private void addToStructure(DasObject table) {
-//        TableRow parentNode = new TableRow(table.getName());
-//        parentNode.setRoot(true);
-//        TreeItem<TableRow> stringTreeItem = new TreeItem<>(parentNode);
-//        root.getChildren().add(stringTreeItem);
-        List<String> tableElements = new ArrayList<>();
-        table.getDasChildren(ObjectKind.COLUMN).forEach(column -> {
-            tableElements.add(column.getName());
-//            stringTreeItem.getChildren().add(new TreeItem<>(new TableRow(column.getName())));
-        });
+        var tableElements = new ArrayList<String>();
+        table.getDasChildren(ObjectKind.COLUMN).forEach(column -> tableElements.add(column.getName()));
         dbElements.put(table.getName(), tableElements);
     }
 }

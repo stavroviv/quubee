@@ -46,7 +46,7 @@ public class GroupingPanel implements QueryComponent {
     }
 
     private void saveQueryData(FullQuery fullQuery, String s, int id) {
-        for (int i = groupingRoot.getChildCount() - 2; i >= 0; i--) {
+        for (var i = groupingRoot.getChildCount() - 2; i >= 0; i--) {
             groupingRoot.remove(i);
         }
         ComponentUtils.clearTree(allFieldsRoot);
@@ -177,7 +177,7 @@ public class GroupingPanel implements QueryComponent {
     }
     
     private JButton smallButton(String text) {
-        JButton button = new JButton(text);
+        var button = new JButton(text);
         button.setMaximumSize(new Dimension(50, 30));
         return button;
     }
