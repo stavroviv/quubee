@@ -12,13 +12,12 @@ import com.intellij.util.messages.MessageBus;
 import lombok.SneakyThrows;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.jetbrains.annotations.NotNull;
-import org.quebee.com.database.DBStructure;
-import org.quebee.com.database.DBTables;
 import org.quebee.com.database.PostgresStructureImpl;
-import org.quebee.com.notifier.ReloadDbTablesNotifier;
 import org.quebee.com.panel.MainPanel;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.util.Messages;
 
+import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 
 public class MainAction extends AnAction {
@@ -27,8 +26,14 @@ public class MainAction extends AnAction {
     @SneakyThrows
     public void actionPerformed(@NotNull AnActionEvent action) {
         String selectionText = getSelectionText(action);
-        MainPanel form = new MainPanel(new FullQuery(CCJSqlParserUtil.parse(selectionText)));
+
+        FullQuery fullQuery = new FullQuery(CCJSqlParserUtil.parse(selectionText));
+        MainPanel form = new MainPanel(fullQuery);
+
+        MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
         setDatabaseTables(action);
+        messageBus.syncPublisher(LOAD_QUERY_DATA).onAction(fullQuery, fullQuery.getFirstCte(), 0);
+
         form.show();
     }
 
@@ -42,11 +47,9 @@ public class MainAction extends AnAction {
     }
 
     private void setDatabaseTables(@NotNull AnActionEvent action) {
-        JdbcConsole console = JdbcConsole.findConsole(action);
-        DBStructure structure = new PostgresStructureImpl();
-        DBTables dbStructure = structure.getDBStructure(console);
-        MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
-        ReloadDbTablesNotifier publisher = messageBus.syncPublisher(RELOAD_TABLES_TOPIC);
-        publisher.onAction(dbStructure);
+        var console = JdbcConsole.findConsole(action);
+        var structure = new PostgresStructureImpl();
+        var dbStructure = structure.getDBStructure(console);
+        Messages.getPublisher(RELOAD_TABLES_TOPIC).onAction(dbStructure);
     }
 }

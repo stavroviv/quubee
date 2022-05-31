@@ -40,6 +40,12 @@ public class DebugGUI implements StartupActivity {
                     "ss2 as (" +
                     "select table.id from table where table.id = 1 union " +
                     "select table1.id from table1 where table1.id = 1 " +
+                    "), " +
+                    "test_table_255 as (" +
+                    "select table.id from table where table.id = 1 union " +
+                    "select table.id from table where table.id = 1 union " +
+                    "select table.id from table where table.id = 1 union " +
+                    "select table1.id from table1 where table1.id = 1 " +
                     ") " +
                     "select test_table_1.id,ss2.id " +
                     "from test_table_1 " +

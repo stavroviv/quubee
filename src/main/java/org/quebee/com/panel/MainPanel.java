@@ -68,8 +68,6 @@ public class MainPanel {
                 return mainPanel;
             }
 
-
-            @NotNull
             private JPanel getEmptyPanel() {
                 JPanel emptyPanel = new JPanel();
                 emptyPanel.setBorder(JBUI.Borders.emptyTop(17));
@@ -93,21 +91,31 @@ public class MainPanel {
         tabsCte.addListener(new TabsListener() {
             @Override
             public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
-                Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery, oldSelection.getText(), 0);
-                Messages.getPublisher(LOAD_QUERY_DATA).onAction(fullQuery, newSelection.getText(), 0);
+                if (dataIsLoading) {
+                    return;
+                }
+                if (Objects.nonNull(oldSelection)) {
+                    Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery, oldSelection.getText(), 0);
+                }
                 loadUnions(newSelection.getText());
+                Messages.getPublisher(LOAD_QUERY_DATA).onAction(fullQuery, newSelection.getText(), 0);
             }
         });
         tabsUnion.addListener(new TabsListener() {
             @Override
             public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
+                if (dataIsLoading) {
+                    return;
+                }
                 var selectedCte = tabsCte.getSelectedInfo();
                 if (Objects.isNull(selectedCte)) {
                     return;
                 }
-                Messages.getPublisher(SAVE_QUERY_DATA).onAction(
-                        fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(oldSelection)
-                );
+                if (Objects.nonNull(oldSelection)) {
+                    Messages.getPublisher(SAVE_QUERY_DATA).onAction(
+                            fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(oldSelection)
+                    );
+                }
                 Messages.getPublisher(LOAD_QUERY_DATA).onAction(
                         fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(newSelection)
                 );
@@ -116,25 +124,27 @@ public class MainPanel {
     }
 
     private void loadCte() {
-        var cte = fullQuery.getCteNames();
-        cte.forEach(x -> tabsCte.addTab(new TabInfo(new JPanel()))
-                .setText(x)
-                .setIcon(DatabaseIcons.Package));
+        dataIsLoading = true;
+        fullQuery.getCteNames().forEach(x ->
+                tabsCte.addTab(new TabInfo(new JPanel())).setText(x).setIcon(DatabaseIcons.Package)
+        );
         tabsCte.setVisible(tabsCte.getTabCount() > 1);
+        loadUnions(fullQuery.getFirstCte());
+        dataIsLoading = false;
     }
 
-    private void loadUnions(String x) {
-        var cte = fullQuery.getCte(x);
-        unionPanel.setVisible(false);
-        if (Objects.isNull(cte)) {
-            return;
-        }
-        var unionMap = cte.getUnionMap().keySet();
+    private boolean dataIsLoading;
+
+    private void loadUnions(String cteName) {
+        dataIsLoading = true;
         tabsUnion.removeAllTabs();
-        unionMap.forEach(y -> tabsUnion.addTab(new TabInfo(new JPanel()))
-                .setText(y)
-                .setIcon(DatabaseIcons.Table));
+        var cte = fullQuery.getCte(cteName);
+//        unionPanel.setVisible(false);
+        cte.getUnionMap().keySet().forEach(y ->
+                tabsUnion.addTab(new TabInfo(new JPanel())).setText(y).setIcon(DatabaseIcons.Table)
+        );
         unionPanel.setVisible(tabsUnion.getTabCount() > 1);
+        dataIsLoading = false;
     }
 
     private void addQueryTabs(JBTabsImpl tabs) {
