@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.qpart.FullQuery;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -24,6 +25,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
+import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
 import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
 
@@ -324,10 +326,15 @@ public class JoinsPanel implements QueryComponent {
         var bus = ApplicationManager.getApplication().getMessageBus();
         bus.connect().subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
         bus.connect().subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
+        bus.connect().subscribe(SAVE_QUERY_DATA, this::saveQueryData);
+    }
+
+    private void saveQueryData(FullQuery fullQuery, String s, int i) {
+        tables.clear();
     }
 
     private void removeSelectedTable(QBTreeNode node) {
-        TableElement tableElement = (TableElement) node.getUserObject();
+        TableElement tableElement = node.getUserObject();
         for (int i = joinTableModel.getItems().size() - 1; i >= 0; i--) {
             if (joinTableModel.getItem(i).getTable1().equals(tableElement.getName())
                     || joinTableModel.getItem(i).getTable2().equals(tableElement.getName())) {

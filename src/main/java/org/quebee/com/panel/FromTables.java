@@ -22,7 +22,7 @@ import org.quebee.com.database.DBTables;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.qpart.FullQuery;
-import org.quebee.com.qpart.OneCte;
+import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.Messages;
 
 import javax.swing.*;
@@ -33,6 +33,7 @@ import java.util.Objects;
 
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
+import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
 import static org.quebee.com.notifier.SelectedTableAddNotifier.SELECTED_TABLE_ADD;
 import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
@@ -67,36 +68,41 @@ public class FromTables implements QueryComponent {
         bus.connect().subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
         bus.connect().subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
         bus.connect().subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
+        bus.connect().subscribe(SAVE_QUERY_DATA, this::saveQueryData);
         bus.connect().subscribe(LOAD_QUERY_DATA, this::loadQueryData);
     }
 
+    private void saveQueryData(FullQuery fullQuery, String s, int id) {
+        ComponentUtils.clearTree(selectedTablesRoot);
+        ComponentUtils.clearTable(selectedFieldsModel);
+    }
+
     private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
-        OneCte cte = fullQuery.getCte(cteName);
+        var cte = fullQuery.getCte(cteName);
         if (Objects.isNull(cte)) {
             return;
         }
-        var union = cte.getUnion("UNION_" + i1);
-        var selectedTablesRoot = union.getSelectedTablesRoot();
 
-        QBTreeNode.nodeToList(selectedTablesRoot).forEach(x ->
-                QBTreeNode.nodeToList(databaseRoot).forEach(node -> {
+        var union = cte.getUnion("UNION_" + i1);
+        union.getSelectedTablesRoot().nodeToList().forEach(x ->
+                databaseRoot.nodeToList().forEach(node -> {
                     var userObject = (TableElement) x.getUserObject();
                     if (node.getUserObject().getName().equals(userObject.getName())) {
                         Messages.getPublisher(SELECTED_TABLE_ADD).onAction(node);
                     }
                 })
         );
-        union.getSelectedFieldsModel().getItems().forEach(x -> {
-            QBTreeNode.nodeToList(databaseRoot).forEach(node -> {
-                if (node.getUserObject().getName().equals(x.getPsTable().getName())) {
-                    QBTreeNode.nodeToList(node).forEach(nodeZ -> {
-                        if (nodeZ.getUserObject().getName().equals(x.getColumnName())) {
-                            Messages.getPublisher(SELECTED_FIELD_ADD).onAction(nodeZ);
-                        }
-                    });
-                }
-            });
-        });
+        union.getSelectedFieldsModel().getItems().forEach(x ->
+                databaseRoot.nodeToList().forEach(node -> {
+                    if (node.getUserObject().getName().equals(x.getPsTable().getName())) {
+                        node.nodeToList().forEach(nodeZ -> {
+                            if (nodeZ.getUserObject().getName().equals(x.getColumnName())) {
+                                Messages.getPublisher(SELECTED_FIELD_ADD).onAction(nodeZ);
+                            }
+                        });
+                    }
+                })
+        );
         selectedTablesModel.reload();
     }
 

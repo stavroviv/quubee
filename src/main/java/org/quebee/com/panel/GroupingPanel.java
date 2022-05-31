@@ -15,11 +15,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
+import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
 import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
 
@@ -39,6 +42,15 @@ public class GroupingPanel implements QueryComponent {
         var bus = ApplicationManager.getApplication().getMessageBus();
         bus.connect().subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
         bus.connect().subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
+        bus.connect().subscribe(SAVE_QUERY_DATA, this::saveQueryData);
+    }
+
+    private void saveQueryData(FullQuery fullQuery, String s, int id) {
+        for (int i = groupingRoot.getChildCount() - 2; i >= 0; i--) {
+            groupingRoot.remove(i);
+        }
+        ComponentUtils.clearTree(allFieldsRoot);
+        groupingModel.reload();
     }
 
     private void addSelectedField(QBTreeNode node) {
@@ -111,7 +123,7 @@ public class GroupingPanel implements QueryComponent {
             }
         };
 
-        groupingTableModel = new ListTableModel<TableElement>(
+        groupingTableModel = new ListTableModel<>(
                 columnInfo
         );
         var groupingTable = new JBTable(groupingTableModel);

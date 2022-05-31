@@ -24,9 +24,9 @@ public class QBTreeNode extends DefaultMutableTreeTableNode {
         this.usObject = node.getUserObject();
     }
 
-    public static List<QBTreeNode> nodeToList(QBTreeNode node) {
+    public List<QBTreeNode> nodeToList() {
         var actualList = new ArrayList<QBTreeNode>();
-        node.children().asIterator().forEachRemaining(x -> actualList.add((QBTreeNode) x));
+        children().asIterator().forEachRemaining(x -> actualList.add((QBTreeNode) x));
         return actualList;
     }
 

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
+import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 
 public class MainPanel {
 
@@ -89,11 +90,10 @@ public class MainPanel {
     }
 
     private void initListeners() {
-//        var bus = ApplicationManager.getApplication().getMessageBus();
-//        bus.connect().subscribe(LOAD_QUERY_DATA, this::loadQueryData);
         tabsCte.addListener(new TabsListener() {
             @Override
             public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
+                Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery, oldSelection.getText(), 0);
                 Messages.getPublisher(LOAD_QUERY_DATA).onAction(fullQuery, newSelection.getText(), 0);
                 loadUnions(newSelection.getText());
             }
@@ -101,12 +101,15 @@ public class MainPanel {
         tabsUnion.addListener(new TabsListener() {
             @Override
             public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
-                var selectedTab = tabsUnion.getSelectedInfo();
-                if (Objects.isNull(selectedTab)) {
+                var selectedCte = tabsCte.getSelectedInfo();
+                if (Objects.isNull(selectedCte)) {
                     return;
                 }
+                Messages.getPublisher(SAVE_QUERY_DATA).onAction(
+                        fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(oldSelection)
+                );
                 Messages.getPublisher(LOAD_QUERY_DATA).onAction(
-                        fullQuery, selectedTab.getText(), tabsUnion.getTabs().indexOf(newSelection)
+                        fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(newSelection)
                 );
             }
         });
@@ -118,7 +121,6 @@ public class MainPanel {
                 .setText(x)
                 .setIcon(DatabaseIcons.Package));
         tabsCte.setVisible(tabsCte.getTabCount() > 1);
-//        loadUnions(cteName);
     }
 
     private void loadUnions(String x) {
