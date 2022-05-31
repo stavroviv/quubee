@@ -9,8 +9,6 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.quebee.com.util.Constants.UNION_0;
-
 @Getter
 @Setter
 public class OneCte implements Orderable {
@@ -37,11 +35,11 @@ public class OneCte implements Orderable {
             SetOperationList body1 = (SetOperationList) body;
             int i = 0;
             for (SelectBody select : body1.getSelects()) {
-                unionMap.put("UNION_" + i, new Union((PlainSelect) select, i));
+                unionMap.put("" + i, new Union((PlainSelect) select, i));
                 i++;
             }
         } else {
-            unionMap.put(UNION_0, new Union((PlainSelect) body, 0));
+            unionMap.put("0", new Union((PlainSelect) body, 0));
         }
     }
 

@@ -83,7 +83,7 @@ public class FromTables implements QueryComponent {
             return;
         }
 
-        var union = cte.getUnion("UNION_" + i1);
+        var union = cte.getUnion("" + i1);
         union.getSelectedTablesRoot().nodeToList().forEach(x ->
                 databaseRoot.nodeToList().forEach(node -> {
                     var userObject = (TableElement) x.getUserObject();
