@@ -38,6 +38,10 @@ public class FullQuery {
         return cteMap.get(cte);
     }
 
+    public Set<String> getCteNames() {
+        return cteMap.keySet();
+    }
+
     public void addCte(String cteName, SelectBody selectBody, int order) {
         cteMap.put(cteName, new OneCte(cteName, selectBody, order));
     }

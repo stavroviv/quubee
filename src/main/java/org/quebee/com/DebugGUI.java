@@ -11,6 +11,7 @@ import net.sf.jsqlparser.statement.Statement;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.notifier.ReloadDbTablesNotifier;
+import org.quebee.com.panel.MainPanel;
 import org.quebee.com.qpart.FullQuery;
 
 import java.util.HashMap;
@@ -30,7 +31,7 @@ public class DebugGUI implements StartupActivity {
     private void testActivity2(Project project) {
         FullQuery fullQuery;
         try {
-            Statement statement = CCJSqlParserUtil.parse("with ss as (" +
+            Statement statement = CCJSqlParserUtil.parse("with test_table_1 as (" +
                     "select table.id, table.test_2, table.test_3, table1.test_4 " +
                     "from table " +
                     "join table1 on table.id=table1.id " +
@@ -40,11 +41,11 @@ public class DebugGUI implements StartupActivity {
                     "select table.id from table where table.id = 1 union " +
                     "select table1.id from table1 where table1.id = 1 " +
                     ") " +
-                    "select ss.id,ss2.id " +
-                    "from ss " +
-                    "join ss2 on ss.id=ss2.id and ss.id=ss2.id " +
-                    "join ss2 as ss3 on ss.id=ss3.id and ss.id=ss3.id " +
-                    "where ss.id = 1"
+                    "select test_table_1.id,ss2.id " +
+                    "from test_table_1 " +
+                    "join ss2 on test_table_1.id=ss2.id and test_table_1.id=ss2.id " +
+                    "join ss2 as ss3 on test_table_1.id=ss3.id and test_table_1.id=ss3.id " +
+                    "where test_table_1.id = 1"
             );
             fullQuery = new FullQuery(statement);
         } catch (JSQLParserException e) {
@@ -52,7 +53,7 @@ public class DebugGUI implements StartupActivity {
             return;
         }
 
-        MainQuiBuiForm form = new MainQuiBuiForm(project);
+        MainPanel form = new MainPanel(fullQuery);
         DBTables dbStructure = new DBTables();
         HashMap<String, List<String>> dbElements = new HashMap<>();
         dbElements.put("table", List.of("id", "test_2", "test_3", "test_4"));
@@ -67,12 +68,15 @@ public class DebugGUI implements StartupActivity {
     }
 
     private void testActivity1(@NotNull Project project) {
+        FullQuery fullQuery;
         try {
-            Statement parse = CCJSqlParserUtil.parse("select id from table where id = 1");
-            System.out.println(parse);
-        } catch (JSQLParserException ignored) {
+            var parse = CCJSqlParserUtil.parse("select id from table where id = 1");
+            fullQuery = new FullQuery(parse);
+        } catch (JSQLParserException e) {
+            Messages.showMessageDialog(e.getMessage(), "Warning", Messages.getErrorIcon());
+            return;
         }
-        MainQuiBuiForm form = new MainQuiBuiForm(project);
+        MainPanel form = new MainPanel(fullQuery);
         DBTables dbStructure = new DBTables();
         HashMap<String, List<String>> dbElements = new HashMap<>();
         for (int i = 0; i < 700; i++) {

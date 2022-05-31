@@ -22,6 +22,7 @@ import org.quebee.com.database.DBTables;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.Messages;
 
 import javax.swing.*;
@@ -70,7 +71,11 @@ public class FromTables implements QueryComponent {
     }
 
     private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
-        var union = fullQuery.getCte(cteName).getUnion("UNION_" + i1);
+        OneCte cte = fullQuery.getCte(cteName);
+        if (Objects.isNull(cte)) {
+            return;
+        }
+        var union = cte.getUnion("UNION_" + i1);
         var selectedTablesRoot = union.getSelectedTablesRoot();
 
         QBTreeNode.nodeToList(selectedTablesRoot).forEach(x ->
