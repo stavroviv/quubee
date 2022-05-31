@@ -5,10 +5,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Caret;
-import com.intellij.openapi.editor.CaretModel;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.util.messages.MessageBus;
 import lombok.SneakyThrows;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.jetbrains.annotations.NotNull;
@@ -25,12 +21,12 @@ public class MainAction extends AnAction {
     @Override
     @SneakyThrows
     public void actionPerformed(@NotNull AnActionEvent action) {
-        String selectionText = getSelectionText(action);
+        var selectionText = getSelectionText(action);
 
-        FullQuery fullQuery = new FullQuery(CCJSqlParserUtil.parse(selectionText));
-        MainPanel form = new MainPanel(fullQuery);
+        var fullQuery = new FullQuery(CCJSqlParserUtil.parse(selectionText));
+        var form = new MainPanel(fullQuery);
 
-        MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
+        var messageBus = ApplicationManager.getApplication().getMessageBus();
         setDatabaseTables(action);
         messageBus.syncPublisher(LOAD_QUERY_DATA).onAction(fullQuery, fullQuery.getFirstCte(), 0);
 
@@ -38,9 +34,9 @@ public class MainAction extends AnAction {
     }
 
     private String getSelectionText(AnActionEvent action) {
-        Editor editor = action.getRequiredData(CommonDataKeys.EDITOR);
-        CaretModel caretModel = editor.getCaretModel();
-        Caret currentCaret = caretModel.getCurrentCaret();
+        var editor = action.getRequiredData(CommonDataKeys.EDITOR);
+        var caretModel = editor.getCaretModel();
+        var currentCaret = caretModel.getCurrentCaret();
         return currentCaret.hasSelection()
                 ? currentCaret.getSelectedText()
                 : action.getData(CommonDataKeys.PSI_FILE).getText();
