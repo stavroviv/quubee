@@ -63,7 +63,7 @@ public class FullQuery {
         return sortedMap;
     }
 
-    public Select getQuery() {
+    public String getQuery() {
         Select select = new Select();
 
         List<WithItem> withItems = new ArrayList<>();
@@ -91,7 +91,7 @@ public class FullQuery {
             select.setWithItemsList(withItems);
         }
 
-        return select.toString().equals(EMPTY_SELECT) ? null : select;
+        return select.toString().equals(EMPTY_SELECT) ? "" : select.toString();
     }
 
     private SelectBody getSelectBody(String cte) {

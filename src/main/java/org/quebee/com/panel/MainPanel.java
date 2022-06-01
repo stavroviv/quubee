@@ -9,6 +9,7 @@ import com.intellij.ui.tabs.TabsListener;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.util.ui.JBUI;
 import icons.DatabaseIcons;
+import lombok.Getter;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.Messages;
 
@@ -18,10 +19,12 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
+import static org.quebee.com.notifier.SaveAllQueryNotifier.SAVE_ALL_QUERY;
 import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 
 public class MainPanel {
 
+    @Getter
     private final DialogWrapper dialog;
     private final JBTabsImpl tabsCte;
     private final JBTabsImpl tabsUnion;
@@ -95,9 +98,13 @@ public class MainPanel {
 
         @Override
         protected void doOKAction() {
+            if (Objects.nonNull(tabsCte.getSelectedInfo()) && Objects.nonNull(tabsUnion.getSelectedInfo())) {
+                Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery,
+                        tabsCte.getSelectedInfo().getText(), Integer.parseInt(tabsUnion.getSelectedInfo().getText())
+                );
+                Messages.getPublisher(SAVE_ALL_QUERY).onAction(fullQuery);
+            }
             super.doOKAction();
-            var messageBus = ApplicationManager.getApplication().getMessageBus();
-//                return messageBus.syncPublisher(topic);
         }
     }
 
