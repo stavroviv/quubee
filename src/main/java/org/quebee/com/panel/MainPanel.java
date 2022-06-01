@@ -1,6 +1,7 @@
 package org.quebee.com.panel;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.tabs.JBTabsPosition;
 import com.intellij.ui.tabs.TabInfo;
@@ -8,7 +9,6 @@ import com.intellij.ui.tabs.TabsListener;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import com.intellij.util.ui.JBUI;
 import icons.DatabaseIcons;
-import org.jetbrains.annotations.NotNull;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.Messages;
 
@@ -35,65 +35,70 @@ public class MainPanel {
         this.tabsUnion = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         this.unionPanel = new JPanel(new BorderLayout());
         this.ctePanel = new JPanel(new BorderLayout());
-        this.dialog = new DialogWrapper(null, false, DialogWrapper.IdeModalityType.PROJECT) {
+        this.dialog = new QueryBuilderDialog(null, false);
 
-            @Override
-            protected @NotNull JComponent createCenterPanel() {
-
-                tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
-                tabsCte.setPreferredSize(JBUI.size(55, 200));
-                tabsUnion.getPresentation().setTabsPosition(JBTabsPosition.right);
-
-                JPanel mainPanel = new JPanel();
-                mainPanel.setLayout(new BorderLayout());
-
-                JPanel panelCurrent = new JPanel();
-                panelCurrent.setLayout(new BorderLayout());
-                final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-                addQueryTabs(tabs);
-                panelCurrent.add(tabs, BorderLayout.CENTER);
-
-                unionPanel.add(getEmptyPanel(), BorderLayout.NORTH);
-                unionPanel.add(tabsUnion, BorderLayout.CENTER);
-                unionPanel.setPreferredSize(JBUI.size(55, 200));
-                panelCurrent.add(unionPanel, BorderLayout.EAST);
-
-                mainPanel.add(panelCurrent, BorderLayout.CENTER);
-
-                ctePanel.add(getEmptyPanel(), BorderLayout.NORTH);
-                ctePanel.add(tabsCte, BorderLayout.CENTER);
-//                ctePanel.setPreferredSize(JBUI.size(55, 200));
-
-                mainPanel.add(ctePanel, BorderLayout.EAST);
-                return mainPanel;
-            }
-
-            private JPanel getEmptyPanel() {
-                JPanel emptyPanel = new JPanel();
-                emptyPanel.setBorder(JBUI.Borders.emptyTop(17));
-                return emptyPanel;
-            }
-
-            @Override
-            protected void createDefaultActions() {
-                super.createDefaultActions();
-                init();
-            }
-
-            @Override
-            protected void doOKAction() {
-                super.doOKAction();
-                var messageBus = ApplicationManager.getApplication().getMessageBus();
-//                return messageBus.syncPublisher(topic);
-            }
-        };
-
-        dialog.setResizable(true);
-        dialog.setTitle("Jet Select");
-        dialog.setSize(900, 550);
         initListeners();
         loadCte();
         queryComponents.forEach(queryComponent -> queryComponent.initListeners(dialog.getDisposable()));
+    }
+
+    private class QueryBuilderDialog extends DialogWrapper {
+
+        protected QueryBuilderDialog(Project project, boolean canBeParent) {
+            super(project, canBeParent, DialogWrapper.IdeModalityType.PROJECT);
+            setResizable(true);
+            setTitle("Jet Select");
+            setSize(900, 550);
+        }
+
+        @Override
+        protected JComponent createCenterPanel() {
+            tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
+            tabsCte.setPreferredSize(JBUI.size(55, 200));
+            tabsUnion.getPresentation().setTabsPosition(JBTabsPosition.right);
+
+            JPanel mainPanel = new JPanel();
+            mainPanel.setLayout(new BorderLayout());
+
+            JPanel panelCurrent = new JPanel();
+            panelCurrent.setLayout(new BorderLayout());
+            final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+            addQueryTabs(tabs);
+            panelCurrent.add(tabs, BorderLayout.CENTER);
+
+            unionPanel.add(getEmptyPanel(), BorderLayout.NORTH);
+            unionPanel.add(tabsUnion, BorderLayout.CENTER);
+            unionPanel.setPreferredSize(JBUI.size(55, 200));
+            panelCurrent.add(unionPanel, BorderLayout.EAST);
+
+            mainPanel.add(panelCurrent, BorderLayout.CENTER);
+
+            ctePanel.add(getEmptyPanel(), BorderLayout.NORTH);
+            ctePanel.add(tabsCte, BorderLayout.CENTER);
+//                ctePanel.setPreferredSize(JBUI.size(55, 200));
+
+            mainPanel.add(ctePanel, BorderLayout.EAST);
+            return mainPanel;
+        }
+
+        private JPanel getEmptyPanel() {
+            JPanel emptyPanel = new JPanel();
+            emptyPanel.setBorder(JBUI.Borders.emptyTop(17));
+            return emptyPanel;
+        }
+
+        @Override
+        protected void createDefaultActions() {
+            super.createDefaultActions();
+            init();
+        }
+
+        @Override
+        protected void doOKAction() {
+            super.doOKAction();
+            var messageBus = ApplicationManager.getApplication().getMessageBus();
+//                return messageBus.syncPublisher(topic);
+        }
     }
 
     private void initListeners() {

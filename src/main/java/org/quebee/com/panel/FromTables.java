@@ -89,7 +89,6 @@ public class FromTables implements QueryComponent {
                 databaseRoot.nodeToList().forEach(node -> {
                     var userObject = (TableElement) x.getUserObject();
                     if (node.getUserObject().getName().equals(userObject.getName())) {
-//                        addSelectedTable(node);
                         Messages.getPublisher(SELECTED_TABLE_ADD).onAction(node);
                     }
                 })
@@ -100,7 +99,6 @@ public class FromTables implements QueryComponent {
                         tableNode.nodeToList().forEach(fieldNode -> {
                             if (fieldNode.getUserObject().getName().equals(x.getColumnName())) {
                                 Messages.getPublisher(SELECTED_FIELD_ADD).onAction(fieldNode);
-//                                addSelectedField(fieldNode);
                             }
                         });
                     }
