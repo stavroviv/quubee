@@ -1,5 +1,6 @@
 package org.quebee.com.panel;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
@@ -93,5 +94,10 @@ public class OrderPanel implements QueryComponent {
                 return TreeTableModel.class;
             }
         };
+    }
+
+    @Override
+    public void initListeners(Disposable disposable) {
+
     }
 }

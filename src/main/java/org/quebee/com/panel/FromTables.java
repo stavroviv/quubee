@@ -1,5 +1,6 @@
 package org.quebee.com.panel;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.AnActionButton;
@@ -59,17 +60,17 @@ public class FromTables implements QueryComponent {
         splitterLeft.setSecondComponent(splitterRight);
 
         this.component = splitterLeft;
-        initListeners();
     }
 
-    private void initListeners() {
+    @Override
+    public void initListeners(Disposable disposable) {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        bus.connect().subscribe(RELOAD_TABLES_TOPIC, this::setDatabaseTables);
-        bus.connect().subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
-        bus.connect().subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
-        bus.connect().subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
-        bus.connect().subscribe(SAVE_QUERY_DATA, this::saveQueryData);
-        bus.connect().subscribe(LOAD_QUERY_DATA, this::loadQueryData);
+        bus.connect(disposable).subscribe(RELOAD_TABLES_TOPIC, this::setDatabaseTables);
+        bus.connect(disposable).subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
+        bus.connect(disposable).subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
+        bus.connect(disposable).subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
+        bus.connect(disposable).subscribe(SAVE_QUERY_DATA, this::saveQueryData);
+        bus.connect(disposable).subscribe(LOAD_QUERY_DATA, this::loadQueryData);
     }
 
     private void saveQueryData(FullQuery fullQuery, String s, int id) {
@@ -88,7 +89,8 @@ public class FromTables implements QueryComponent {
                 databaseRoot.nodeToList().forEach(node -> {
                     var userObject = (TableElement) x.getUserObject();
                     if (node.getUserObject().getName().equals(userObject.getName())) {
-                        addSelectedTable(node);
+//                        addSelectedTable(node);
+                        Messages.getPublisher(SELECTED_TABLE_ADD).onAction(node);
                     }
                 })
         );
@@ -97,7 +99,8 @@ public class FromTables implements QueryComponent {
                     if (tableNode.getUserObject().getName().equals(x.getPsTable().getName())) {
                         tableNode.nodeToList().forEach(fieldNode -> {
                             if (fieldNode.getUserObject().getName().equals(x.getColumnName())) {
-                                addSelectedField(fieldNode);
+                                Messages.getPublisher(SELECTED_FIELD_ADD).onAction(fieldNode);
+//                                addSelectedField(fieldNode);
                             }
                         });
                     }

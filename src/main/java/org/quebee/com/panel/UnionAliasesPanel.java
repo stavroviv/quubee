@@ -1,5 +1,6 @@
 package org.quebee.com.panel;
 
+import com.intellij.openapi.Disposable;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -11,5 +12,10 @@ public class UnionAliasesPanel implements QueryComponent {
 
     public UnionAliasesPanel() {
         this.component = new JPanel();
+    }
+
+    @Override
+    public void initListeners(Disposable disposable) {
+
     }
 }

@@ -79,12 +79,21 @@ public class MainPanel {
                 super.createDefaultActions();
                 init();
             }
+
+            @Override
+            protected void doOKAction() {
+                super.doOKAction();
+                var messageBus = ApplicationManager.getApplication().getMessageBus();
+//                return messageBus.syncPublisher(topic);
+            }
         };
+
         dialog.setResizable(true);
         dialog.setTitle("Jet Select");
         dialog.setSize(900, 550);
         initListeners();
         loadCte();
+        queryComponents.forEach(queryComponent -> queryComponent.initListeners(dialog.getDisposable()));
     }
 
     private void initListeners() {
@@ -139,7 +148,6 @@ public class MainPanel {
         dataIsLoading = true;
         tabsUnion.removeAllTabs();
         var cte = fullQuery.getCte(cteName);
-//        unionPanel.setVisible(false);
         cte.getUnionMap().keySet().forEach(y ->
                 tabsUnion.addTab(new TabInfo(new JPanel())).setText(y).setIcon(DatabaseIcons.Table)
         );
@@ -147,15 +155,18 @@ public class MainPanel {
         dataIsLoading = false;
     }
 
+    private List<QueryComponent> queryComponents;
+
     private void addQueryTabs(JBTabsImpl tabs) {
-        List.of(
+        queryComponents = List.of(
                 new FromTables(),
                 new JoinsPanel(),
                 new GroupingPanel(),
                 new ConditionsPanel(),
                 new UnionAliasesPanel(),
                 new OrderPanel()
-        ).forEach(queryTab ->
+        );
+        queryComponents.forEach(queryTab ->
                 tabs.addTab(new TabInfo(queryTab.getComponent()).setText(queryTab.getHeader()))
         );
     }

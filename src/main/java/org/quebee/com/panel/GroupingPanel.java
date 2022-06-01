@@ -1,5 +1,6 @@
 package org.quebee.com.panel;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
@@ -35,14 +36,14 @@ public class GroupingPanel implements QueryComponent {
         component.setProportion(0.3f);
         component.setFirstComponent(getAvailableGroupingFieldsTree());
         component.setSecondComponent(getGroupingAggregatesPanel());
-        initListeners();
     }
 
-    public void initListeners() {
+    @Override
+    public void initListeners(Disposable disposable) {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        bus.connect().subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
-        bus.connect().subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
-        bus.connect().subscribe(SAVE_QUERY_DATA, this::saveQueryData);
+        bus.connect(disposable).subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
+        bus.connect(disposable).subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
+        bus.connect(disposable).subscribe(SAVE_QUERY_DATA, this::saveQueryData);
     }
 
     private void saveQueryData(FullQuery fullQuery, String s, int id) {

@@ -1,5 +1,6 @@
 package org.quebee.com.panel;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
@@ -230,9 +231,7 @@ public class JoinsPanel implements QueryComponent {
                     }
 
                     private final ComboBox<String> conditionField1 = new ComboBox<>();
-                    private final ComboBox<String> conditionField2 = new ComboBox<>(
-                            new String[]{"test_1", "test_2", "test_3"}
-                    );
+                    private final ComboBox<String> conditionField2 = new ComboBox<>();
                     private final ComboBox<String> conditionComparison = new ComboBox<>(
                             new String[]{"=", "!=", ">", "<", ">=", "<="}
                     );
@@ -291,42 +290,23 @@ public class JoinsPanel implements QueryComponent {
         });
 
         this.component = decorator.createPanel();
-        initListeners();
     }
 
     @NotNull
     private DefaultCellEditor availableTablesEditor() {
-        var comboBox = new ComboBox<>(tables.stream()
-                .map(x -> ((TableElement) x.getUserObject()).getName())
-                .toArray(String[]::new));
-//        comboBox.setRenderer(new DefaultListCellRenderer() {
-//            @Override
-//            public Component getListCellRendererComponent(JList list, Object value, int index,
-//                                                          boolean isSelected, boolean cellHasFocus) {
-//                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-//                TableElement elementValue = (TableElement) value;
-//                setText(elementValue.getName());
-//                return this;
-//            }
-//        });
-//        comboBox.addActionListener(e -> {
-//            @SuppressWarnings("unchecked")
-//            var comboBox1 = (ComboBox<TableElement>) e.getSource();
-//            var item = (TableElement) comboBox1.getSelectedItem();
-//            if (Objects.isNull(linkTable.getSelectedObject()) || Objects.isNull(item)) {
-//                return;
-//            }
-//            linkTable.getSelectedObject().setTable1Id(item.getId());
-//        });
-
-        return new DefaultCellEditor(comboBox);
+        return new DefaultCellEditor(
+                new ComboBox<>(tables.stream()
+                        .map(x -> ((TableElement) x.getUserObject()).getName())
+                        .toArray(String[]::new))
+        );
     }
 
-    private void initListeners() {
+    @Override
+    public void initListeners(Disposable disposable) {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        bus.connect().subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
-        bus.connect().subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
-        bus.connect().subscribe(SAVE_QUERY_DATA, this::saveQueryData);
+        bus.connect(disposable).subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
+        bus.connect(disposable).subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
+        bus.connect(disposable).subscribe(SAVE_QUERY_DATA, this::saveQueryData);
     }
 
     private void saveQueryData(FullQuery fullQuery, String s, int i) {
