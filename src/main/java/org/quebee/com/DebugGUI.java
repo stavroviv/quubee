@@ -22,7 +22,7 @@ public class DebugGUI implements StartupActivity {
 
     @Override
     public void runActivity(@NotNull Project project) {
-        //testActivity1(project);
+//        testActivity1(project);
         testActivity2(project);
     }
 
@@ -57,7 +57,13 @@ public class DebugGUI implements StartupActivity {
             return;
         }
 
-        var form = new MainPanel(fullQuery);
+        var form = new MainPanel(fullQuery){
+            @Override
+            protected void doOKAction() {
+                System.out.println(getFullQuery().getFullSelectText());
+                super.doOKAction();
+            }
+        };
         var dbStructure = new DBTables();
         var dbElements = new HashMap<String, List<String>>();
         dbElements.put("table", List.of("id", "test_2", "test_3", "test_4"));

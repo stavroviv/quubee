@@ -63,7 +63,7 @@ public class FullQuery {
         return sortedMap;
     }
 
-    public String getQuery() {
+    public String getFullSelectText() {
         Select select = new Select();
 
         List<WithItem> withItems = new ArrayList<>();

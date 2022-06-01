@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import lombok.SneakyThrows;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -17,9 +16,10 @@ import org.quebee.com.panel.MainPanel;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.Messages;
 
+import java.util.Objects;
+
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
-import static org.quebee.com.notifier.SaveAllQueryNotifier.SAVE_ALL_QUERY;
 
 public class MainAction extends AnAction {
 
@@ -32,38 +32,42 @@ public class MainAction extends AnAction {
         var selectionText = getSelectionText(action);
 
         var fullQuery = new FullQuery(CCJSqlParserUtil.parse(selectionText));
-        var form = new MainPanel(fullQuery);
+        var form = new MainPanel(fullQuery) {
+            @Override
+            protected void doOKAction() {
+                saveQueryPart();
+                setQueryTextToEditor(getFullQuery());
+                super.doOKAction();
+            }
+        };
 
         var messageBus = ApplicationManager.getApplication().getMessageBus();
         setDatabaseTables(action);
         messageBus.syncPublisher(LOAD_QUERY_DATA).onAction(fullQuery, fullQuery.getFirstCte(), 0);
 
         form.show();
-        var bus = ApplicationManager.getApplication().getMessageBus();
-//        bus.connect(form.getDialog().getDisposable()).subscribe(SAVE_ALL_QUERY, this::getQueryText); ????
-        bus.connect().subscribe(SAVE_ALL_QUERY, this::getQueryText);
     }
 
-    private void getQueryText(FullQuery fullQuery) {
-        var resultQuery = fullQuery.getQuery();
+    private void setQueryTextToEditor(FullQuery fullQuery) {
+        var resultQuery = fullQuery.getFullSelectText();
         ApplicationManager.getApplication().invokeLater(() -> {
             var editor = action.getRequiredData(CommonDataKeys.EDITOR);
             var document = editor.getDocument();
-            // Work off of the primary caret to get the selection info
             var primaryCaret = editor.getCaretModel().getPrimaryCaret();
-            int start = primaryCaret.getSelectionStart();
-            int end = primaryCaret.getSelectionEnd();
-            // Replace the selection with a fixed string.
-            // Must do this document change in a write action context.
+            var start = primaryCaret.getSelectionStart();
+            var end = primaryCaret.getSelectionEnd();
             var project = action.getProject();
+
             WriteCommandAction.runWriteCommandAction(project, () -> {
-                var data = action.getData(LangDataKeys.PSI_FILE);
                 if (start != end) {
                     document.replaceString(start, end, resultQuery);
                 } else {
                     document.replaceString(0, document.getTextLength(), resultQuery);
                 }
-                CodeStyleManager.getInstance(project).reformatText((PsiFile) data, 0, document.getTextLength());
+                var data = action.getData(LangDataKeys.PSI_FILE);
+                if (Objects.nonNull(data) && Objects.nonNull(project)) {
+                    CodeStyleManager.getInstance(project).reformatText(data, 0, document.getTextLength());
+                }
             });
         });
     }
@@ -72,9 +76,12 @@ public class MainAction extends AnAction {
         var editor = action.getRequiredData(CommonDataKeys.EDITOR);
         var caretModel = editor.getCaretModel();
         var currentCaret = caretModel.getCurrentCaret();
-        return currentCaret.hasSelection()
-                ? currentCaret.getSelectedText()
-                : action.getData(CommonDataKeys.PSI_FILE).getText();
+        return currentCaret.hasSelection() ? currentCaret.getSelectedText() : getAllText(action);
+    }
+
+    private String getAllText(AnActionEvent action) {
+        var data = action.getData(CommonDataKeys.PSI_FILE);
+        return Objects.nonNull(data) ? data.getText() : "";
     }
 
     private void setDatabaseTables(@NotNull AnActionEvent action) {

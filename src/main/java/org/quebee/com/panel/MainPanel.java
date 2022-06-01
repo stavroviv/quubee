@@ -1,7 +1,6 @@
 package org.quebee.com.panel;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.tabs.JBTabsPosition;
 import com.intellij.ui.tabs.TabInfo;
@@ -19,93 +18,77 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
-import static org.quebee.com.notifier.SaveAllQueryNotifier.SAVE_ALL_QUERY;
 import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 
-public class MainPanel {
+public class MainPanel extends DialogWrapper {
+
+    private JBTabsImpl tabsCte;
+    private JBTabsImpl tabsUnion;
+    private JPanel unionPanel;
+    private JPanel ctePanel;
 
     @Getter
-    private final DialogWrapper dialog;
-    private final JBTabsImpl tabsCte;
-    private final JBTabsImpl tabsUnion;
-    private final JPanel unionPanel;
-    private final JPanel ctePanel;
     private final FullQuery fullQuery;
 
     public MainPanel(FullQuery fullQuery) {
+        super(null, false, DialogWrapper.IdeModalityType.PROJECT);
+        setModal(false);
+        setResizable(true);
+        setTitle("Jet Select");
+        setSize(900, 550);
+
         this.fullQuery = fullQuery;
-        this.tabsCte = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-        this.tabsUnion = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-        this.unionPanel = new JPanel(new BorderLayout());
-        this.ctePanel = new JPanel(new BorderLayout());
-        this.dialog = new QueryBuilderDialog(null, false);
 
         initListeners();
         loadCte();
-        queryComponents.forEach(queryComponent -> queryComponent.initListeners(dialog.getDisposable()));
+        queryComponents.forEach(queryComponent -> queryComponent.initListeners(getDisposable()));
     }
 
-    private class QueryBuilderDialog extends DialogWrapper {
+    @Override
+    protected JComponent createCenterPanel() {
+        tabsCte = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+        tabsUnion = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+        unionPanel = new JPanel(new BorderLayout());
+        ctePanel = new JPanel(new BorderLayout());
 
-        protected QueryBuilderDialog(Project project, boolean canBeParent) {
-            super(project, canBeParent, DialogWrapper.IdeModalityType.PROJECT);
-            setResizable(true);
-            setTitle("Jet Select");
-            setSize(900, 550);
-        }
+        tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
+        tabsCte.setPreferredSize(JBUI.size(55, 200));
+        tabsUnion.getPresentation().setTabsPosition(JBTabsPosition.right);
 
-        @Override
-        protected JComponent createCenterPanel() {
-            tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
-            tabsCte.setPreferredSize(JBUI.size(55, 200));
-            tabsUnion.getPresentation().setTabsPosition(JBTabsPosition.right);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
 
-            JPanel mainPanel = new JPanel();
-            mainPanel.setLayout(new BorderLayout());
+        JPanel panelCurrent = new JPanel();
+        panelCurrent.setLayout(new BorderLayout());
+        final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+        addQueryTabs(tabs);
+        panelCurrent.add(tabs, BorderLayout.CENTER);
 
-            JPanel panelCurrent = new JPanel();
-            panelCurrent.setLayout(new BorderLayout());
-            final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-            addQueryTabs(tabs);
-            panelCurrent.add(tabs, BorderLayout.CENTER);
+        unionPanel.add(getEmptyPanel(), BorderLayout.NORTH);
+        unionPanel.add(tabsUnion, BorderLayout.CENTER);
+        unionPanel.setPreferredSize(JBUI.size(55, 200));
+        panelCurrent.add(unionPanel, BorderLayout.EAST);
 
-            unionPanel.add(getEmptyPanel(), BorderLayout.NORTH);
-            unionPanel.add(tabsUnion, BorderLayout.CENTER);
-            unionPanel.setPreferredSize(JBUI.size(55, 200));
-            panelCurrent.add(unionPanel, BorderLayout.EAST);
+        mainPanel.add(panelCurrent, BorderLayout.CENTER);
 
-            mainPanel.add(panelCurrent, BorderLayout.CENTER);
-
-            ctePanel.add(getEmptyPanel(), BorderLayout.NORTH);
-            ctePanel.add(tabsCte, BorderLayout.CENTER);
+        ctePanel.add(getEmptyPanel(), BorderLayout.NORTH);
+        ctePanel.add(tabsCte, BorderLayout.CENTER);
 //                ctePanel.setPreferredSize(JBUI.size(55, 200));
 
-            mainPanel.add(ctePanel, BorderLayout.EAST);
-            return mainPanel;
-        }
+        mainPanel.add(ctePanel, BorderLayout.EAST);
+        return mainPanel;
+    }
 
-        private JPanel getEmptyPanel() {
-            JPanel emptyPanel = new JPanel();
-            emptyPanel.setBorder(JBUI.Borders.emptyTop(17));
-            return emptyPanel;
-        }
+    private JPanel getEmptyPanel() {
+        JPanel emptyPanel = new JPanel();
+        emptyPanel.setBorder(JBUI.Borders.emptyTop(17));
+        return emptyPanel;
+    }
 
-        @Override
-        protected void createDefaultActions() {
-            super.createDefaultActions();
-            init();
-        }
-
-        @Override
-        protected void doOKAction() {
-            if (Objects.nonNull(tabsCte.getSelectedInfo()) && Objects.nonNull(tabsUnion.getSelectedInfo())) {
-                Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery,
-                        tabsCte.getSelectedInfo().getText(), Integer.parseInt(tabsUnion.getSelectedInfo().getText())
-                );
-                Messages.getPublisher(SAVE_ALL_QUERY).onAction(fullQuery);
-            }
-            super.doOKAction();
-        }
+    @Override
+    protected void createDefaultActions() {
+        super.createDefaultActions();
+        init();
     }
 
     private void initListeners() {
@@ -169,6 +152,15 @@ public class MainPanel {
 
     private List<QueryComponent> queryComponents;
 
+    public void saveQueryPart() {
+        if (Objects.isNull(tabsCte.getSelectedInfo()) || Objects.isNull(tabsUnion.getSelectedInfo())) {
+            return;
+        }
+        org.quebee.com.util.Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery,
+                tabsCte.getSelectedInfo().getText(), Integer.parseInt(tabsUnion.getSelectedInfo().getText())
+        );
+    }
+
     private void addQueryTabs(JBTabsImpl tabs) {
         queryComponents = List.of(
                 new FromTables(),
@@ -181,9 +173,5 @@ public class MainPanel {
         queryComponents.forEach(queryTab ->
                 tabs.addTab(new TabInfo(queryTab.getComponent()).setText(queryTab.getHeader()))
         );
-    }
-
-    public void show() {
-        dialog.show();
     }
 }
