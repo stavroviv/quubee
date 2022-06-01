@@ -88,16 +88,16 @@ public class FromTables implements QueryComponent {
                 databaseRoot.nodeToList().forEach(node -> {
                     var userObject = (TableElement) x.getUserObject();
                     if (node.getUserObject().getName().equals(userObject.getName())) {
-                        Messages.getPublisher(SELECTED_TABLE_ADD).onAction(node);
+                        addSelectedTable(node);
                     }
                 })
         );
         union.getSelectedFieldsModel().getItems().forEach(x ->
-                databaseRoot.nodeToList().forEach(node -> {
-                    if (node.getUserObject().getName().equals(x.getPsTable().getName())) {
-                        node.nodeToList().forEach(nodeZ -> {
-                            if (nodeZ.getUserObject().getName().equals(x.getColumnName())) {
-                                Messages.getPublisher(SELECTED_FIELD_ADD).onAction(nodeZ);
+                databaseRoot.nodeToList().forEach(tableNode -> {
+                    if (tableNode.getUserObject().getName().equals(x.getPsTable().getName())) {
+                        tableNode.nodeToList().forEach(fieldNode -> {
+                            if (fieldNode.getUserObject().getName().equals(x.getColumnName())) {
+                                addSelectedField(fieldNode);
                             }
                         });
                     }
