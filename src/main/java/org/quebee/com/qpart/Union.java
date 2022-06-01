@@ -23,12 +23,12 @@ public class Union implements Orderable {
     private ListTableModel<TableElement> selectedFieldsModel = new ListTableModel<>();
 
     // joins
-    private ListTableModel<LinkElement> joinTableModel;
+    private ListTableModel<LinkElement> joinTableModel = new ListTableModel<>();
 
     // grouping
     private QBTreeNode groupingRoot;
-    private ListTableModel<TableElement> groupingTableModel;
-    private ListTableModel<TableElement> aggregateTableModel;
+    private ListTableModel<TableElement> groupingTableModel = new ListTableModel<>();
+    private ListTableModel<TableElement> aggregateTableModel = new ListTableModel<>();
 
     public Union(PlainSelect select, Integer order) {
         this.order = order;

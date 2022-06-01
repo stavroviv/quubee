@@ -3,6 +3,7 @@ package org.quebee.com.qpart;
 import lombok.SneakyThrows;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.quebee.com.model.LinkElement;
@@ -334,24 +335,24 @@ public class FullQuery {
 //        select.setSelectItems(sItems);
     }
 
-    private static void saveFromTables(PlainSelect selectBody, OneCte oneCte, String union) {
-//        Union union1 = oneCte.getUnionMap().get(union);
-//        if (!union1.getLinkTable().getItems().isEmpty()) {
-//            return;
-//        }
-//        List<Join> joins = new ArrayList<>();
-//        union1.getTablesView().getRoot().getChildren().forEach(x -> {
-//            String tableName = x.getValue().getName();
-//            if (selectBody.getFromItem() == null) {
-//                selectBody.setFromItem(new Table(tableName));
-//            } else {
-//                Join join = new Join();
-//                join.setRightItem(new Table(tableName));
-//                join.setSimple(true);
-//                joins.add(join);
-//            }
-//        });
-//        selectBody.setJoins(joins);
+    private static void saveFromTables(PlainSelect selectBody, OneCte oneCte, String unionName) {
+        var union = oneCte.getUnionMap().get(unionName);
+        if (!union.getJoinTableModel().getItems().isEmpty()) {
+            return;
+        }
+        var joins = new ArrayList<Join>();
+        union.getSelectedTablesRoot().nodeToList().forEach(x -> {
+            var tableName = x.getUserObject().getName();
+            if (selectBody.getFromItem() == null) {
+                selectBody.setFromItem(new Table(tableName));
+            } else {
+                var join = new Join();
+                join.setRightItem(new Table(tableName));
+                join.setSimple(true);
+                joins.add(join);
+            }
+        });
+        selectBody.setJoins(joins);
     }
 
     public void saveOrderBy(PlainSelect select, OneCte cte) {
