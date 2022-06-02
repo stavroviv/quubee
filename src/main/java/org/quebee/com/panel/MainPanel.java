@@ -6,7 +6,6 @@ import com.intellij.ui.tabs.JBTabsPosition;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.TabsListener;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
-import com.intellij.util.ui.JBUI;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import org.quebee.com.qpart.FullQuery;
@@ -26,8 +25,8 @@ public class MainPanel extends DialogWrapper {
 
     private JBTabsImpl tabsCte;
     private JBTabsImpl tabsUnion;
-    private JPanel unionPanel;
-    private JPanel ctePanel;
+    private Box unionPanel;
+    private Box ctePanel;
 
     @Getter
     private final FullQuery fullQuery;
@@ -50,41 +49,31 @@ public class MainPanel extends DialogWrapper {
     protected JComponent createCenterPanel() {
         tabsCte = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         tabsUnion = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-        unionPanel = new JPanel(new BorderLayout());
-        ctePanel = new JPanel(new BorderLayout());
+
+        unionPanel = Box.createVerticalBox();
+        unionPanel.add(Box.createVerticalStrut(25));
+        unionPanel.add(tabsUnion);
+
+        ctePanel = Box.createVerticalBox();
+        ctePanel.add(Box.createVerticalStrut(25));
+        ctePanel.add(tabsCte);
 
         tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
-        tabsCte.setPreferredSize(JBUI.size(55, 200));
+//        tabsCte.setPreferredSize(JBUI.size(55, 200));
         tabsUnion.getPresentation().setTabsPosition(JBTabsPosition.right);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
-
-        JPanel panelCurrent = new JPanel();
-        panelCurrent.setLayout(new BorderLayout());
-        final JBTabsImpl tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+        var tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         addQueryTabs(tabs);
-        panelCurrent.add(tabs, BorderLayout.CENTER);
 
-        unionPanel.add(getEmptyPanel(), BorderLayout.NORTH);
-        unionPanel.add(tabsUnion, BorderLayout.CENTER);
-        unionPanel.setPreferredSize(JBUI.size(55, 200));
-        panelCurrent.add(unionPanel, BorderLayout.EAST);
+        var horizontalBox = Box.createHorizontalBox();
+        horizontalBox.add(unionPanel);
+        horizontalBox.add(ctePanel);
 
-        mainPanel.add(panelCurrent, BorderLayout.CENTER);
-
-        ctePanel.add(getEmptyPanel(), BorderLayout.NORTH);
-        ctePanel.add(tabsCte, BorderLayout.CENTER);
-//                ctePanel.setPreferredSize(JBUI.size(55, 200));
-
-        mainPanel.add(ctePanel, BorderLayout.EAST);
+        var mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.add(tabs, BorderLayout.CENTER);
+        mainPanel.add(horizontalBox, BorderLayout.EAST);
         return mainPanel;
-    }
-
-    private JPanel getEmptyPanel() {
-        JPanel emptyPanel = new JPanel();
-        emptyPanel.setBorder(JBUI.Borders.emptyTop(17));
-        return emptyPanel;
     }
 
     @Override
@@ -136,7 +125,7 @@ public class MainPanel extends DialogWrapper {
         fullQuery.getCteNames().forEach(x ->
                 tabsCte.addTab(new TabInfo(new JPanel())).setText(x).setIcon(DatabaseIcons.Package)
         );
-        tabsCte.setVisible(tabsCte.getTabCount() > 1);
+        ctePanel.setVisible(tabsCte.getTabCount() > 1);
         loadUnions(fullQuery.getFirstCte());
         dataIsLoading = false;
     }
