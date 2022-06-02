@@ -60,8 +60,6 @@ public class MainPanel extends DialogWrapper {
         unionPanel.add(Box.createVerticalStrut(25));
         unionPanel.add(tabsUnion);
 
-//        tabsCte.setPreferredSize(JBUI.size(55, 200));
-
         var tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         addQueryTabs(tabs);
 
