@@ -158,8 +158,8 @@ public class UnionAliasesPanel implements QueryComponent {
         }
 
         clearAndAddUnionColumns(cte);
-
-        for (var i = 0; i < cte.getUnionMap().keySet().size(); i++) {
+        var firstUnion = cte.getUnion("0");
+        for (var i = 0; i < firstUnion.getSelectedFieldsModel().getRowCount(); i++) {
             var aliasElement = new AliasElement();
             int j = 0;
             for (var s : cte.getUnionMap().keySet()) {
