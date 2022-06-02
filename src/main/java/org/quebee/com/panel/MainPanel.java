@@ -48,19 +48,19 @@ public class MainPanel extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
         tabsCte = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-        tabsUnion = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-
-        unionPanel = Box.createVerticalBox();
-        unionPanel.add(Box.createVerticalStrut(25));
-        unionPanel.add(tabsUnion);
+        tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
 
         ctePanel = Box.createVerticalBox();
         ctePanel.add(Box.createVerticalStrut(25));
         ctePanel.add(tabsCte);
 
-        tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
-//        tabsCte.setPreferredSize(JBUI.size(55, 200));
+        tabsUnion = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         tabsUnion.getPresentation().setTabsPosition(JBTabsPosition.right);
+        unionPanel = Box.createVerticalBox();
+        unionPanel.add(Box.createVerticalStrut(25));
+        unionPanel.add(tabsUnion);
+
+//        tabsCte.setPreferredSize(JBUI.size(55, 200));
 
         var tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         addQueryTabs(tabs);
