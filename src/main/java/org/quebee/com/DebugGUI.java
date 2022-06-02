@@ -15,6 +15,7 @@ import org.quebee.com.qpart.FullQuery;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.quebee.com.notifier.LoadQueryCteDataNotifier.LOAD_QUERY_CTE_DATA;
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 
@@ -73,7 +74,7 @@ public class DebugGUI implements StartupActivity {
         var messageBus = ApplicationManager.getApplication().getMessageBus();
         messageBus.syncPublisher(RELOAD_TABLES_TOPIC).onAction(dbStructure);
         messageBus.syncPublisher(LOAD_QUERY_DATA).onAction(fullQuery, fullQuery.getFirstCte(), 0);
-
+        messageBus.syncPublisher(LOAD_QUERY_CTE_DATA).onAction(fullQuery, fullQuery.getFirstCte());
         form.show();
     }
 

@@ -1,7 +1,7 @@
 package org.quebee.com;
 
 import com.intellij.database.console.JdbcConsole;
-import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.database.run.actions.AlignedIconWithTextAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
@@ -18,10 +18,11 @@ import org.quebee.com.util.Messages;
 
 import java.util.Objects;
 
+import static org.quebee.com.notifier.LoadQueryCteDataNotifier.LOAD_QUERY_CTE_DATA;
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
 import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 
-public class MainAction extends AnAction {
+public class MainAction extends AlignedIconWithTextAction {
 
     private AnActionEvent action;
 
@@ -44,6 +45,7 @@ public class MainAction extends AnAction {
         var messageBus = ApplicationManager.getApplication().getMessageBus();
         setDatabaseTables(action);
         messageBus.syncPublisher(LOAD_QUERY_DATA).onAction(fullQuery, fullQuery.getFirstCte(), 0);
+        messageBus.syncPublisher(LOAD_QUERY_CTE_DATA).onAction(fullQuery, fullQuery.getFirstCte());
 
         form.show();
     }

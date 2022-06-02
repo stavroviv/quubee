@@ -9,6 +9,7 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -29,16 +30,12 @@ public class TableElement {
     private boolean table;
     private boolean column;
 
+    private boolean distinct;
+
     public TableElement(String name) {
         this.name = name;
         this.id = UUID.randomUUID();
     }
-
-//    @SuppressWarnings("unused")
-//    public TableElement(TableElement element) {
-//        this.name = element.getName();
-//        this.id = element.getId();
-//    }
 
     public TableElement(String name, UUID parentId) {
         this(name);
@@ -47,6 +44,10 @@ public class TableElement {
 
     private Table psTable;
     private String columnName;
+
+    public String getNameOrAlias() {
+        return Objects.isNull(alias) ? columnName : alias;
+    }
 
     public TableElement(Table table, String columnName) {
         this.psTable = table;

@@ -17,7 +17,9 @@ import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 
+import static org.quebee.com.notifier.LoadQueryCteDataNotifier.LOAD_QUERY_CTE_DATA;
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
+import static org.quebee.com.notifier.SaveQueryCteDataNotifier.SAVE_QUERY_CTE_DATA;
 import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 
 public class MainPanel extends DialogWrapper {
@@ -100,9 +102,11 @@ public class MainPanel extends DialogWrapper {
                 }
                 if (Objects.nonNull(oldSelection)) {
                     Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery, oldSelection.getText(), 0);
+                    Messages.getPublisher(SAVE_QUERY_CTE_DATA).onAction(fullQuery, oldSelection.getText());
                 }
                 loadUnions(newSelection.getText());
                 Messages.getPublisher(LOAD_QUERY_DATA).onAction(fullQuery, newSelection.getText(), 0);
+                Messages.getPublisher(LOAD_QUERY_CTE_DATA).onAction(fullQuery, newSelection.getText());
             }
         });
         tabsUnion.addListener(new TabsListener() {

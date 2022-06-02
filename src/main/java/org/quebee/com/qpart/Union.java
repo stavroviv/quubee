@@ -41,10 +41,15 @@ public class Union implements Orderable {
             if (!(selectItem instanceof SelectExpressionItem)) {
                 continue;
             }
-            var expression = ((SelectExpressionItem) selectItem).getExpression();
+            var selectExpressionItem = (SelectExpressionItem) selectItem;
+            var expression = selectExpressionItem.getExpression();
             if (expression instanceof Column) {
-                Column column = (Column) expression;
-                selectedFieldsModel.addRow(new TableElement(column.getTable(), column.getColumnName()));
+                var column = (Column) expression;
+                var item = new TableElement(column.getTable(), column.getColumnName());
+                if (Objects.nonNull(selectExpressionItem.getAlias())) {
+                    item.setAlias(selectExpressionItem.getAlias().getName());
+                }
+                selectedFieldsModel.addRow(item);
             }
         }
     }
