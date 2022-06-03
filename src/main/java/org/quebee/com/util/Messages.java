@@ -5,7 +5,7 @@ import com.intellij.util.messages.Topic;
 
 public class Messages {
 
-    public static  <L> L getPublisher(Topic<L> topic) {
+    public static <L> L getPublisher(Topic<L> topic) {
         var messageBus = ApplicationManager.getApplication().getMessageBus();
         return messageBus.syncPublisher(topic);
     }

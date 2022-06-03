@@ -342,7 +342,7 @@ public class FromTables implements QueryComponent {
             table.setTable(true);
             var child = new QBTreeNode(table);
             databaseRoot.add(child);
-            for (String columnName : stringListEntry.getValue()) {
+            for (var columnName : stringListEntry.getValue()) {
                 var column = new TableElement(columnName);
                 column.setColumn(true);
                 child.add(new QBTreeNode(column));
