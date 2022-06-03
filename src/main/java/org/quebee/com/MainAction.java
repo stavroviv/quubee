@@ -14,15 +14,14 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.PostgresStructureImpl;
+import org.quebee.com.notifier.LoadQueryCteDataNotifier;
+import org.quebee.com.notifier.LoadQueryDataNotifier;
 import org.quebee.com.notifier.ReloadDbTablesNotifier;
 import org.quebee.com.panel.MainPanel;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.Messages;
 
 import java.util.Objects;
-
-import static org.quebee.com.notifier.LoadQueryCteDataNotifier.LOAD_QUERY_CTE_DATA;
-import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
 
 public class MainAction extends AlignedIconWithTextAction {
 
@@ -49,10 +48,9 @@ public class MainAction extends AlignedIconWithTextAction {
             }
         };
 
-        var messageBus = ApplicationManager.getApplication().getMessageBus();
         setDatabaseTables(action, form);
-        messageBus.syncPublisher(LOAD_QUERY_DATA).onAction(fullQuery, fullQuery.getFirstCte(), 0);
-        messageBus.syncPublisher(LOAD_QUERY_CTE_DATA).onAction(fullQuery, fullQuery.getFirstCte());
+        Messages.getPublisher(form.getId(), LoadQueryDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte(), 0);
+        Messages.getPublisher(form.getId(), LoadQueryCteDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte());
 
         form.show();
     }
@@ -97,6 +95,6 @@ public class MainAction extends AlignedIconWithTextAction {
         var console = JdbcConsole.findConsole(action);
         var structure = new PostgresStructureImpl();
         var dbStructure = structure.getDBStructure(console);
-        Messages.getPublisher(form.getId(), "RELOAD_TABLES_TOPIC", ReloadDbTablesNotifier.class).onAction(dbStructure);
+        Messages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
     }
 }

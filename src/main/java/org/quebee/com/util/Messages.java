@@ -9,31 +9,31 @@ import java.util.UUID;
 
 public class Messages {
 
-    public static <L> L getPublisher(Topic<L> topic) {
+//    public static <L> L getPublisher(Topic<L> topic) {
+//        var messageBus = ApplicationManager.getApplication().getMessageBus();
+//        return messageBus.syncPublisher(topic);
+//    }
+
+    static Map<UUID, Map<Class<?>, Topic<?>>> topics = new HashMap<>();
+
+    public static <L> L getPublisher(UUID id, Class<L> listenerClass) {
         var messageBus = ApplicationManager.getApplication().getMessageBus();
-        return messageBus.syncPublisher(topic);
+        return messageBus.syncPublisher(getTopic(id, listenerClass));
     }
 
-    static Map<UUID, Map<String, Topic<?>>> topics = new HashMap<>();
-
-    public static <L> L getPublisher(UUID id, String topic, Class<L> listenerClass) {
-        var messageBus = ApplicationManager.getApplication().getMessageBus();
-        return messageBus.syncPublisher(getTopic(id, topic, listenerClass));
-    }
-
-    public static <L> Topic<L> getTopic(UUID id, String topicName, Class<L> listenerClass) {
-        Map<String, Topic<?>> stringTopicMap = topics.get(id);
+    public static <L> Topic<L> getTopic(UUID id, Class<L> listenerClass) {
+        Map<Class<?>, Topic<?>> stringTopicMap = topics.get(id);
         Topic<L> topic;
         if (stringTopicMap == null) {
-            Map<String, Topic<?>> value = new HashMap<>();
-            topic = Topic.create(topicName, listenerClass);
-            value.put(topicName, topic);
+            Map<Class<?>, Topic<?>> value = new HashMap<>();
+            topic = Topic.create("jet select topic " + listenerClass.getName(), listenerClass);
+            value.put(listenerClass, topic);
             topics.put(id, value);
         } else {
-            topic = (Topic<L>) stringTopicMap.get(topicName);
+            topic = (Topic<L>) stringTopicMap.get(listenerClass);
             if (topic == null) {
-                topic = Topic.create(topicName, listenerClass);
-                stringTopicMap.put(topicName, topic);
+                topic = Topic.create("jet select topic " + listenerClass.getName(), listenerClass);
+                stringTopicMap.put(listenerClass, topic);
             }
         }
         return topic;

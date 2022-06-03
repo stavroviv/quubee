@@ -8,6 +8,10 @@ import com.intellij.ui.tabs.TabsListener;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import icons.DatabaseIcons;
 import lombok.Getter;
+import org.quebee.com.notifier.LoadQueryCteDataNotifier;
+import org.quebee.com.notifier.LoadQueryDataNotifier;
+import org.quebee.com.notifier.SaveQueryCteDataNotifier;
+import org.quebee.com.notifier.SaveQueryDataNotifier;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.Messages;
 
@@ -16,11 +20,6 @@ import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
-import static org.quebee.com.notifier.LoadQueryCteDataNotifier.LOAD_QUERY_CTE_DATA;
-import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
-import static org.quebee.com.notifier.SaveQueryCteDataNotifier.SAVE_QUERY_CTE_DATA;
-import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 
 public class MainPanel extends DialogWrapper {
 
@@ -96,12 +95,12 @@ public class MainPanel extends DialogWrapper {
                     return;
                 }
                 if (Objects.nonNull(oldSelection)) {
-                    Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery, oldSelection.getText(), 0);
-                    Messages.getPublisher(SAVE_QUERY_CTE_DATA).onAction(fullQuery, oldSelection.getText());
+                    Messages.getPublisher(id, SaveQueryDataNotifier.class).onAction(fullQuery, oldSelection.getText(), 0);
+                    Messages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, oldSelection.getText());
                 }
                 loadUnions(newSelection.getText());
-                Messages.getPublisher(LOAD_QUERY_DATA).onAction(fullQuery, newSelection.getText(), 0);
-                Messages.getPublisher(LOAD_QUERY_CTE_DATA).onAction(fullQuery, newSelection.getText());
+                Messages.getPublisher(id, LoadQueryDataNotifier.class).onAction(fullQuery, newSelection.getText(), 0);
+                Messages.getPublisher(id, LoadQueryCteDataNotifier.class).onAction(fullQuery, newSelection.getText());
             }
         });
         tabsUnion.addListener(new TabsListener() {
@@ -115,11 +114,11 @@ public class MainPanel extends DialogWrapper {
                     return;
                 }
                 if (Objects.nonNull(oldSelection)) {
-                    Messages.getPublisher(SAVE_QUERY_DATA).onAction(
+                    Messages.getPublisher(id, SaveQueryDataNotifier.class).onAction(
                             fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(oldSelection)
                     );
                 }
-                Messages.getPublisher(LOAD_QUERY_DATA).onAction(
+                Messages.getPublisher(id, LoadQueryDataNotifier.class).onAction(
                         fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(newSelection)
                 );
             }
@@ -155,10 +154,10 @@ public class MainPanel extends DialogWrapper {
         if (Objects.isNull(tabsCte.getSelectedInfo()) || Objects.isNull(tabsUnion.getSelectedInfo())) {
             return;
         }
-        Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery,
+        Messages.getPublisher(id, SaveQueryDataNotifier.class).onAction(fullQuery,
                 tabsCte.getSelectedInfo().getText(), Integer.parseInt(tabsUnion.getSelectedInfo().getText())
         );
-        Messages.getPublisher(SAVE_QUERY_CTE_DATA).onAction(fullQuery, tabsCte.getSelectedInfo().getText());
+        Messages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, tabsCte.getSelectedInfo().getText());
     }
 
     private void addQueryTabs(JBTabsImpl tabs) {

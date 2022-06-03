@@ -12,6 +12,7 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.IconUtil;
+import com.intellij.util.messages.Topic;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
@@ -22,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
-import org.quebee.com.notifier.ReloadDbTablesNotifier;
+import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.Messages;
@@ -33,12 +34,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
 
-import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
-import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
-import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
-import static org.quebee.com.notifier.SelectedTableAddNotifier.SELECTED_TABLE_ADD;
-import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
-import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
 import static org.quebee.com.util.Messages.getTopic;
 
 @Getter
@@ -67,13 +62,18 @@ public class FromTables implements QueryComponent {
 
     @Override
     public void initListeners(Disposable disposable) {
+        extracted(disposable, ReloadDbTablesNotifier.class, this::setDatabaseTables);
+        extracted(disposable, SelectedTableAddNotifier.class, this::addSelectedTable);
+        extracted(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        extracted(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
+        extracted(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
+        extracted(disposable, LoadQueryDataNotifier.class, this::loadQueryData);
+    }
+
+    private <L> void extracted(Disposable disposable, Class<L> listenerClass, L handler) {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        bus.connect(disposable).subscribe(getTopic(mainPanel.getId(), "RELOAD_TABLES_TOPIC", ReloadDbTablesNotifier.class), this::setDatabaseTables);
-        bus.connect(disposable).subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
-        bus.connect(disposable).subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
-        bus.connect(disposable).subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
-        bus.connect(disposable).subscribe(SAVE_QUERY_DATA, this::saveQueryData);
-        bus.connect(disposable).subscribe(LOAD_QUERY_DATA, this::loadQueryData);
+        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
+        bus.connect(disposable).subscribe(topic, handler);
     }
 
     private void saveQueryData(FullQuery fullQuery, String cteName, int id) {
@@ -95,7 +95,7 @@ public class FromTables implements QueryComponent {
                 databaseRoot.nodeToList().forEach(node -> {
                     var userObject = (TableElement) x.getUserObject();
                     if (node.getUserObject().getName().equals(userObject.getName())) {
-                        Messages.getPublisher(SELECTED_TABLE_ADD).onAction(node);
+                        Messages.getPublisher(mainPanel.getId(), SelectedTableAddNotifier.class).onAction(node);
                     }
                 })
         );
@@ -104,7 +104,7 @@ public class FromTables implements QueryComponent {
                     if (tableNode.getUserObject().getName().equals(x.getPsTable().getName())) {
                         tableNode.nodeToList().forEach(fieldNode -> {
                             if (fieldNode.getUserObject().getName().equals(x.getColumnName())) {
-                                Messages.getPublisher(SELECTED_FIELD_ADD).onAction(fieldNode);
+                                Messages.getPublisher(mainPanel.getId(), SelectedFieldAddNotifier.class).onAction(fieldNode);
                             }
                         });
                     }
@@ -155,7 +155,7 @@ public class FromTables implements QueryComponent {
         if (!exists) {
             addSelectedTableNode(parent);
         }
-        Messages.getPublisher(SELECTED_FIELD_ADD).onAction(node);
+        Messages.getPublisher(mainPanel.getId(), SelectedFieldAddNotifier.class).onAction(node);
     }
 
     private void addSelectedField(QBTreeNode node) {
@@ -190,7 +190,7 @@ public class FromTables implements QueryComponent {
         } else {
             selectedTablesModel.nodesWereInserted(selectedTablesRoot, new int[]{selectedTablesRoot.getChildCount() - 1});
         }
-        Messages.getPublisher(SELECTED_TABLE_AFTER_ADD).onAction(newTableNode);
+        Messages.getPublisher(mainPanel.getId(), SelectedTableAfterAddNotifier.class).onAction(newTableNode);
     }
 
     private QBTreeNode selectedTablesRoot;
@@ -222,7 +222,7 @@ public class FromTables implements QueryComponent {
 //            selectedTablesModel.reload();
 //        });
 
-        decorator.setRemoveAction(button -> Messages.getPublisher(SELECTED_TABLE_REMOVE)
+        decorator.setRemoveAction(button -> Messages.getPublisher(mainPanel.getId(), SelectedTableRemoveNotifier.class)
                 .onAction((QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0)));
 
         var panel = decorator.createPanel();
@@ -246,7 +246,7 @@ public class FromTables implements QueryComponent {
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
                 }
-                Messages.getPublisher(SELECTED_FIELD_ADD).onAction(value);
+                Messages.getPublisher(mainPanel.getId(), SelectedFieldAddNotifier.class).onAction(value);
             }
         });
         return panel;
@@ -333,7 +333,7 @@ public class FromTables implements QueryComponent {
                 if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1 || mouseEvent.getX() < 40) {
                     return;
                 }
-                Messages.getPublisher(SELECTED_TABLE_ADD)
+                Messages.getPublisher(mainPanel.getId(), SelectedTableAddNotifier.class)
                         .onAction((QBTreeNode) treeTable.getValueAt(table.getSelectedRow(), 0));
             }
         };
