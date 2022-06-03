@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.notifier.ReloadDbTablesNotifier;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.Messages;
@@ -33,12 +34,12 @@ import java.awt.event.MouseEvent;
 import java.util.Objects;
 
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
-import static org.quebee.com.notifier.ReloadDbTablesNotifier.RELOAD_TABLES_TOPIC;
 import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
 import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
 import static org.quebee.com.notifier.SelectedTableAddNotifier.SELECTED_TABLE_ADD;
 import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
 import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
+import static org.quebee.com.util.Messages.getTopic;
 
 @Getter
 public class FromTables implements QueryComponent {
@@ -47,8 +48,9 @@ public class FromTables implements QueryComponent {
 
     private QBTreeNode databaseRoot;
     private ListTreeTableModel databaseModel;
+    private MainPanel mainPanel;
 
-    public FromTables() {
+    public FromTables(MainPanel mainPanel) {
         var splitterLeft = new JBSplitter();
         splitterLeft.setProportion(0.3f);
 
@@ -60,12 +62,13 @@ public class FromTables implements QueryComponent {
         splitterLeft.setSecondComponent(splitterRight);
 
         this.component = splitterLeft;
+        this.mainPanel = mainPanel;
     }
 
     @Override
     public void initListeners(Disposable disposable) {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        bus.connect(disposable).subscribe(RELOAD_TABLES_TOPIC, this::setDatabaseTables);
+        bus.connect(disposable).subscribe(getTopic(mainPanel.getId(), "RELOAD_TABLES_TOPIC", ReloadDbTablesNotifier.class), this::setDatabaseTables);
         bus.connect(disposable).subscribe(SELECTED_TABLE_ADD, this::addSelectedTable);
         bus.connect(disposable).subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
         bus.connect(disposable).subscribe(SELECTED_FIELD_ADD, this::addSelectedField);

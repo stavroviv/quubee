@@ -15,6 +15,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.quebee.com.notifier.LoadQueryCteDataNotifier.LOAD_QUERY_CTE_DATA;
 import static org.quebee.com.notifier.LoadQueryDataNotifier.LOAD_QUERY_DATA;
@@ -27,9 +28,16 @@ public class MainPanel extends DialogWrapper {
     private JBTabsImpl tabsUnion;
     private Box unionPanel;
     private Box ctePanel;
-
+    @Getter
+    private final UUID id = UUID.randomUUID();
     @Getter
     private final FullQuery fullQuery;
+
+    @Override
+    protected void dispose() {
+        Messages.removeTopics(id);
+        super.dispose();
+    }
 
     public MainPanel(FullQuery fullQuery) {
         super(null, false, DialogWrapper.IdeModalityType.PROJECT);
@@ -155,7 +163,7 @@ public class MainPanel extends DialogWrapper {
 
     private void addQueryTabs(JBTabsImpl tabs) {
         queryComponents = List.of(
-                new FromTables(),
+                new FromTables(this),
                 new JoinsPanel(),
                 new GroupingPanel(),
                 new ConditionsPanel(),

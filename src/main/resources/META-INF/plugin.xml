@@ -8,9 +8,7 @@
     <depends>com.intellij.modules.database</depends>
     <depends>com.intellij.modules.ultimate</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="org.quebee.com.DebugGUI"/>
-    </extensions>
+
 
     <actions>
         <action id="com.querybuilder.MainAction"
