@@ -21,4 +21,9 @@ public class ComponentUtils {
         clearTable(destination);
         destination.addRows(source.getItems());
     }
+
+    public static void loadTreeToTree(QBTreeNode source, QBTreeNode destination) {
+        clearTree(destination);
+        source.nodeToList().forEach(destination::add);
+    }
 }

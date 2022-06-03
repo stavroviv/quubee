@@ -159,11 +159,16 @@ public class MainPanel extends DialogWrapper {
                 new JoinsPanel(),
                 new GroupingPanel(),
                 new ConditionsPanel(),
-                new UnionAliasesPanel(),
+                new UnionAliasesPanel(this),
                 new OrderPanel()
         );
         queryComponents.forEach(queryTab ->
                 tabs.addTab(new TabInfo(queryTab.getComponent()).setText(queryTab.getHeader()))
         );
+    }
+
+    public String currentUnion() {
+        TabInfo tabInfo = tabsUnion.getSelectedInfo();
+        return "Union " + (Objects.isNull(tabInfo) ? "0" : tabInfo.getText());
     }
 }

@@ -55,8 +55,8 @@ public class GroupingPanel implements QueryComponent {
     }
 
     private void addSelectedField(QBTreeNode node) {
-        var parent = (TableElement) node.getParent().getUserObject();
-        var userObject = (TableElement) node.getUserObject();
+        var parent =  node.getParent().getUserObject();
+        var userObject = node.getUserObject();
         var tableElement = new TableElement(parent.getName() + "." + userObject.getName(), parent.getId());
         tableElement.setColumn(true);
         groupingRoot.insert(new QBTreeNode(tableElement), groupingRoot.getChildCount() - 1);

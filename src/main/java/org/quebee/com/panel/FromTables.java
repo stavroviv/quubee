@@ -73,7 +73,10 @@ public class FromTables implements QueryComponent {
         bus.connect(disposable).subscribe(LOAD_QUERY_DATA, this::loadQueryData);
     }
 
-    private void saveQueryData(FullQuery fullQuery, String s, int id) {
+    private void saveQueryData(FullQuery fullQuery, String cteName, int id) {
+        var union = fullQuery.getCte(cteName).getUnion("" + id);
+        ComponentUtils.loadTableToTable(selectedFieldsModel, union.getSelectedFieldsModel());
+        ComponentUtils.loadTreeToTree(selectedTablesRoot, union.getSelectedTablesRoot());
         ComponentUtils.clearTree(selectedTablesRoot);
         ComponentUtils.clearTable(selectedFieldsModel);
     }

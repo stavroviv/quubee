@@ -11,6 +11,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.AliasElement;
+import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.qpart.OneCte;
@@ -22,14 +23,17 @@ import java.util.Objects;
 
 import static org.quebee.com.notifier.LoadQueryCteDataNotifier.LOAD_QUERY_CTE_DATA;
 import static org.quebee.com.notifier.SaveQueryCteDataNotifier.SAVE_QUERY_CTE_DATA;
+import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
 
 @Getter
 public class UnionAliasesPanel implements QueryComponent {
     private final String header = "Union/Aliases";
     private final JComponent component;
+    private final MainPanel mainPanel;
 
-    public UnionAliasesPanel() {
+    public UnionAliasesPanel(MainPanel mainPanel) {
         this.component = createComponent();
+        this.mainPanel = mainPanel;
     }
 
     private JComponent createComponent() {
@@ -145,6 +149,16 @@ public class UnionAliasesPanel implements QueryComponent {
         var bus = ApplicationManager.getApplication().getMessageBus();
         bus.connect(disposable).subscribe(LOAD_QUERY_CTE_DATA, this::loadQueryData);
         bus.connect(disposable).subscribe(SAVE_QUERY_CTE_DATA, this::saveQueryData);
+        bus.connect(disposable).subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
+    }
+
+    private void addSelectedField(QBTreeNode node) {
+        var parent = node.getParent().getUserObject();
+        var userObject = node.getUserObject();
+        var item = new AliasElement();
+        item.setAliasName(userObject.getName());
+        item.putAlias(mainPanel.currentUnion(), parent.getName() + "." + userObject.getName());
+        aliasTableModel.addRow(item);
     }
 
     private void saveQueryData(FullQuery query, String cteName) {
