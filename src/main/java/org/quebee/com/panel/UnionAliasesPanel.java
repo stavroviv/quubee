@@ -33,7 +33,7 @@ public class UnionAliasesPanel implements QueryComponent {
     }
 
     private JComponent createComponent() {
-        JBSplitter component = new JBSplitter();
+        var component = new JBSplitter();
         component.setProportion(0.3f);
         component.setFirstComponent(getUnionTablePanel());
         component.setSecondComponent(getAliasTablePanel());
@@ -115,15 +115,17 @@ public class UnionAliasesPanel implements QueryComponent {
 
         var unionTable = new TableView<>(unionTableModel);
         var decorator = ToolbarDecorator.createDecorator(unionTable);
-        decorator.setAddAction(button -> addNewUnion());
+        decorator.setAddAction(button -> addNewUnion(true));
         return decorator.createPanel();
     }
 
     private int curMaxUnion;
 
-    private void addNewUnion() {
-        var item = new TableElement("Union " + curMaxUnion);
-        unionTableModel.addRow(item);
+    private void addNewUnion(boolean uiAdd) {
+        if (uiAdd) {
+            var item = new TableElement("Union " + curMaxUnion);
+            unionTableModel.addRow(item);
+        }
         var columnInfos = aliasTableModel.getColumnInfos();
         var newColumnInfo = Arrays.copyOf(columnInfos, columnInfos.length + 1);
         var aliasNameInfo = new ColumnInfo<AliasElement, String>("Union " + curMaxUnion) {
@@ -159,9 +161,8 @@ public class UnionAliasesPanel implements QueryComponent {
             return;
         }
         clearAndAddUnionColumns(cte);
-        for (AliasElement item : cte.getAliasTable().getItems()) {
-            aliasTableModel.addRow(new AliasElement(item));
-        }
+        ComponentUtils.loadTableToTable(cte.getAliasTable(), aliasTableModel);
+        ComponentUtils.loadTableToTable(cte.getUnionTable(), unionTableModel);
     }
 
     private void clearAndAddUnionColumns(OneCte cte) {
@@ -169,7 +170,7 @@ public class UnionAliasesPanel implements QueryComponent {
         var newColumnInfo = Arrays.copyOf(columnInfos, 1);
         aliasTableModel.setColumnInfos(newColumnInfo);
         for (var i = 0; i < cte.getUnionMap().keySet().size(); i++) {
-            addNewUnion();
+            addNewUnion(false);
         }
     }
 }

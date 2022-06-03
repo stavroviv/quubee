@@ -19,8 +19,6 @@ public class ComponentUtils {
 
     public static <T> void loadTableToTable(ListTableModel<T> source, ListTableModel<T> destination) {
         clearTable(destination);
-        for (T item : source.getItems()) {
-            destination.addRow(item);
-        }
+        destination.addRows(source.getItems());
     }
 }

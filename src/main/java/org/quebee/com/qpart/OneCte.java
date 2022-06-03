@@ -3,12 +3,12 @@ package org.quebee.com.qpart;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
 import lombok.Setter;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.*;
 import org.quebee.com.model.AliasElement;
+import org.quebee.com.model.TableElement;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -20,8 +20,8 @@ public class OneCte implements Orderable {
 //    private Map<String, TableColumn<AliasRow, String>> unionColumns = new HashMap<>();
 
     private ListTableModel<AliasElement> aliasTable = new ListTableModel<>();
-    //    private TableView<TableRow> unionTable = new TableView<>();
-//
+    private ListTableModel<TableElement> unionTable = new ListTableModel<>();
+    //
 //    private TreeTableView<TableRow> orderFieldsTree = new TreeTableView<>();
 //    private TableView<TableRow> orderTableResults = new TableView<>();
     private int curMaxUnion;
@@ -33,6 +33,8 @@ public class OneCte implements Orderable {
     public OneCte(String cteName, SelectBody selectBody, Integer order) {
         this.cteName = cteName;
         this.order = order;
+
+        unionTable.addRow(new TableElement("Union " + 0));
         if (selectBody instanceof SetOperationList) {
             var body = (SetOperationList) selectBody;
             var i = 0;
@@ -40,17 +42,28 @@ public class OneCte implements Orderable {
                 unionMap.put("" + i, new Union((PlainSelect) select, i));
                 i++;
             }
+            loadUnionTable(body.getOperations());
         } else {
             unionMap.put("0", new Union((PlainSelect) selectBody, 0));
         }
         loadAliasTable();
     }
 
+    private void loadUnionTable(List<SetOperation> operations) {
+        var i = 1;
+        for (SetOperation operation : operations) {
+            var item = new TableElement("Union " + i);
+            item.setDistinct(!((UnionOp) operation).isAll());
+            unionTable.addRow(item);
+            i++;
+        }
+    }
+
     private void loadAliasTable() {
         var firstUnion = getUnion("0");
         for (var i = 0; i < firstUnion.getSelectedFieldsModel().getRowCount(); i++) {
             var aliasElement = new AliasElement();
-            int j = 0;
+            var j = 0;
             for (var s : getUnionMap().keySet()) {
                 var value = getUnion(s);
                 var item = value.getSelectedFieldsModel().getItem(i);
