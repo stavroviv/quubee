@@ -3,7 +3,10 @@ package org.quebee.com.qpart;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
 import lombok.Setter;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SetOperation;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.UnionOp;
 import org.quebee.com.model.AliasElement;
 import org.quebee.com.model.TableElement;
 
@@ -39,12 +42,12 @@ public class OneCte implements Orderable {
             var body = (SetOperationList) selectBody;
             var i = 0;
             for (var select : body.getSelects()) {
-                unionMap.put("" + i, new Union((PlainSelect) select, i));
+                unionMap.put("" + i, new Union(select, i));
                 i++;
             }
             loadUnionTable(body.getOperations());
         } else {
-            unionMap.put("0", new Union((PlainSelect) selectBody, 0));
+            unionMap.put("0", new Union(selectBody, 0));
         }
         loadAliasTable();
     }

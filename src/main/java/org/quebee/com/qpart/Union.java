@@ -6,6 +6,7 @@ import lombok.Setter;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.QBTreeNode;
@@ -30,8 +31,12 @@ public class Union implements Orderable {
     private ListTableModel<TableElement> groupingTableModel = new ListTableModel<>();
     private ListTableModel<TableElement> aggregateTableModel = new ListTableModel<>();
 
-    public Union(PlainSelect select, Integer order) {
+    public Union(SelectBody selectBody, Integer order) {
         this.order = order;
+        if (Objects.isNull(selectBody)) {
+            return;
+        }
+        var select = (PlainSelect) selectBody;
         fillFromTablesModels(select);
         fillSelectedFieldsModels(select);
     }

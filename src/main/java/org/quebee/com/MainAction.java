@@ -10,6 +10,8 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import lombok.SneakyThrows;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.Select;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.PostgresStructureImpl;
 import org.quebee.com.panel.MainPanel;
@@ -32,7 +34,12 @@ public class MainAction extends AlignedIconWithTextAction {
         this.action = action;
         var selectionText = getSelectionText(action);
 
-        var fullQuery = new FullQuery(CCJSqlParserUtil.parse(selectionText));
+        Statement parse = new Select();
+        if (!selectionText.isBlank()) {
+            parse = CCJSqlParserUtil.parse(selectionText);
+        }
+
+        var fullQuery = new FullQuery(parse);
         var form = new MainPanel(fullQuery) {
             @Override
             protected void doOKAction() {
