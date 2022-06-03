@@ -1,8 +1,11 @@
 package org.quebee.com.qpart;
 
 import lombok.SneakyThrows;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
@@ -297,42 +300,38 @@ public class FullQuery {
     }
 
     private static void saveAliases(PlainSelect select, OneCte cte, String union, boolean first) {
-//        List<SelectItem> sItems = new ArrayList<>();
-//
-//        for (AliasRow item : cte.getAliasTable().getItems()) {
-//            String name = item.getValues().get(union);
-//            if (name.equals(EMPTY_UNION_VALUE)) {
-//                name = "NULL";
-//            }
-//
-//            Expression expression = null;
-//            try {
-//                expression = new CCJSqlParser(name).Expression();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//            if (expression == null) {
-//                throw new RuntimeException("Empty expression for " + name);
-//            }
-//
-//            SelectExpressionItem sItem = new SelectExpressionItem();
-//            sItem.setExpression(expression);
-//
-//            Expression expression1 = sItem.getExpression();
-//            boolean equals = true;
-//            if (expression1 instanceof Column) {
-//                Column column = (Column) expression1;
-//                equals = !column.getColumnName().equals(item.getAlias());
-//            }
-//
-//            if (first && equals) {
-//                sItem.setAlias(new Alias(item.getAlias()));
-//            }
+        var sItems = new ArrayList<SelectItem>();
+
+        for (var item : cte.getAliasTable().getItems()) {
+            var name = item.getAlias().get("Union " + union);
+            if (Objects.isNull(name) || name.equals(EMPTY_UNION_VALUE)) {
+                name = "NULL";
+            }
+
+            Expression expression;
+            try {
+                expression = new CCJSqlParser(name).Expression();
+            } catch (Exception e) {
+                throw new RuntimeException("Empty expression for " + name);
+            }
+
+            var sItem = new SelectExpressionItem();
+            sItem.setExpression(expression);
+
+            var expression1 = sItem.getExpression();
+            var equals = true;
+            if (expression1 instanceof Column) {
+                Column column = (Column) expression1;
+                equals = !column.getColumnName().equals(item.getAliasName());
+            }
+
+            if (first && equals) {
+                sItem.setAlias(new Alias(item.getAliasName()));
+            }
 //            setAggregate(sItem, item.getIds().get(union), cte, union);
-//            sItems.add(sItem);
-//        }
-//        select.setSelectItems(sItems);
+            sItems.add(sItem);
+        }
+        select.setSelectItems(sItems);
     }
 
     private static void saveFromTables(PlainSelect selectBody, OneCte oneCte, String unionName) {

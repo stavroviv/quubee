@@ -121,7 +121,7 @@ public class MainPanel extends DialogWrapper {
     private void loadCte() {
         dataIsLoading = true;
         fullQuery.getCteNames().forEach(x ->
-                tabsCte.addTab(new TabInfo(new JPanel())).setText(x).setIcon(DatabaseIcons.Package)
+                tabsCte.addTab(new TabInfo(Box.createVerticalBox())).setText(x).setIcon(DatabaseIcons.Package)
         );
         ctePanel.setVisible(tabsCte.getTabCount() > 1);
         loadUnions(fullQuery.getFirstCte());
@@ -135,7 +135,7 @@ public class MainPanel extends DialogWrapper {
         tabsUnion.removeAllTabs();
         var cte = fullQuery.getCte(cteName);
         cte.getUnionMap().keySet().forEach(y ->
-                tabsUnion.addTab(new TabInfo(new JPanel())).setText(y).setIcon(DatabaseIcons.Table)
+                tabsUnion.addTab(new TabInfo(Box.createVerticalBox())).setText(y).setIcon(DatabaseIcons.Table)
         );
         unionPanel.setVisible(tabsUnion.getTabCount() > 1);
         dataIsLoading = false;
@@ -147,9 +147,10 @@ public class MainPanel extends DialogWrapper {
         if (Objects.isNull(tabsCte.getSelectedInfo()) || Objects.isNull(tabsUnion.getSelectedInfo())) {
             return;
         }
-        org.quebee.com.util.Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery,
+        Messages.getPublisher(SAVE_QUERY_DATA).onAction(fullQuery,
                 tabsCte.getSelectedInfo().getText(), Integer.parseInt(tabsUnion.getSelectedInfo().getText())
         );
+        Messages.getPublisher(SAVE_QUERY_CTE_DATA).onAction(fullQuery, tabsCte.getSelectedInfo().getText());
     }
 
     private void addQueryTabs(JBTabsImpl tabs) {

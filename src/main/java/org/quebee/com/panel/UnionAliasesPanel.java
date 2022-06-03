@@ -145,7 +145,9 @@ public class UnionAliasesPanel implements QueryComponent {
         bus.connect(disposable).subscribe(SAVE_QUERY_CTE_DATA, this::saveQueryData);
     }
 
-    private void saveQueryData(FullQuery query, String s) {
+    private void saveQueryData(FullQuery query, String cteName) {
+        var cte = query.getCte(cteName);
+        ComponentUtils.loadTableToTable(aliasTableModel, cte.getAliasTable());
         ComponentUtils.clearTable(unionTableModel);
         ComponentUtils.clearTable(aliasTableModel);
         curMaxUnion = 0;
@@ -156,22 +158,9 @@ public class UnionAliasesPanel implements QueryComponent {
         if (Objects.isNull(cte)) {
             return;
         }
-
         clearAndAddUnionColumns(cte);
-        var firstUnion = cte.getUnion("0");
-        for (var i = 0; i < firstUnion.getSelectedFieldsModel().getRowCount(); i++) {
-            var aliasElement = new AliasElement();
-            int j = 0;
-            for (var s : cte.getUnionMap().keySet()) {
-                var value = cte.getUnion(s);
-                var item = value.getSelectedFieldsModel().getItem(i);
-                if (j == 0) {
-                    aliasElement.setAliasName(item.getNameOrAlias());
-                }
-                aliasElement.putAlias("Union " + j, item.getPsTable().getName() + "." + item.getColumnName());
-                j++;
-            }
-            aliasTableModel.addRow(aliasElement);
+        for (AliasElement item : cte.getAliasTable().getItems()) {
+            aliasTableModel.addRow(new AliasElement(item));
         }
     }
 

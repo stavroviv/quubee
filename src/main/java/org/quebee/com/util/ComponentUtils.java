@@ -16,4 +16,11 @@ public class ComponentUtils {
             treeRoot.remove(i);
         }
     }
+
+    public static <T> void loadTableToTable(ListTableModel<T> source, ListTableModel<T> destination) {
+        clearTable(destination);
+        for (T item : source.getItems()) {
+            destination.addRow(item);
+        }
+    }
 }
