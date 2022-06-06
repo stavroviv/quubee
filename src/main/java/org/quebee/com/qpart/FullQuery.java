@@ -68,23 +68,21 @@ public class FullQuery {
     }
 
     public String getFullSelectText() {
-        Select select = new Select();
-
-        List<WithItem> withItems = new ArrayList<>();
-        Map<String, OneCte> cteMapSort = sortByOrder(cteMap);
-        Iterator<String> iterator = cteMapSort.keySet().iterator();
-        String cte;
-        int index = 0;
+        var select = new Select();
+        var withItems = new ArrayList<WithItem>();
+        var cteMapSort = sortByOrder(cteMap);
+        var iterator = cteMapSort.keySet().iterator();
+        var index = 0;
 
         while (iterator.hasNext()) {
-            cte = iterator.next();
+            var cte = iterator.next();
             if (index == cteMap.size() - 1) {
                 select.setSelectBody(getSelectBody(cte));
                 break;
             }
-            WithItem cteBody = new WithItem();
+            var cteBody = new WithItem();
             cteBody.setName(cteMap.get(cte).getCteName());
-            SubSelect subSelect = new SubSelect();
+            var subSelect = new SubSelect();
             subSelect.setSelectBody(getSelectBody(cte));
             cteBody.setSubSelect(subSelect);
             withItems.add(cteBody);
@@ -101,17 +99,15 @@ public class FullQuery {
     private SelectBody getSelectBody(String cte) {
         var selectBody = new SetOperationList();
         var oneCte = cteMap.get(cte);
-
         var unionMapSort = sortByOrder(oneCte.getUnionMap());
         var iterator = unionMapSort.keySet().iterator();
-        String union;
-
         var ops = new ArrayList<SetOperation>();
         var brackets = new ArrayList<Boolean>();
         var selectBodies = new ArrayList<SelectBody>();
         var first = true;
+
         while (iterator.hasNext()) {
-            union = iterator.next();
+            var union = iterator.next();
             if (oneCte.getUnionMap().size() == 1) {
                 return getPlainSelect(oneCte, union, first, true);
             }
