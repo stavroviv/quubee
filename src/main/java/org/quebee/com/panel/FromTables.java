@@ -1,6 +1,5 @@
 package org.quebee.com.panel;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.CommonActionsPanel;
@@ -24,7 +23,6 @@ import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
-import org.quebee.com.util.Messages;
 
 import javax.swing.*;
 import javax.swing.tree.TreeNode;
@@ -56,13 +54,13 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     @Override
-    public void initListeners(Disposable disposable) {
-        subscribe(disposable, ReloadDbTablesNotifier.class, this::setDatabaseTables);
-        subscribe(disposable, SelectedTableAddNotifier.class, this::addSelectedTable);
-        subscribe(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
-        subscribe(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
-        subscribe(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
-        subscribe(disposable, LoadQueryDataNotifier.class, this::loadQueryData);
+    public void initListeners() {
+        subscribe(ReloadDbTablesNotifier.class, this::setDatabaseTables);
+        subscribe(SelectedTableAddNotifier.class, this::addSelectedTable);
+        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
+        subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(LoadQueryDataNotifier.class, this::loadQueryData);
     }
 
     private void saveQueryData(FullQuery fullQuery, String cteName, int id) {
@@ -84,7 +82,7 @@ public class FromTables extends AbstractQueryPanel {
                 databaseRoot.nodeToList().forEach(node -> {
                     var userObject = (TableElement) x.getUserObject();
                     if (node.getUserObject().getName().equals(userObject.getName())) {
-                        Messages.getPublisher(mainPanel.getId(), SelectedTableAddNotifier.class).onAction(node);
+                        getPublisher(SelectedTableAddNotifier.class).onAction(node);
                     }
                 })
         );
@@ -93,7 +91,7 @@ public class FromTables extends AbstractQueryPanel {
                     if (tableNode.getUserObject().getName().equals(x.getPsTable().getName())) {
                         tableNode.nodeToList().forEach(fieldNode -> {
                             if (fieldNode.getUserObject().getName().equals(x.getColumnName())) {
-                                Messages.getPublisher(mainPanel.getId(), SelectedFieldAddNotifier.class).onAction(fieldNode);
+                                getPublisher(SelectedFieldAddNotifier.class).onAction(fieldNode);
                             }
                         });
                     }
@@ -144,7 +142,7 @@ public class FromTables extends AbstractQueryPanel {
         if (!exists) {
             addSelectedTableNode(parent);
         }
-        Messages.getPublisher(mainPanel.getId(), SelectedFieldAddNotifier.class).onAction(node);
+        getPublisher(SelectedFieldAddNotifier.class).onAction(node);
     }
 
     private void addSelectedField(QBTreeNode node) {
@@ -179,7 +177,7 @@ public class FromTables extends AbstractQueryPanel {
         } else {
             selectedTablesModel.nodesWereInserted(selectedTablesRoot, new int[]{selectedTablesRoot.getChildCount() - 1});
         }
-        Messages.getPublisher(mainPanel.getId(), SelectedTableAfterAddNotifier.class).onAction(newTableNode);
+        getPublisher(SelectedTableAfterAddNotifier.class).onAction(newTableNode);
     }
 
     private QBTreeNode selectedTablesRoot;
@@ -211,8 +209,10 @@ public class FromTables extends AbstractQueryPanel {
 //            selectedTablesModel.reload();
 //        });
 
-        decorator.setRemoveAction(button -> Messages.getPublisher(mainPanel.getId(), SelectedTableRemoveNotifier.class)
-                .onAction((QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0)));
+        decorator.setRemoveAction(button ->
+                getPublisher(SelectedTableRemoveNotifier.class)
+                        .onAction((QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0))
+        );
 
         var panel = decorator.createPanel();
         decorator.getActionsPanel().getAnActionButton(CommonActionsPanel.Buttons.REMOVE).addCustomUpdater(
@@ -235,7 +235,7 @@ public class FromTables extends AbstractQueryPanel {
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
                 }
-                Messages.getPublisher(mainPanel.getId(), SelectedFieldAddNotifier.class).onAction(value);
+                getPublisher(SelectedFieldAddNotifier.class).onAction(value);
             }
         });
         return panel;
@@ -322,7 +322,7 @@ public class FromTables extends AbstractQueryPanel {
                 if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1 || mouseEvent.getX() < 40) {
                     return;
                 }
-                Messages.getPublisher(mainPanel.getId(), SelectedTableAddNotifier.class)
+                getPublisher(SelectedTableAddNotifier.class)
                         .onAction((QBTreeNode) treeTable.getValueAt(table.getSelectedRow(), 0));
             }
         };
