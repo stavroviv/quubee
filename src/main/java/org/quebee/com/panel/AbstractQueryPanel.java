@@ -1,8 +1,8 @@
 package org.quebee.com.panel;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.util.messages.Topic;
+import org.quebee.com.util.Messages;
 
 import javax.swing.*;
 
@@ -20,11 +20,15 @@ public abstract class AbstractQueryPanel {
 
     public abstract String getHeader();
 
-    public abstract void initListeners(Disposable disposable);
+    public abstract void initListeners();
 
-    protected  <L> void subscribe(Disposable disposable, Class<L> listenerClass, L handler) {
+    protected <L> void subscribe(Class<L> listenerClass, L handler) {
         var bus = ApplicationManager.getApplication().getMessageBus();
         Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
-        bus.connect(disposable).subscribe(topic, handler);
+        bus.connect(mainPanel.getDisposable()).subscribe(topic, handler);
+    }
+
+    protected <L> L getPublisher(Class<L> handler) {
+        return Messages.getPublisher(mainPanel.getId(), handler);
     }
 }

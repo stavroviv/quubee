@@ -43,7 +43,7 @@ public class MainPanel extends DialogWrapper {
 
         initListeners();
         loadCte();
-        abstractQueryPanels.forEach(queryComponent -> queryComponent.initListeners(getDisposable()));
+        abstractQueryPanels.forEach(AbstractQueryPanel::initListeners);
     }
 
     @Override

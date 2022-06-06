@@ -1,7 +1,6 @@
 package org.quebee.com.panel;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
@@ -242,7 +241,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
     }
 
     @Override
-    public void initListeners(Disposable disposable) {
+    public void initListeners() {
 
     }
 }

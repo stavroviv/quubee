@@ -1,6 +1,5 @@
 package org.quebee.com.panel;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBTextField;
@@ -302,10 +301,10 @@ public class JoinsPanel extends AbstractQueryPanel {
     }
 
     @Override
-    public void initListeners(Disposable disposable) {
-        subscribe(disposable, SelectedTableAfterAddNotifier.class, this::addSelectedTable);
-        subscribe(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
-        subscribe(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
+    public void initListeners() {
+        subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
+        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
     }
 
 //    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {

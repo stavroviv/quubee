@@ -16,19 +16,20 @@ public class Messages {
         return messageBus.syncPublisher(getTopic(id, handler));
     }
 
+    @SuppressWarnings("unchecked")
     public static <L> Topic<L> getTopic(UUID id, Class<L> handler) {
-        Map<Class<?>, Topic<?>> stringTopicMap = topics.get(id);
+        Map<Class<?>, Topic<?>> topicsById = topics.get(id);
         Topic<L> topic;
-        if (stringTopicMap == null) {
+        if (topicsById == null) {
             Map<Class<?>, Topic<?>> value = new HashMap<>();
             topic = Topic.create("jet select topic " + handler.getName(), handler);
             value.put(handler, topic);
             topics.put(id, value);
         } else {
-            topic = (Topic<L>) stringTopicMap.get(handler);
+            topic = (Topic<L>) topicsById.get(handler);
             if (topic == null) {
                 topic = Topic.create("jet select topic " + handler.getName(), handler);
-                stringTopicMap.put(handler, topic);
+                topicsById.put(handler, topic);
             }
         }
         return topic;

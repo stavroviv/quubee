@@ -1,6 +1,5 @@
 package org.quebee.com.panel;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -38,10 +37,10 @@ public class GroupingPanel extends AbstractQueryPanel {
     }
 
     @Override
-    public void initListeners(Disposable disposable) {
-        subscribe(disposable, SelectedTableAfterAddNotifier.class, this::addSelectedTable);
-        subscribe(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
-        subscribe(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
+    public void initListeners() {
+        subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
+        subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
+        subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
     }
 
     private void saveQueryData(FullQuery fullQuery, String s, int id) {

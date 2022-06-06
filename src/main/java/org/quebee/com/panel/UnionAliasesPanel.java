@@ -1,6 +1,5 @@
 package org.quebee.com.panel;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
@@ -142,10 +141,10 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
     }
 
     @Override
-    public void initListeners(Disposable disposable) {
-        subscribe(disposable, LoadQueryCteDataNotifier.class, this::loadQueryData);
-        subscribe(disposable, SaveQueryCteDataNotifier.class, this::saveQueryData);
-        subscribe(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
+    public void initListeners() {
+        subscribe(LoadQueryCteDataNotifier.class, this::loadQueryData);
+        subscribe(SaveQueryCteDataNotifier.class, this::saveQueryData);
+        subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
     }
 
     private void addSelectedField(QBTreeNode node) {
