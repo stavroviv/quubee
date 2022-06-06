@@ -18,10 +18,10 @@ public class Messages {
 
     @SuppressWarnings("unchecked")
     public static <L> Topic<L> getTopic(UUID id, Class<L> handler) {
-        Map<Class<?>, Topic<?>> topicsById = topics.get(id);
+        var topicsById = topics.get(id);
         Topic<L> topic;
         if (topicsById == null) {
-            Map<Class<?>, Topic<?>> topicsByHandler = new HashMap<>();
+            var topicsByHandler = new HashMap<Class<?>, Topic<?>>();
             topic = Topic.create("jet select topic " + handler.getName(), handler);
             topicsByHandler.put(handler, topic);
             topics.put(id, topicsByHandler);
