@@ -14,8 +14,6 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.model.QBTreeNode;
@@ -89,21 +87,25 @@ public class FromTables extends AbstractQueryPanel {
         selectedTablesModel.reload();
     }
 
-    private void removeSelectedTable(MutableTreeTableNode node) {
+    private void removeSelectedTable(QBTreeNode node) {
         if (Objects.nonNull(node.getParent().getParent())) {
             return;
         }
         var index = selectedTablesRoot.getIndex(node);
         selectedTablesRoot.remove(node);
         selectedTablesModel.nodesWereRemoved(selectedTablesRoot, new int[]{index}, new Object[]{node});
-        removeSelectedFieldsByTable(node, selectedFieldsModel);
+        removeSelectedFieldsByTable(node);
     }
 
-    private void removeSelectedFieldsByTable(TreeTableNode node, ListTableModel<TableElement> model) {
-        for (var i = model.getItems().size() - 1; i >= 0; i--) {
-            var userObject = (TableElement) node.getUserObject();
-            if (model.getItem(i).getParentId().equals(userObject.getId())) {
-                model.removeRow(i);
+    private void removeSelectedFieldsByTable(QBTreeNode node) {
+        var userObject = node.getUserObject();
+        var removeTableName = Objects.nonNull(userObject.getAlias())
+                ? userObject.getAlias()
+                : userObject.getName();
+        for (var i = selectedFieldsModel.getItems().size() - 1; i >= 0; i--) {
+            var name = selectedFieldsModel.getItem(i).getTableName();
+            if (name.equals(removeTableName)) {
+                selectedFieldsModel.removeRow(i);
             }
         }
     }
@@ -117,18 +119,9 @@ public class FromTables extends AbstractQueryPanel {
             return;
         }
         var parent = node.getParent();
-        var parentUserObject = (TableElement) parent.getUserObject();
-        var exists = false;
-        var children = selectedTablesRoot.children();
-        while (children.hasMoreElements()) {
-            var mutableTreeTableNode = children.nextElement();
-            var userObject = (TableElement) mutableTreeTableNode.getUserObject();
-            if (userObject.getId() == parentUserObject.getId()) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
+        var parentUserObject = parent.getUserObject();
+        if (selectedTablesRoot.nodeToList().stream()
+                .noneMatch(x -> x.getUserObject().getName().equals(parentUserObject.getName()))) {
             addSelectedTableNode(parent, alias);
         }
         getPublisher(SelectedFieldAddNotifier.class).onAction(node);
@@ -140,22 +133,21 @@ public class FromTables extends AbstractQueryPanel {
 
     private void addSelectedTableNode(QBTreeNode node, String alias) {
         var userObject = node.getUserObject();
-        var newNodeId = userObject.getId();
-        var exists = false;
+        var existNumber = 0;
         for (int i = 0; i < selectedTablesRoot.getChildCount(); i++) {
-            TreeTableNode childAt = selectedTablesRoot.getChildAt(i);
-            if (((TableElement) childAt.getUserObject()).getId().equals(newNodeId)) {
-                exists = true;
-                break;
+            var childAt = (QBTreeNode) selectedTablesRoot.getChildAt(i);
+            if (childAt.getUserObject().getName().equals(node.getUserObject().getName())) {
+                existNumber++;
             }
         }
 
         var newUserObject = new TableElement(userObject.getName());
         newUserObject.setTable(true);
-        if (!exists) {
-            newUserObject.setId(newNodeId);
+        if (existNumber > 0 && Objects.isNull(alias)) {
+            newUserObject.setAlias(newUserObject.getName() + existNumber);
+        } else {
+            newUserObject.setAlias(alias);
         }
-        newUserObject.setAlias(alias);
         var newTableNode = new QBTreeNode(newUserObject);
         node.children().asIterator()
                 .forEachRemaining(x -> newTableNode.add(new QBTreeNode((TableElement) x.getUserObject())));

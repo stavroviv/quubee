@@ -38,7 +38,7 @@ public class TableElement {
         this.id = UUID.randomUUID();
     }
 
-    private Table psTable;
+    private String tableName;
     private String columnName;
 
     public TableElement(FromItem fromItem) {
@@ -51,20 +51,25 @@ public class TableElement {
     }
 
     public TableElement(QBTreeNode node) {
-        this(node.getNameWithAlias());
+        var parent = node.getParent().getUserObject();
+        var userObject = node.getUserObject();
+        var tableName = Objects.nonNull(parent.getAlias()) ? parent.getAlias() : parent.getName();
+        this.name = tableName + "." + userObject.getName();
+        this.setTableName(tableName);
+        this.id = UUID.randomUUID();
     }
 
-    public String getNameOrAlias() {
-        return Objects.isNull(alias) ? columnName : alias;
-    }
+//    public String getNameOrAlias() {
+//        return Objects.isNull(alias) ? columnName : alias;
+//    }
 
-    public TableElement(Table table, String columnName) {
-        this.psTable = table;
+    public TableElement(String tableName, String columnName) {
+        this.tableName = tableName;
         this.columnName = columnName;
     }
 
     public String getName() {
-        return Objects.nonNull(name) ? name : psTable.getName() + "." + columnName;
+        return Objects.nonNull(name) ? name : tableName + "." + columnName;
     }
 
     public static class Renderer extends ColoredTreeCellRenderer {

@@ -13,6 +13,7 @@ import org.quebee.com.model.TableElement;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -71,9 +72,9 @@ public class OneCte implements Orderable {
                 var value = getUnion(s);
                 var item = value.getSelectedFieldsModel().getItem(i);
                 if (j == 0) {
-                    aliasElement.setAliasName(item.getNameOrAlias());
+                    aliasElement.setAliasName(Objects.isNull(item.getAlias()) ? item.getColumnName() : item.getAlias());
                 }
-                aliasElement.putAlias("Union " + j, item.getPsTable().getName() + "." + item.getColumnName());
+                aliasElement.putAlias("Union " + j, item.getTableName() + "." + item.getColumnName());
                 j++;
             }
             aliasTable.addRow(aliasElement);

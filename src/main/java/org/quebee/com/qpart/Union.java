@@ -160,7 +160,7 @@ public class Union implements Orderable {
             var expression = selectExpressionItem.getExpression();
             if (expression instanceof Column) {
                 var column = (Column) expression;
-                var item = new TableElement(column.getTable(), column.getColumnName());
+                var item = new TableElement(column.getTable().getName(), column.getColumnName());
                 if (Objects.nonNull(selectExpressionItem.getAlias())) {
                     item.setAlias(selectExpressionItem.getAlias().getName());
                 }

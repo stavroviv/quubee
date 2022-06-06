@@ -8,7 +8,6 @@ import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
-import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.QBTreeNode;
@@ -34,7 +33,7 @@ public class JoinsPanel extends AbstractQueryPanel {
 
     private final String header = "Joins";
     private final JComponent component;
-    private final Set<TreeTableNode> tables = new HashSet<>();
+    private final Set<QBTreeNode> tables = new HashSet<>();
     private final ListTableModel<LinkElement> joinTableModel;
     private final TableView<LinkElement> joinTable;
 
@@ -265,7 +264,11 @@ public class JoinsPanel extends AbstractQueryPanel {
                         }
                         var table = getter.apply(selectedObject);
                         tables.stream()
-                                .filter(x -> ((TableElement) x.getUserObject()).getName().equals(table))
+                                .filter(x -> {
+                                    var userObject = x.getUserObject();
+                                    return userObject.getName().equals(table)
+                                            || (Objects.nonNull(userObject.getAlias()) && userObject.getAlias().equals(table));
+                                })
                                 .forEach(x -> x.children().asIterator().forEachRemaining(y -> {
                                     var userObject = (TableElement) y.getUserObject();
                                     comboBox.addItem(userObject.getName());
@@ -294,7 +297,10 @@ public class JoinsPanel extends AbstractQueryPanel {
     private DefaultCellEditor availableTablesEditor() {
         return new DefaultCellEditor(
                 new ComboBox<>(tables.stream()
-                        .map(x -> ((TableElement) x.getUserObject()).getName())
+                        .map(x -> {
+                            TableElement userObject = x.getUserObject();
+                            return Objects.nonNull(userObject.getAlias()) ? userObject.getAlias() : userObject.getName();
+                        })
                         .toArray(String[]::new))
         );
     }
