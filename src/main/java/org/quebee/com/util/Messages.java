@@ -21,10 +21,10 @@ public class Messages {
         Map<Class<?>, Topic<?>> topicsById = topics.get(id);
         Topic<L> topic;
         if (topicsById == null) {
-            Map<Class<?>, Topic<?>> value = new HashMap<>();
+            Map<Class<?>, Topic<?>> topicsByHandler = new HashMap<>();
             topic = Topic.create("jet select topic " + handler.getName(), handler);
-            value.put(handler, topic);
-            topics.put(id, value);
+            topicsByHandler.put(handler, topic);
+            topics.put(id, topicsByHandler);
         } else {
             topic = (Topic<L>) topicsById.get(handler);
             if (topic == null) {
