@@ -52,9 +52,7 @@ public class GroupingPanel extends AbstractQueryPanel {
     }
 
     private void addSelectedField(QBTreeNode node) {
-        var parent =  node.getParent().getUserObject();
-        var userObject = node.getUserObject();
-        var tableElement = new TableElement(parent.getName() + "." + userObject.getName(), parent.getId());
+        var tableElement = new TableElement(node);
         tableElement.setColumn(true);
         groupingRoot.insert(new QBTreeNode(tableElement), groupingRoot.getChildCount() - 1);
         groupingModel.nodesWereInserted(groupingRoot, new int[]{groupingRoot.getChildCount() - 2});

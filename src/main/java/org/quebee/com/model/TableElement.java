@@ -5,6 +5,7 @@ import icons.DatabaseIcons;
 import lombok.Getter;
 import lombok.Setter;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.FromItem;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,13 +38,21 @@ public class TableElement {
         this.id = UUID.randomUUID();
     }
 
-    public TableElement(String name, UUID parentId) {
-        this(name);
-        this.parentId = parentId;
-    }
-
     private Table psTable;
     private String columnName;
+
+    public TableElement(FromItem fromItem) {
+        if (fromItem instanceof Table) {
+            Table fromItem1 = (Table) fromItem;
+            this.name = fromItem1.getName();
+        }
+        this.alias = Objects.nonNull(fromItem.getAlias()) ? fromItem.getAlias().getName() : null;
+        this.id = UUID.randomUUID();
+    }
+
+    public TableElement(QBTreeNode node) {
+        this(node.getNameWithAlias());
+    }
 
     public String getNameOrAlias() {
         return Objects.isNull(alias) ? columnName : alias;
@@ -52,6 +61,10 @@ public class TableElement {
     public TableElement(Table table, String columnName) {
         this.psTable = table;
         this.columnName = columnName;
+    }
+
+    public String getName() {
+        return Objects.nonNull(name) ? name : psTable.getName() + "." + columnName;
     }
 
     public static class Renderer extends ColoredTreeCellRenderer {
@@ -63,15 +76,15 @@ public class TableElement {
             if (!(userObject instanceof TableElement)) {
                 return;
             }
-            TableElement value1 = (TableElement) userObject;
-            if (value1.isTable()) {
+            TableElement element = (TableElement) userObject;
+            if (element.isTable()) {
                 setIcon(DatabaseIcons.Table);
-            } else if (value1.isColumn()) {
+            } else if (element.isColumn()) {
                 setIcon(DatabaseIcons.Col);
             } else {
                 setIcon(DatabaseIcons.ObjectGroup);
             }
-            append(value1.getName());
+            append(Objects.nonNull(element.getAlias()) ? element.getAlias() : element.getName());
         }
     }
 }

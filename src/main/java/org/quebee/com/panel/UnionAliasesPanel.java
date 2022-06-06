@@ -148,11 +148,10 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
     }
 
     private void addSelectedField(QBTreeNode node) {
-        var parent = node.getParent().getUserObject();
         var userObject = node.getUserObject();
         var item = new AliasElement();
         item.setAliasName(userObject.getName());
-        item.putAlias(mainPanel.currentUnion(), parent.getName() + "." + userObject.getName());
+        item.putAlias(mainPanel.currentUnion(), node.getNameWithAlias());
         aliasTableModel.addRow(item);
     }
 

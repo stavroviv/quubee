@@ -99,24 +99,24 @@ public class FullQuery {
     }
 
     private SelectBody getSelectBody(String cte) {
-        SetOperationList selectBody = new SetOperationList();
-        OneCte oneCte = cteMap.get(cte);
+        var selectBody = new SetOperationList();
+        var oneCte = cteMap.get(cte);
 
-        Map<String, Union> unionMapSort = sortByOrder(oneCte.getUnionMap());
-        Iterator<String> iterator = unionMapSort.keySet().iterator();
+        var unionMapSort = sortByOrder(oneCte.getUnionMap());
+        var iterator = unionMapSort.keySet().iterator();
         String union;
 
-        List<SetOperation> ops = new ArrayList<>();
-        List<Boolean> brackets = new ArrayList<>();
-        List<SelectBody> selectBodies = new ArrayList<>();
-        boolean first = true;
+        var ops = new ArrayList<SetOperation>();
+        var brackets = new ArrayList<Boolean>();
+        var selectBodies = new ArrayList<SelectBody>();
+        var first = true;
         while (iterator.hasNext()) {
             union = iterator.next();
             if (oneCte.getUnionMap().size() == 1) {
                 return getPlainSelect(oneCte, union, first, true);
             }
             brackets.add(false);
-            UnionOp unionOp = new UnionOp();
+            var unionOp = new UnionOp();
             unionOp.setAll(!isDistinct(oneCte, union));
             ops.add(unionOp);
             selectBodies.add(getPlainSelect(oneCte, union, first, !iterator.hasNext()));
@@ -144,7 +144,7 @@ public class FullQuery {
     }
 
     private PlainSelect getPlainSelect(OneCte cte, String union, boolean first, boolean last) {
-        PlainSelect select = new PlainSelect();
+        var select = new PlainSelect();
 
         saveAliases(select, cte, union, first);
         saveFromTables(select, cte, union);
@@ -341,12 +341,17 @@ public class FullQuery {
         }
         var joins = new ArrayList<Join>();
         union.getSelectedTablesRoot().nodeToList().forEach(x -> {
-            var tableName = x.getUserObject().getName();
+            var userObject = x.getUserObject();
+            var tableName = userObject.getName();
+            var item = new Table(tableName);
+            if (Objects.nonNull(userObject.getAlias())) {
+                item.setAlias(new Alias(userObject.getAlias(), true));
+            }
             if (selectBody.getFromItem() == null) {
-                selectBody.setFromItem(new Table(tableName));
+                selectBody.setFromItem(item);
             } else {
                 var join = new Join();
-                join.setRightItem(new Table(tableName));
+                join.setRightItem(item);
                 join.setSimple(true);
                 joins.add(join);
             }

@@ -42,7 +42,6 @@ public class FromTables extends AbstractQueryPanel {
         super(mainPanel);
         var splitterLeft = new JBSplitter();
         splitterLeft.setProportion(0.3f);
-
         splitterLeft.setFirstComponent(databaseTables());
 
         var splitterRight = new JBSplitter();
@@ -80,23 +79,13 @@ public class FromTables extends AbstractQueryPanel {
         var union = cte.getUnion("" + i1);
         union.getSelectedTablesRoot().nodeToList().forEach(x ->
                 databaseRoot.nodeToList().forEach(node -> {
-                    var userObject = (TableElement) x.getUserObject();
+                    var userObject = x.getUserObject();
                     if (node.getUserObject().getName().equals(userObject.getName())) {
-                        getPublisher(SelectedTableAddNotifier.class).onAction(node);
+                        getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
                     }
                 })
         );
-        union.getSelectedFieldsModel().getItems().forEach(x ->
-                databaseRoot.nodeToList().forEach(tableNode -> {
-                    if (tableNode.getUserObject().getName().equals(x.getPsTable().getName())) {
-                        tableNode.nodeToList().forEach(fieldNode -> {
-                            if (fieldNode.getUserObject().getName().equals(x.getColumnName())) {
-                                getPublisher(SelectedFieldAddNotifier.class).onAction(fieldNode);
-                            }
-                        });
-                    }
-                })
-        );
+        ComponentUtils.loadTableToTable(union.getSelectedFieldsModel(), selectedFieldsModel);
         selectedTablesModel.reload();
     }
 
@@ -119,12 +108,12 @@ public class FromTables extends AbstractQueryPanel {
         }
     }
 
-    private void addSelectedTable(QBTreeNode node) {
+    private void addSelectedTable(QBTreeNode node, String alias) {
         if (Objects.isNull(node.getParent())) {
             return;
         }
         if (Objects.isNull(node.getParent().getParent())) {
-            addSelectedTableNode(node);
+            addSelectedTableNode(node, alias);
             return;
         }
         var parent = node.getParent();
@@ -140,18 +129,16 @@ public class FromTables extends AbstractQueryPanel {
             }
         }
         if (!exists) {
-            addSelectedTableNode(parent);
+            addSelectedTableNode(parent, alias);
         }
         getPublisher(SelectedFieldAddNotifier.class).onAction(node);
     }
 
     private void addSelectedField(QBTreeNode node) {
-        var parent = node.getParent().getUserObject();
-        var userObject = node.getUserObject();
-        selectedFieldsModel.addRow(new TableElement(parent.getName() + "." + userObject.getName(), parent.getId()));
+        selectedFieldsModel.addRow(new TableElement(node));
     }
 
-    private void addSelectedTableNode(QBTreeNode node) {
+    private void addSelectedTableNode(QBTreeNode node, String alias) {
         var userObject = node.getUserObject();
         var newNodeId = userObject.getId();
         var exists = false;
@@ -168,6 +155,7 @@ public class FromTables extends AbstractQueryPanel {
         if (!exists) {
             newUserObject.setId(newNodeId);
         }
+        newUserObject.setAlias(alias);
         var newTableNode = new QBTreeNode(newUserObject);
         node.children().asIterator()
                 .forEachRemaining(x -> newTableNode.add(new QBTreeNode((TableElement) x.getUserObject())));
@@ -323,7 +311,7 @@ public class FromTables extends AbstractQueryPanel {
                     return;
                 }
                 getPublisher(SelectedTableAddNotifier.class)
-                        .onAction((QBTreeNode) treeTable.getValueAt(table.getSelectedRow(), 0));
+                        .onAction((QBTreeNode) treeTable.getValueAt(table.getSelectedRow(), 0), null);
             }
         };
     }

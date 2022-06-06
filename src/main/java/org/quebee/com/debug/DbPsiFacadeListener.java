@@ -1,4 +1,4 @@
-package org.quebee.com;
+package org.quebee.com.debug;
 
 import com.intellij.database.psi.DbDataSource;
 import com.intellij.database.psi.DbPsiFacade;

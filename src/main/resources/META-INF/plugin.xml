@@ -8,7 +8,9 @@
     <depends>com.intellij.modules.database</depends>
     <depends>com.intellij.modules.ultimate</depends>
 
-
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="org.quebee.com.debug.DebugGUI"/>
+    </extensions>
 
     <actions>
         <action id="com.querybuilder.MainAction"
@@ -21,11 +23,11 @@
     </actions>
 
     <projectListeners>
-        <listener class="org.quebee.com.DbPsiFacadeListener"
+        <listener class="org.quebee.com.debug.DbPsiFacadeListener"
                   topic="com.intellij.database.psi.DbPsiFacade$Listener"/>
     </projectListeners>
     <projectListeners>
-        <listener class="org.quebee.com.DataSourceStorageListener"
+        <listener class="org.quebee.com.debug.DataSourceStorageListener"
                   topic="com.intellij.database.dataSource.DataSourceStorage$Listener"/>
     </projectListeners>
 </idea-plugin>

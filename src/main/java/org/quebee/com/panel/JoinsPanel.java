@@ -13,10 +13,12 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.notifier.LoadQueryDataNotifier;
 import org.quebee.com.notifier.SaveQueryDataNotifier;
 import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
 import org.quebee.com.notifier.SelectedTableRemoveNotifier;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -80,7 +82,6 @@ public class JoinsPanel extends AbstractQueryPanel {
             @Override
             public void setValue(LinkElement variable, Boolean value) {
                 variable.setAllTable1(value);
-//                setModified();
             }
 
             @Override
@@ -135,7 +136,6 @@ public class JoinsPanel extends AbstractQueryPanel {
             @Override
             public void setValue(LinkElement variable, Boolean value) {
                 variable.setAllTable2(value);
-//                setModified();
             }
 
             @Override
@@ -163,7 +163,6 @@ public class JoinsPanel extends AbstractQueryPanel {
             @Override
             public void setValue(LinkElement variable, Boolean value) {
                 variable.setCustom(value);
-//                setModified();
             }
 
             @Override
@@ -243,7 +242,7 @@ public class JoinsPanel extends AbstractQueryPanel {
                             conditionCustom.setText(variable.getCondition());
                             return conditionCustom;
                         }
-                        Box hBox = Box.createHorizontalBox();
+                        var hBox = Box.createHorizontalBox();
                         setFieldCombo(conditionField1, LinkElement::getTable1);
                         conditionField1.setItem(variable.getField1());
                         hBox.add(conditionField1);
@@ -281,9 +280,9 @@ public class JoinsPanel extends AbstractQueryPanel {
         );
 
         joinTable = new TableView<>(joinTableModel);
-        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(joinTable);
+        var decorator = ToolbarDecorator.createDecorator(joinTable);
         decorator.setAddAction(button -> {
-            LinkElement item = new LinkElement();
+            var item = new LinkElement();
             item.setComparison("=");
             joinTableModel.addRow(item);
         });
@@ -305,21 +304,24 @@ public class JoinsPanel extends AbstractQueryPanel {
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
         subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
         subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(LoadQueryDataNotifier.class, this::loadQueryData);
     }
 
-//    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
-//        var bus = ApplicationManager.getApplication().getMessageBus();
-//        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
-//        bus.connect(disposable).subscribe(topic, handler);
-//    }
+    private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
+        var union = fullQuery.getCte(cteName).getUnion("" + i1);
+        ComponentUtils.loadTableToTable(union.getJoinTableModel(), joinTableModel);
+    }
 
-    private void saveQueryData(FullQuery fullQuery, String s, int i) {
+    private void saveQueryData(FullQuery fullQuery, String cteName, int id) {
+        var union = fullQuery.getCte(cteName).getUnion("" + id);
+        ComponentUtils.loadTableToTable(joinTableModel, union.getJoinTableModel());
+        ComponentUtils.clearTable(joinTableModel);
         tables.clear();
     }
 
     private void removeSelectedTable(QBTreeNode node) {
         var tableElement = node.getUserObject();
-        for (int i = joinTableModel.getItems().size() - 1; i >= 0; i--) {
+        for (var i = joinTableModel.getItems().size() - 1; i >= 0; i--) {
             if (joinTableModel.getItem(i).getTable1().equals(tableElement.getName())
                     || joinTableModel.getItem(i).getTable2().equals(tableElement.getName())) {
                 joinTableModel.removeRow(i);

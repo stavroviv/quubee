@@ -29,4 +29,13 @@ public class LinkElement {
         this.table1 = "";
         this.table2 = "";
     }
+
+    public LinkElement(String table1, String table2, boolean allTable1, boolean allTable2, boolean custom) {
+        setTable1(table1);
+        setTable2(table2);
+        setAllTable1(allTable1);
+        setAllTable2(allTable2);
+        setCustom(custom);
+        setComparison("=");
+    }
 }

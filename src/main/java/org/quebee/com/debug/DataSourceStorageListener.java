@@ -1,4 +1,4 @@
-package org.quebee.com;
+package org.quebee.com.debug;
 
 import com.intellij.database.dataSource.DataSourceStorage;
 import com.intellij.database.dataSource.LocalDataSource;

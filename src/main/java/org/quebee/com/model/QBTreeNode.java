@@ -4,6 +4,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class QBTreeNode extends DefaultMutableTreeTableNode {
 
@@ -51,5 +52,12 @@ public class QBTreeNode extends DefaultMutableTreeTableNode {
     @Override
     public int hashCode() {
         return getUserObject().hashCode();
+    }
+
+    public String getNameWithAlias() {
+        var parent = getParent().getUserObject();
+        var userObject = getUserObject();
+        return (Objects.nonNull(parent.getAlias()) ? parent.getAlias() : parent.getName())
+                + "." + userObject.getName();
     }
 }
