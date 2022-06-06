@@ -16,9 +16,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class TableElement {
-
     private UUID id;
-    private UUID parentId;
     private String name;
     private String alias;
 

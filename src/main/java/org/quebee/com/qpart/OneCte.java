@@ -55,7 +55,7 @@ public class OneCte implements Orderable {
 
     private void loadUnionTable(List<SetOperation> operations) {
         var i = 1;
-        for (SetOperation operation : operations) {
+        for (var operation : operations) {
             var item = new TableElement("Union " + i);
             item.setDistinct(!((UnionOp) operation).isAll());
             unionTable.addRow(item);

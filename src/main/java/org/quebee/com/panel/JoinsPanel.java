@@ -210,71 +210,8 @@ public class JoinsPanel extends AbstractQueryPanel {
             }
 
             @Override
-            public @NotNull TableCellEditor getEditor(final LinkElement variable) {
-                return new AbstractTableCellEditor() {
-
-                    @Override
-                    public LinkElement getCellEditorValue() {
-                        LinkElement elem = new LinkElement();
-                        if (conditionField1.getSelectedItem() != null) {
-                            elem.setField1(conditionField1.getSelectedItem().toString());
-                        }
-                        if (conditionField2.getSelectedItem() != null) {
-                            elem.setField2(conditionField2.getSelectedItem().toString());
-                        }
-                        elem.setComparison(conditionComparison.getItem());
-                        elem.setCondition(conditionCustom.getText());
-                        return elem;
-                    }
-
-                    private final ComboBox<String> conditionField1 = new ComboBox<>();
-                    private final ComboBox<String> conditionField2 = new ComboBox<>();
-                    private final ComboBox<String> conditionComparison = new ComboBox<>(
-                            new String[]{"=", "!=", ">", "<", ">=", "<="}
-                    );
-                    private final JBTextField conditionCustom = new JBTextField();
-
-                    @Override
-                    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
-                                                                 int row, int column) {
-                        if (variable.isCustom()) {
-                            conditionCustom.setText(variable.getCondition());
-                            return conditionCustom;
-                        }
-                        var hBox = Box.createHorizontalBox();
-                        setFieldCombo(conditionField1, LinkElement::getTable1);
-                        conditionField1.setItem(variable.getField1());
-                        hBox.add(conditionField1);
-
-                        conditionComparison.setItem(variable.getComparison());
-                        hBox.add(conditionComparison);
-
-                        setFieldCombo(conditionField2, LinkElement::getTable2);
-                        conditionField2.setItem(variable.getField2());
-                        hBox.add(conditionField2);
-
-                        return hBox;
-                    }
-
-                    private void setFieldCombo(ComboBox<String> comboBox, Function<LinkElement, String> getter) {
-                        comboBox.removeAllItems();
-                        var selectedObject = joinTable.getSelectedObject();
-                        if (Objects.isNull(selectedObject)) {
-                            return;
-                        }
-                        var table = getter.apply(selectedObject);
-                        tables.stream()
-                                .filter(x -> {
-                                    var userObject = x.getUserObject();
-                                    return userObject.getName().equals(table)
-                                            || (Objects.nonNull(userObject.getAlias()) && userObject.getAlias().equals(table));
-                                })
-                                .forEach(x -> x.children().asIterator().forEachRemaining(y -> {
-                                    var userObject = (TableElement) y.getUserObject();
-                                    comboBox.addItem(userObject.getName());
-                                }));
-                    }
-                };
+            public TableCellEditor getEditor(final LinkElement variable) {
+                return new LinkingConditionEditor(variable);
             }
         };
 
@@ -291,6 +228,76 @@ public class JoinsPanel extends AbstractQueryPanel {
         });
 
         this.component = decorator.createPanel();
+    }
+
+    private class LinkingConditionEditor extends AbstractTableCellEditor {
+
+        private final LinkElement variable;
+        private final ComboBox<String> conditionField1 = new ComboBox<>();
+        private final ComboBox<String> conditionField2 = new ComboBox<>();
+        private final ComboBox<String> conditionComparison = new ComboBox<>(
+                new String[]{"=", "!=", ">", "<", ">=", "<="}
+        );
+        private final JBTextField conditionCustom = new JBTextField();
+
+        public LinkingConditionEditor(LinkElement variable) {
+            this.variable = variable;
+        }
+
+        @Override
+        public LinkElement getCellEditorValue() {
+            var linkElement = new LinkElement();
+            if (conditionField1.getSelectedItem() != null) {
+                linkElement.setField1(conditionField1.getSelectedItem().toString());
+            }
+            if (conditionField2.getSelectedItem() != null) {
+                linkElement.setField2(conditionField2.getSelectedItem().toString());
+            }
+            linkElement.setComparison(conditionComparison.getItem());
+            linkElement.setCondition(conditionCustom.getText());
+            return linkElement;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
+                                                     int row, int column) {
+            if (variable.isCustom()) {
+                conditionCustom.setText(variable.getCondition());
+                return conditionCustom;
+            }
+            var hBox = Box.createHorizontalBox();
+            setFieldCombo(conditionField1, LinkElement::getTable1);
+            conditionField1.setItem(variable.getField1());
+            hBox.add(conditionField1);
+
+            conditionComparison.setItem(variable.getComparison());
+            hBox.add(conditionComparison);
+
+            setFieldCombo(conditionField2, LinkElement::getTable2);
+            conditionField2.setItem(variable.getField2());
+            hBox.add(conditionField2);
+
+            return hBox;
+        }
+
+        private void setFieldCombo(ComboBox<String> comboBox, Function<LinkElement, String> getter) {
+            comboBox.removeAllItems();
+            var selectedObject = joinTable.getSelectedObject();
+            if (Objects.isNull(selectedObject)) {
+                return;
+            }
+            var table = getter.apply(selectedObject);
+            tables.stream()
+                    .filter(x -> {
+                        var userObject = x.getUserObject();
+                        return userObject.getName().equals(table)
+                                || (Objects.nonNull(userObject.getAlias()) && userObject.getAlias().equals(table));
+                    })
+                    .forEach(x -> x.children().asIterator().forEachRemaining(y -> {
+                        var userObject = (TableElement) y.getUserObject();
+                        comboBox.addItem(userObject.getName());
+                    }));
+        }
     }
 
     @NotNull

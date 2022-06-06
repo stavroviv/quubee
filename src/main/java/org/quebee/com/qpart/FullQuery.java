@@ -24,12 +24,12 @@ public class FullQuery {
             throw new IllegalStateException("Only select queries supported");
         }
 
-        Select select = (Select) statement;
-        List<WithItem> withItemsList = select.getWithItemsList();
+        var select = (Select) statement;
+        var withItemsList = select.getWithItemsList();
         if (Objects.nonNull(withItemsList)) {
-            int i = 0;
-            for (WithItem x : withItemsList) {
-                SubSelect subSelect = x.getSubSelect();
+            var i = 0;
+            for (var x : withItemsList) {
+                var subSelect = x.getSubSelect();
                 addCte(x.getName(), subSelect.getSelectBody(), i++);
             }
             addCte(BODY, select.getSelectBody(), i);
@@ -155,50 +155,46 @@ public class FullQuery {
     }
 
     public static void saveLinks(PlainSelect selectBody, OneCte cte, String union) {
-        Union union1 = cte.getUnionMap().get(union);
-//        TableView<LinkElement> linkTable = union1.getLinkTable();
-//        if (linkTable.getItems().isEmpty()) {
-//            return;
-//        }
-//
-//        String tableFrom = linkTable.getItems().get(0).getTable1();
-//        selectBody.setFromItem(new Table(tableFrom));
-//        List<Join> joins = new ArrayList<>();
-//        for (LinkElement item : linkTable.getItems()) {
-//            Join join = new Join();
-//            join.setRightItem(new Table(item.getTable2()));
-//            setJoinType(item, join);
-//            setCondition(item, join);
-//            joins.add(join);
-//        }
+        var union1 = cte.getUnionMap().get(union);
+        var joinTable = union1.getJoinTableModel();
+        if (joinTable.getItems().isEmpty()) {
+            return;
+        }
 
-//        selectBody.setJoins(joins);
+        var tableFrom = joinTable.getItems().get(0).getTable1();
+        selectBody.setFromItem(new Table(tableFrom));
+        var joins = new ArrayList<Join>();
+        for (var item : joinTable.getItems()) {
+            var join = new Join();
+            join.setRightItem(new Table(item.getTable2()));
+            setJoinType(item, join);
+            setCondition(item, join);
+            joins.add(join);
+        }
+
+        selectBody.setJoins(joins);
     }
 
     private static void setCondition(LinkElement item, Join join) {
-//        String strExpression = item.getCondition();
-//        if (!item.isCustom()) {
-//            strExpression = item.getTable1() + "." + item.getField1()
-//                    + item.getExpression()
-//                    + item.getTable2() + "." + item.getField2();
-//        }
-//        try {
-//            join.setOnExpression(getExpression(strExpression));
-//        } catch (JSQLParserException e) {
-//            e.printStackTrace();
-//        }
+        var strExpression = item.getCondition();
+        if (!item.isCustom()) {
+            strExpression = item.getTable1() + "." + item.getField1()
+                    + item.getComparison()
+                    + item.getTable2() + "." + item.getField2();
+        }
+        join.setOnExpression(getExpression(strExpression));
     }
 
     private static void setJoinType(LinkElement item, Join join) {
-//        if (item.isAllTable1() && item.isAllTable2()) {
-//            join.setFull(true);
-//        } else if (item.isAllTable1()) {
-//            join.setLeft(true);
-//        } else if (item.isAllTable2()) {
-//            join.setRight(true);
-//        } else {
-//            join.setInner(true);
-//        }
+        if (item.isAllTable1() && item.isAllTable2()) {
+            join.setFull(true);
+        } else if (item.isAllTable1()) {
+            join.setLeft(true);
+        } else if (item.isAllTable2()) {
+            join.setRight(true);
+        } else {
+            join.setInner(true);
+        }
     }
 
     @SneakyThrows

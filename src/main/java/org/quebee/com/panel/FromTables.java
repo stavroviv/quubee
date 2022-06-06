@@ -75,14 +75,15 @@ public class FromTables extends AbstractQueryPanel {
         }
 
         var union = cte.getUnion("" + i1);
-        union.getSelectedTablesRoot().nodeToList().forEach(x ->
-                databaseRoot.nodeToList().forEach(node -> {
-                    var userObject = x.getUserObject();
-                    if (node.getUserObject().getName().equals(userObject.getName())) {
-                        getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
-                    }
-                })
-        );
+//        union.getSelectedTablesRoot().nodeToList().forEach(x ->
+//                databaseRoot.nodeToList().forEach(node -> {
+//                    var userObject = x.getUserObject();
+//                    if (node.getUserObject().getName().equals(userObject.getName())) {
+//                        getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
+//                    }
+//                })
+//        );
+        ComponentUtils.loadTreeToTree(union.getSelectedTablesRoot(), selectedTablesRoot);
         ComponentUtils.loadTableToTable(union.getSelectedFieldsModel(), selectedFieldsModel);
         selectedTablesModel.reload();
     }
@@ -134,7 +135,7 @@ public class FromTables extends AbstractQueryPanel {
     private void addSelectedTableNode(QBTreeNode node, String alias) {
         var userObject = node.getUserObject();
         var existNumber = 0;
-        for (int i = 0; i < selectedTablesRoot.getChildCount(); i++) {
+        for (var i = 0; i < selectedTablesRoot.getChildCount(); i++) {
             var childAt = (QBTreeNode) selectedTablesRoot.getChildAt(i);
             if (childAt.getUserObject().getName().equals(node.getUserObject().getName())) {
                 existNumber++;
