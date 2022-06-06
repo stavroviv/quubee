@@ -24,8 +24,10 @@ import java.util.Random;
 public class OrderPanel implements QueryComponent {
     private final String header = "Order";
     private final JBSplitter component = new JBSplitter();
+    private final MainPanel mainPanel;
 
-    public OrderPanel() {
+    public OrderPanel(MainPanel mainPanel) {
+        this.mainPanel = mainPanel;
         component.setProportion(0.3f);
         component.setFirstComponent(getFieldsTable());
         component.setSecondComponent(getOrderTable());

@@ -62,15 +62,15 @@ public class FromTables implements QueryComponent {
 
     @Override
     public void initListeners(Disposable disposable) {
-        extracted(disposable, ReloadDbTablesNotifier.class, this::setDatabaseTables);
-        extracted(disposable, SelectedTableAddNotifier.class, this::addSelectedTable);
-        extracted(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
-        extracted(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
-        extracted(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
-        extracted(disposable, LoadQueryDataNotifier.class, this::loadQueryData);
+        subscribeOnTopic(disposable, ReloadDbTablesNotifier.class, this::setDatabaseTables);
+        subscribeOnTopic(disposable, SelectedTableAddNotifier.class, this::addSelectedTable);
+        subscribeOnTopic(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        subscribeOnTopic(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
+        subscribeOnTopic(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribeOnTopic(disposable, LoadQueryDataNotifier.class, this::loadQueryData);
     }
 
-    private <L> void extracted(Disposable disposable, Class<L> listenerClass, L handler) {
+    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
         var bus = ApplicationManager.getApplication().getMessageBus();
         Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
         bus.connect(disposable).subscribe(topic, handler);

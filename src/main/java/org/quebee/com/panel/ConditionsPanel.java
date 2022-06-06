@@ -37,8 +37,10 @@ import java.awt.*;
 public class ConditionsPanel implements QueryComponent {
     private final String header = "Conditions";
     private final JBSplitter component = new JBSplitter();
+    private final MainPanel mainPanel;
 
-    public ConditionsPanel() {
+    public ConditionsPanel(MainPanel mainPanel) {
+        this.mainPanel = mainPanel;
         component.setProportion(0.3f);
         component.setFirstComponent(getFieldsTree());
         component.setSecondComponent(getConditionsTable());

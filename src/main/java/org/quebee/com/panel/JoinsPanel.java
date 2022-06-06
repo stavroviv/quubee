@@ -6,6 +6,7 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.table.TableView;
+import com.intellij.util.messages.Topic;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
@@ -15,6 +16,9 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.notifier.SaveQueryDataNotifier;
+import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
+import org.quebee.com.notifier.SelectedTableRemoveNotifier;
 import org.quebee.com.qpart.FullQuery;
 
 import javax.swing.*;
@@ -26,9 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-import static org.quebee.com.notifier.SaveQueryDataNotifier.SAVE_QUERY_DATA;
-import static org.quebee.com.notifier.SelectedTableAfterAddNotifier.SELECTED_TABLE_AFTER_ADD;
-import static org.quebee.com.notifier.SelectedTableRemoveNotifier.SELECTED_TABLE_REMOVE;
+import static org.quebee.com.util.Messages.getTopic;
 
 @Getter
 public class JoinsPanel implements QueryComponent {
@@ -38,8 +40,11 @@ public class JoinsPanel implements QueryComponent {
     private final Set<TreeTableNode> tables = new HashSet<>();
     private final ListTableModel<LinkElement> joinTableModel;
     private final TableView<LinkElement> joinTable;
+    private final MainPanel mainPanel;
 
-    public JoinsPanel() {
+    public JoinsPanel(MainPanel mainPanel) {
+        this.mainPanel = mainPanel;
+
         var table1Info = new ColumnInfo<LinkElement, String>("Table 1") {
             @Override
             public int getWidth(JTable table) {
@@ -303,10 +308,15 @@ public class JoinsPanel implements QueryComponent {
 
     @Override
     public void initListeners(Disposable disposable) {
+        subscribeOnTopic(disposable, SelectedTableAfterAddNotifier.class, this::addSelectedTable);
+        subscribeOnTopic(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        subscribeOnTopic(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
+    }
+
+    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        bus.connect(disposable).subscribe(SELECTED_TABLE_AFTER_ADD, this::addSelectedTable);
-        bus.connect(disposable).subscribe(SELECTED_TABLE_REMOVE, this::removeSelectedTable);
-        bus.connect(disposable).subscribe(SAVE_QUERY_DATA, this::saveQueryData);
+        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
+        bus.connect(disposable).subscribe(topic, handler);
     }
 
     private void saveQueryData(FullQuery fullQuery, String s, int i) {

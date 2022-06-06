@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
+import com.intellij.util.messages.Topic;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
@@ -13,6 +14,9 @@ import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.AliasElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.notifier.LoadQueryCteDataNotifier;
+import org.quebee.com.notifier.SaveQueryCteDataNotifier;
+import org.quebee.com.notifier.SelectedFieldAddNotifier;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.ComponentUtils;
@@ -21,9 +25,7 @@ import javax.swing.*;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static org.quebee.com.notifier.LoadQueryCteDataNotifier.LOAD_QUERY_CTE_DATA;
-import static org.quebee.com.notifier.SaveQueryCteDataNotifier.SAVE_QUERY_CTE_DATA;
-import static org.quebee.com.notifier.SelectedFieldAddNotifier.SELECTED_FIELD_ADD;
+import static org.quebee.com.util.Messages.getTopic;
 
 @Getter
 public class UnionAliasesPanel implements QueryComponent {
@@ -32,8 +34,8 @@ public class UnionAliasesPanel implements QueryComponent {
     private final MainPanel mainPanel;
 
     public UnionAliasesPanel(MainPanel mainPanel) {
-        this.component = createComponent();
         this.mainPanel = mainPanel;
+        this.component = createComponent();
     }
 
     private JComponent createComponent() {
@@ -146,10 +148,15 @@ public class UnionAliasesPanel implements QueryComponent {
 
     @Override
     public void initListeners(Disposable disposable) {
+        subscribeOnTopic(disposable, LoadQueryCteDataNotifier.class, this::loadQueryData);
+        subscribeOnTopic(disposable, SaveQueryCteDataNotifier.class, this::saveQueryData);
+        subscribeOnTopic(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
+    }
+
+    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        bus.connect(disposable).subscribe(LOAD_QUERY_CTE_DATA, this::loadQueryData);
-        bus.connect(disposable).subscribe(SAVE_QUERY_CTE_DATA, this::saveQueryData);
-        bus.connect(disposable).subscribe(SELECTED_FIELD_ADD, this::addSelectedField);
+        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
+        bus.connect(disposable).subscribe(topic, handler);
     }
 
     private void addSelectedField(QBTreeNode node) {

@@ -163,11 +163,11 @@ public class MainPanel extends DialogWrapper {
     private void addQueryTabs(JBTabsImpl tabs) {
         queryComponents = List.of(
                 new FromTables(this),
-                new JoinsPanel(),
-                new GroupingPanel(),
-                new ConditionsPanel(),
+                new JoinsPanel(this),
+                new GroupingPanel(this),
+                new ConditionsPanel(this),
                 new UnionAliasesPanel(this),
-                new OrderPanel()
+                new OrderPanel(this)
         );
         queryComponents.forEach(queryTab ->
                 tabs.addTab(new TabInfo(queryTab.getComponent()).setText(queryTab.getHeader()))
