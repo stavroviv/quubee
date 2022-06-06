@@ -1,11 +1,9 @@
 package org.quebee.com.panel;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
-import com.intellij.util.messages.Topic;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
@@ -25,16 +23,13 @@ import javax.swing.*;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static org.quebee.com.util.Messages.getTopic;
-
 @Getter
-public class UnionAliasesPanel implements QueryComponent {
+public class UnionAliasesPanel extends AbstractQueryPanel {
     private final String header = "Union/Aliases";
     private final JComponent component;
-    private final MainPanel mainPanel;
 
     public UnionAliasesPanel(MainPanel mainPanel) {
-        this.mainPanel = mainPanel;
+        super(mainPanel);
         this.component = createComponent();
     }
 
@@ -148,15 +143,9 @@ public class UnionAliasesPanel implements QueryComponent {
 
     @Override
     public void initListeners(Disposable disposable) {
-        subscribeOnTopic(disposable, LoadQueryCteDataNotifier.class, this::loadQueryData);
-        subscribeOnTopic(disposable, SaveQueryCteDataNotifier.class, this::saveQueryData);
-        subscribeOnTopic(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
-    }
-
-    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
-        var bus = ApplicationManager.getApplication().getMessageBus();
-        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
-        bus.connect(disposable).subscribe(topic, handler);
+        subscribe(disposable, LoadQueryCteDataNotifier.class, this::loadQueryData);
+        subscribe(disposable, SaveQueryCteDataNotifier.class, this::saveQueryData);
+        subscribe(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
     }
 
     private void addSelectedField(QBTreeNode node) {

@@ -2,7 +2,6 @@ package org.quebee.com.panel;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.CommonActionsPanel;
 import com.intellij.ui.JBSplitter;
@@ -12,7 +11,6 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.IconUtil;
-import com.intellij.util.messages.Topic;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
@@ -34,18 +32,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
 
-import static org.quebee.com.util.Messages.getTopic;
-
 @Getter
-public class FromTables implements QueryComponent {
+public class FromTables extends AbstractQueryPanel {
     private final String header = "Tables and Fields";
     private final JComponent component;
 
     private QBTreeNode databaseRoot;
     private ListTreeTableModel databaseModel;
-    private MainPanel mainPanel;
 
     public FromTables(MainPanel mainPanel) {
+        super(mainPanel);
         var splitterLeft = new JBSplitter();
         splitterLeft.setProportion(0.3f);
 
@@ -57,23 +53,16 @@ public class FromTables implements QueryComponent {
         splitterLeft.setSecondComponent(splitterRight);
 
         this.component = splitterLeft;
-        this.mainPanel = mainPanel;
     }
 
     @Override
     public void initListeners(Disposable disposable) {
-        subscribeOnTopic(disposable, ReloadDbTablesNotifier.class, this::setDatabaseTables);
-        subscribeOnTopic(disposable, SelectedTableAddNotifier.class, this::addSelectedTable);
-        subscribeOnTopic(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
-        subscribeOnTopic(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
-        subscribeOnTopic(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
-        subscribeOnTopic(disposable, LoadQueryDataNotifier.class, this::loadQueryData);
-    }
-
-    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
-        var bus = ApplicationManager.getApplication().getMessageBus();
-        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
-        bus.connect(disposable).subscribe(topic, handler);
+        subscribe(disposable, ReloadDbTablesNotifier.class, this::setDatabaseTables);
+        subscribe(disposable, SelectedTableAddNotifier.class, this::addSelectedTable);
+        subscribe(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        subscribe(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
+        subscribe(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(disposable, LoadQueryDataNotifier.class, this::loadQueryData);
     }
 
     private void saveQueryData(FullQuery fullQuery, String cteName, int id) {

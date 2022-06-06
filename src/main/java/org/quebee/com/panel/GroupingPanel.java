@@ -1,7 +1,6 @@
 package org.quebee.com.panel;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -9,7 +8,6 @@ import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.intellij.util.messages.Topic;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
@@ -27,16 +25,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-import static org.quebee.com.util.Messages.getTopic;
-
 @Getter
-public class GroupingPanel implements QueryComponent {
+public class GroupingPanel extends AbstractQueryPanel {
     private final String header = "Grouping";
     private final JBSplitter component = new JBSplitter();
-    private final MainPanel mainPanel;
 
     public GroupingPanel(MainPanel mainPanel) {
-        this.mainPanel = mainPanel;
+        super(mainPanel);
         component.setProportion(0.3f);
         component.setFirstComponent(getAvailableGroupingFieldsTree());
         component.setSecondComponent(getGroupingAggregatesPanel());
@@ -44,15 +39,9 @@ public class GroupingPanel implements QueryComponent {
 
     @Override
     public void initListeners(Disposable disposable) {
-        subscribeOnTopic(disposable, SelectedTableAfterAddNotifier.class, this::addSelectedTable);
-        subscribeOnTopic(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
-        subscribeOnTopic(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
-    }
-
-    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
-        var bus = ApplicationManager.getApplication().getMessageBus();
-        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
-        bus.connect(disposable).subscribe(topic, handler);
+        subscribe(disposable, SelectedTableAfterAddNotifier.class, this::addSelectedTable);
+        subscribe(disposable, SelectedFieldAddNotifier.class, this::addSelectedField);
+        subscribe(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
     }
 
     private void saveQueryData(FullQuery fullQuery, String s, int id) {

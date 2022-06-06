@@ -34,13 +34,12 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 @Getter
-public class ConditionsPanel implements QueryComponent {
+public class ConditionsPanel extends AbstractQueryPanel {
     private final String header = "Conditions";
     private final JBSplitter component = new JBSplitter();
-    private final MainPanel mainPanel;
 
     public ConditionsPanel(MainPanel mainPanel) {
-        this.mainPanel = mainPanel;
+        super(mainPanel);
         component.setProportion(0.3f);
         component.setFirstComponent(getFieldsTree());
         component.setSecondComponent(getConditionsTable());

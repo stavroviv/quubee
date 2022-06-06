@@ -21,13 +21,12 @@ import javax.swing.*;
 import java.util.Random;
 
 @Getter
-public class OrderPanel implements QueryComponent {
+public class OrderPanel extends AbstractQueryPanel {
     private final String header = "Order";
     private final JBSplitter component = new JBSplitter();
-    private final MainPanel mainPanel;
 
     public OrderPanel(MainPanel mainPanel) {
-        this.mainPanel = mainPanel;
+        super(mainPanel);
         component.setProportion(0.3f);
         component.setFirstComponent(getFieldsTable());
         component.setSecondComponent(getOrderTable());

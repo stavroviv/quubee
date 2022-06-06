@@ -32,12 +32,6 @@ public class MainPanel extends DialogWrapper {
     @Getter
     private final FullQuery fullQuery;
 
-    @Override
-    protected void dispose() {
-        Messages.removeTopics(id);
-        super.dispose();
-    }
-
     public MainPanel(FullQuery fullQuery) {
         super(null, false, DialogWrapper.IdeModalityType.PROJECT);
         setModal(false);
@@ -49,7 +43,13 @@ public class MainPanel extends DialogWrapper {
 
         initListeners();
         loadCte();
-        queryComponents.forEach(queryComponent -> queryComponent.initListeners(getDisposable()));
+        abstractQueryPanels.forEach(queryComponent -> queryComponent.initListeners(getDisposable()));
+    }
+
+    @Override
+    protected void dispose() {
+        Messages.removeTopics(id);
+        super.dispose();
     }
 
     @Override
@@ -148,7 +148,7 @@ public class MainPanel extends DialogWrapper {
         dataIsLoading = false;
     }
 
-    private List<QueryComponent> queryComponents;
+    private List<AbstractQueryPanel> abstractQueryPanels;
 
     public void saveQueryPart() {
         if (Objects.isNull(tabsCte.getSelectedInfo()) || Objects.isNull(tabsUnion.getSelectedInfo())) {
@@ -161,7 +161,7 @@ public class MainPanel extends DialogWrapper {
     }
 
     private void addQueryTabs(JBTabsImpl tabs) {
-        queryComponents = List.of(
+        abstractQueryPanels = List.of(
                 new FromTables(this),
                 new JoinsPanel(this),
                 new GroupingPanel(this),
@@ -169,7 +169,7 @@ public class MainPanel extends DialogWrapper {
                 new UnionAliasesPanel(this),
                 new OrderPanel(this)
         );
-        queryComponents.forEach(queryTab ->
+        abstractQueryPanels.forEach(queryTab ->
                 tabs.addTab(new TabInfo(queryTab.getComponent()).setText(queryTab.getHeader()))
         );
     }

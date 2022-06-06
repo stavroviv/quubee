@@ -1,12 +1,10 @@
 package org.quebee.com.panel;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.table.TableView;
-import com.intellij.util.messages.Topic;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
@@ -30,20 +28,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-import static org.quebee.com.util.Messages.getTopic;
-
 @Getter
-public class JoinsPanel implements QueryComponent {
+public class JoinsPanel extends AbstractQueryPanel {
 
     private final String header = "Joins";
     private final JComponent component;
     private final Set<TreeTableNode> tables = new HashSet<>();
     private final ListTableModel<LinkElement> joinTableModel;
     private final TableView<LinkElement> joinTable;
-    private final MainPanel mainPanel;
 
     public JoinsPanel(MainPanel mainPanel) {
-        this.mainPanel = mainPanel;
+        super(mainPanel);
 
         var table1Info = new ColumnInfo<LinkElement, String>("Table 1") {
             @Override
@@ -308,16 +303,16 @@ public class JoinsPanel implements QueryComponent {
 
     @Override
     public void initListeners(Disposable disposable) {
-        subscribeOnTopic(disposable, SelectedTableAfterAddNotifier.class, this::addSelectedTable);
-        subscribeOnTopic(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
-        subscribeOnTopic(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(disposable, SelectedTableAfterAddNotifier.class, this::addSelectedTable);
+        subscribe(disposable, SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        subscribe(disposable, SaveQueryDataNotifier.class, this::saveQueryData);
     }
 
-    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
-        var bus = ApplicationManager.getApplication().getMessageBus();
-        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
-        bus.connect(disposable).subscribe(topic, handler);
-    }
+//    private <L> void subscribeOnTopic(Disposable disposable, Class<L> listenerClass, L handler) {
+//        var bus = ApplicationManager.getApplication().getMessageBus();
+//        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
+//        bus.connect(disposable).subscribe(topic, handler);
+//    }
 
     private void saveQueryData(FullQuery fullQuery, String s, int i) {
         tables.clear();
