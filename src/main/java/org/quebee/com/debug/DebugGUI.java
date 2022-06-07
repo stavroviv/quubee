@@ -13,6 +13,7 @@ import org.quebee.com.notifier.LoadQueryDataNotifier;
 import org.quebee.com.notifier.ReloadDbTablesNotifier;
 import org.quebee.com.panel.MainPanel;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.util.JetSelectMessages;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +49,7 @@ public class DebugGUI implements StartupActivity {
         }
         dbStructure.setDbElements(dbElements);
 
-        org.quebee.com.util.Messages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
+        JetSelectMessages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
         form.show();
     }
 
@@ -96,9 +97,9 @@ public class DebugGUI implements StartupActivity {
         dbElements.put("table1", List.of("id", "test_2", "test_3", "test_4"));
         dbStructure.setDbElements(dbElements);
 
-        org.quebee.com.util.Messages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
-        org.quebee.com.util.Messages.getPublisher(form.getId(), LoadQueryDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte(), 0);
-        org.quebee.com.util.Messages.getPublisher(form.getId(), LoadQueryCteDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte());
+        JetSelectMessages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
+        JetSelectMessages.getPublisher(form.getId(), LoadQueryDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte(), 0);
+        JetSelectMessages.getPublisher(form.getId(), LoadQueryCteDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte());
 
         form.show();
     }
@@ -134,9 +135,9 @@ public class DebugGUI implements StartupActivity {
         dbElements.put("test_table_3", List.of("id", "test_2", "test_3", "test_4"));
         dbStructure.setDbElements(dbElements);
 
-        org.quebee.com.util.Messages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
-        org.quebee.com.util.Messages.getPublisher(form.getId(), LoadQueryDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte(), 0);
-        org.quebee.com.util.Messages.getPublisher(form.getId(), LoadQueryCteDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte());
+        JetSelectMessages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
+        JetSelectMessages.getPublisher(form.getId(), LoadQueryDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte(), 0);
+        JetSelectMessages.getPublisher(form.getId(), LoadQueryCteDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte());
 
         form.show();
     }

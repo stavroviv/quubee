@@ -2,11 +2,11 @@ package org.quebee.com.panel;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.util.messages.Topic;
-import org.quebee.com.util.Messages;
+import org.quebee.com.util.JetSelectMessages;
 
 import javax.swing.*;
 
-import static org.quebee.com.util.Messages.getTopic;
+import static org.quebee.com.util.JetSelectMessages.getTopic;
 
 public abstract class AbstractQueryPanel {
 
@@ -29,6 +29,6 @@ public abstract class AbstractQueryPanel {
     }
 
     protected <L> L getPublisher(Class<L> handler) {
-        return Messages.getPublisher(mainPanel.getId(), handler);
+        return JetSelectMessages.getPublisher(mainPanel.getId(), handler);
     }
 }

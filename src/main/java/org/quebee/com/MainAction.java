@@ -7,8 +7,9 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import lombok.SneakyThrows;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.Select;
@@ -19,7 +20,7 @@ import org.quebee.com.notifier.LoadQueryDataNotifier;
 import org.quebee.com.notifier.ReloadDbTablesNotifier;
 import org.quebee.com.panel.MainPanel;
 import org.quebee.com.qpart.FullQuery;
-import org.quebee.com.util.Messages;
+import org.quebee.com.util.JetSelectMessages;
 
 import java.util.Objects;
 
@@ -28,14 +29,17 @@ public class MainAction extends AlignedIconWithTextAction {
     private AnActionEvent action;
 
     @Override
-    @SneakyThrows
     public void actionPerformed(@NotNull AnActionEvent action) {
         this.action = action;
         var selectionText = getSelectionText(action);
 
         Statement parse = new Select();
         if (!selectionText.isBlank()) {
-            parse = CCJSqlParserUtil.parse(selectionText);
+            try {
+                parse = CCJSqlParserUtil.parse(selectionText);
+            } catch (JSQLParserException e) {
+                Messages.showMessageDialog(e.getMessage(), "Warning", Messages.getErrorIcon());
+            }
         }
 
         var fullQuery = new FullQuery(parse);
@@ -49,8 +53,8 @@ public class MainAction extends AlignedIconWithTextAction {
         };
 
         setDatabaseTables(action, form);
-        Messages.getPublisher(form.getId(), LoadQueryDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte(), 0);
-        Messages.getPublisher(form.getId(), LoadQueryCteDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte());
+        JetSelectMessages.getPublisher(form.getId(), LoadQueryDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte(), 0);
+        JetSelectMessages.getPublisher(form.getId(), LoadQueryCteDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte());
 
         form.show();
     }
@@ -95,6 +99,6 @@ public class MainAction extends AlignedIconWithTextAction {
         var console = JdbcConsole.findConsole(action);
         var structure = new PostgresStructureImpl();
         var dbStructure = structure.getDBStructure(console);
-        Messages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
+        JetSelectMessages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
     }
 }

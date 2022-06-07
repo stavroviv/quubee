@@ -13,7 +13,7 @@ import org.quebee.com.notifier.LoadQueryDataNotifier;
 import org.quebee.com.notifier.SaveQueryCteDataNotifier;
 import org.quebee.com.notifier.SaveQueryDataNotifier;
 import org.quebee.com.qpart.FullQuery;
-import org.quebee.com.util.Messages;
+import org.quebee.com.util.JetSelectMessages;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,7 +48,7 @@ public class MainPanel extends DialogWrapper {
 
     @Override
     protected void dispose() {
-        Messages.removeTopics(id);
+        JetSelectMessages.removeTopics(id);
         super.dispose();
     }
 
@@ -95,12 +95,12 @@ public class MainPanel extends DialogWrapper {
                     return;
                 }
                 if (Objects.nonNull(oldSelection)) {
-                    Messages.getPublisher(id, SaveQueryDataNotifier.class).onAction(fullQuery, oldSelection.getText(), 0);
-                    Messages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, oldSelection.getText());
+                    JetSelectMessages.getPublisher(id, SaveQueryDataNotifier.class).onAction(fullQuery, oldSelection.getText(), 0);
+                    JetSelectMessages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, oldSelection.getText());
                 }
                 loadUnions(newSelection.getText());
-                Messages.getPublisher(id, LoadQueryDataNotifier.class).onAction(fullQuery, newSelection.getText(), 0);
-                Messages.getPublisher(id, LoadQueryCteDataNotifier.class).onAction(fullQuery, newSelection.getText());
+                JetSelectMessages.getPublisher(id, LoadQueryDataNotifier.class).onAction(fullQuery, newSelection.getText(), 0);
+                JetSelectMessages.getPublisher(id, LoadQueryCteDataNotifier.class).onAction(fullQuery, newSelection.getText());
             }
         });
         tabsUnion.addListener(new TabsListener() {
@@ -114,11 +114,11 @@ public class MainPanel extends DialogWrapper {
                     return;
                 }
                 if (Objects.nonNull(oldSelection)) {
-                    Messages.getPublisher(id, SaveQueryDataNotifier.class).onAction(
+                    JetSelectMessages.getPublisher(id, SaveQueryDataNotifier.class).onAction(
                             fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(oldSelection)
                     );
                 }
-                Messages.getPublisher(id, LoadQueryDataNotifier.class).onAction(
+                JetSelectMessages.getPublisher(id, LoadQueryDataNotifier.class).onAction(
                         fullQuery, selectedCte.getText(), tabsUnion.getTabs().indexOf(newSelection)
                 );
             }
@@ -154,10 +154,10 @@ public class MainPanel extends DialogWrapper {
         if (Objects.isNull(tabsCte.getSelectedInfo()) || Objects.isNull(tabsUnion.getSelectedInfo())) {
             return;
         }
-        Messages.getPublisher(id, SaveQueryDataNotifier.class).onAction(fullQuery,
+        JetSelectMessages.getPublisher(id, SaveQueryDataNotifier.class).onAction(fullQuery,
                 tabsCte.getSelectedInfo().getText(), Integer.parseInt(tabsUnion.getSelectedInfo().getText())
         );
-        Messages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, tabsCte.getSelectedInfo().getText());
+        JetSelectMessages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, tabsCte.getSelectedInfo().getText());
     }
 
     private void addQueryTabs(JBTabsImpl tabs) {

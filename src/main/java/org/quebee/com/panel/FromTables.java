@@ -81,7 +81,7 @@ public class FromTables extends AbstractQueryPanel {
                 })
         );
         union.getSelectedFieldsModel().getItems().forEach(x ->
-                getPublisher(SelectedFieldAddNotifier.class).onAction(x)
+                getPublisher(SelectedFieldAddNotifier.class).onAction(x, false)
         );
         selectedTablesModel.reload();
     }
@@ -121,11 +121,11 @@ public class FromTables extends AbstractQueryPanel {
             addSelectedTableNode(parent, alias);
         }
         getPublisher(SelectedFieldAddNotifier.class).onAction(
-                new TableElement(parentUserObject.getName(), node.getUserObject().getName())
+                new TableElement(parentUserObject.getName(), node.getUserObject().getName()), true
         );
     }
 
-    private void addSelectedField(TableElement node) {
+    private void addSelectedField(TableElement node, boolean interactive) {
         selectedFieldsModel.addRow(node);
     }
 
@@ -216,7 +216,7 @@ public class FromTables extends AbstractQueryPanel {
                 var columnObject = value.getUserObject();
                 var tableObject = value.getParent().getUserObject();
                 getPublisher(SelectedFieldAddNotifier.class).onAction(
-                        new TableElement(tableObject.getNameWithAlias(), columnObject.getName())
+                        new TableElement(tableObject.getNameWithAlias(), columnObject.getName()), true
                 );
             }
         });

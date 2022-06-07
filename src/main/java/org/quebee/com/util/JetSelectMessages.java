@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class Messages {
+public class JetSelectMessages {
 
     private final static Map<UUID, Map<Class<?>, Topic<?>>> topics = new HashMap<>();
 

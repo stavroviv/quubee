@@ -80,7 +80,7 @@ public class GroupingPanel extends AbstractQueryPanel {
         groupingModel.reload();
     }
 
-    private void addSelectedField(TableElement element) {
+    private void addSelectedField(TableElement element, boolean interactive) {
         var tableElement = new TableElement(element);
         tableElement.setColumn(true);
         groupingRoot.insert(new QBTreeNode(tableElement), groupingRoot.getChildCount() - 1);

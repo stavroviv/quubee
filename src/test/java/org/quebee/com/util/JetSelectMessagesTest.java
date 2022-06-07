@@ -2,7 +2,7 @@ package org.quebee.com.util;
 
 import org.junit.jupiter.api.Test;
 
-class MessagesTest {
+class JetSelectMessagesTest {
 
     @Test
     void dummyTest() {
