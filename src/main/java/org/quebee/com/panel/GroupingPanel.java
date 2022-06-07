@@ -14,9 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
-import org.quebee.com.notifier.SaveQueryDataNotifier;
-import org.quebee.com.notifier.SelectedFieldAddNotifier;
-import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
+import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
 
@@ -41,6 +39,37 @@ public class GroupingPanel extends AbstractQueryPanel {
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
         subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
         subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
+        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+    }
+
+    private void removeSelectedField(TableElement tableElement) {
+        groupingRoot.nodeToList().stream()
+                .filter(x -> x.getUserObject().getDescription().equals(tableElement.getDescription()))
+                .forEach(x -> {
+                    var index = groupingRoot.getIndex(x);
+                    groupingRoot.remove(x);
+                    groupingModel.nodesWereRemoved(groupingRoot, new int[]{index}, new Object[]{x});
+                });
+    }
+
+    private void removeSelectedTable(QBTreeNode node) {
+        var userObject = node.getUserObject();
+        var removeTableName = userObject.getDescription();
+        allFieldsRoot.nodeToList().stream()
+                .filter(x -> x.getUserObject().getDescription().equals(removeTableName))
+                .findFirst().ifPresent(x -> {
+                    var index = allFieldsRoot.getIndex(x);
+                    allFieldsRoot.remove(x);
+                    groupingModel.nodesWereRemoved(allFieldsRoot, new int[]{index}, new Object[]{x});
+                });
+        groupingRoot.nodeToList().stream()
+                .filter(x -> x.getUserObject().getTableName().equals(removeTableName))
+                .forEach(x -> {
+                    var index = groupingRoot.getIndex(x);
+                    groupingRoot.remove(x);
+                    groupingModel.nodesWereRemoved(groupingRoot, new int[]{index}, new Object[]{x});
+                });
     }
 
     private void saveQueryData(FullQuery fullQuery, String s, int id) {
@@ -59,13 +88,9 @@ public class GroupingPanel extends AbstractQueryPanel {
     }
 
     private void addSelectedTable(QBTreeNode node) {
-        var userObject = node.getUserObject();
-        var newUserObject = new TableElement(userObject.getName());
-        newUserObject.setTable(true);
-        newUserObject.setId(userObject.getId());
+        var newUserObject = new TableElement(node.getUserObject());
         var newTableNode = new QBTreeNode(newUserObject);
-        node.children().asIterator()
-                .forEachRemaining(x -> newTableNode.add(new QBTreeNode((TableElement) x.getUserObject())));
+        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
         allFieldsRoot.add(newTableNode);
         groupingModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
     }
@@ -153,7 +178,7 @@ public class GroupingPanel extends AbstractQueryPanel {
         hBox.add(Box.createHorizontalStrut(5));
 
         var comp = Box.createVerticalBox();
-      //  comp.setBorder(new LineBorder(JBColor.RED, 1));
+        //  comp.setBorder(new LineBorder(JBColor.RED, 1));
         comp.setPreferredSize(new Dimension(30, 300));
         comp.add(Box.createVerticalStrut(10));
         comp.add(smallButton(">"));
@@ -171,7 +196,7 @@ public class GroupingPanel extends AbstractQueryPanel {
 
         return hBox;
     }
-    
+
     private JButton smallButton(String text) {
         var button = new JButton(text);
         button.setMaximumSize(new Dimension(50, 30));

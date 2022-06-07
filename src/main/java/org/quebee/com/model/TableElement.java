@@ -51,11 +51,13 @@ public class TableElement {
     }
 
     @SuppressWarnings("CopyConstructorMissesField")
-    public TableElement(TableElement node) {
-        this.name = node.getName();
-        this.alias = node.getAlias();
-        this.columnName = node.getColumnName();
-        this.tableName = node.getTableName();
+    public TableElement(TableElement tableElement) {
+        this.name = tableElement.getName();
+        this.alias = tableElement.getAlias();
+        this.columnName = tableElement.getColumnName();
+        this.tableName = tableElement.getTableName();
+        this.table = tableElement.isTable();
+        this.column = tableElement.isColumn();
         this.id = UUID.randomUUID();
     }
 

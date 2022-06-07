@@ -1,10 +1,7 @@
 package org.quebee.com.panel;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.ui.AnActionButton;
-import com.intellij.ui.CommonActionsPanel;
-import com.intellij.ui.JBSplitter;
-import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.*;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -100,10 +97,7 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     private void removeSelectedFieldsByTable(QBTreeNode node) {
-        var userObject = node.getUserObject();
-        var removeTableName = Objects.nonNull(userObject.getAlias())
-                ? userObject.getAlias()
-                : userObject.getName();
+        var removeTableName = node.getUserObject().getDescription();
         for (var i = selectedFieldsModel.getItems().size() - 1; i >= 0; i--) {
             var name = selectedFieldsModel.getItem(i).getTableName();
             if (name.equals(removeTableName)) {
@@ -230,6 +224,7 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     private ListTableModel<TableElement> selectedFieldsModel;
+    private TableView<TableElement> selectedFieldsTable;
 
     public JComponent selectedFields() {
         var fieldInfo = new ColumnInfo<TableElement, String>("Fields") {
@@ -248,9 +243,9 @@ public class FromTables extends AbstractQueryPanel {
         selectedFieldsModel = new ListTableModel<>(new ColumnInfo[]{
                 fieldInfo
         });
-        var table = new TableView<>(selectedFieldsModel);
+        selectedFieldsTable = new TableView<>(selectedFieldsModel);
 
-        var decorator = ToolbarDecorator.createDecorator(table);
+        var decorator = ToolbarDecorator.createDecorator(selectedFieldsTable);
         decorator.setAddAction(button -> {
 //            model.addRow(new TableElement());
             //    model.reload();
@@ -261,10 +256,10 @@ public class FromTables extends AbstractQueryPanel {
 //                System.out.println("test");
 //            }
 //        });
-//        decorator.setRemoveAction(button -> {
-//            System.out.println(button);
-//            // myTableModel.addRow();
-//        });
+        decorator.setRemoveAction(button -> {
+            getPublisher(SelectedFieldRemoveNotifier.class).onAction(selectedFieldsTable.getSelectedObject());
+            TableUtil.doRemoveSelectedItems(selectedFieldsTable, selectedFieldsModel, null);
+        });
         return decorator.createPanel();
     }
 

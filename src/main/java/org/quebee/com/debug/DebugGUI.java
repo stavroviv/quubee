@@ -23,8 +23,8 @@ public class DebugGUI implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
 //        testActivity1();
-//        testActivity2();
-        testActivityJoinTable();
+        testActivity2();
+//        testActivityJoinTable();
     }
 
     private void testActivity1() {
