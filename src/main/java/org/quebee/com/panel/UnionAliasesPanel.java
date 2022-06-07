@@ -9,10 +9,9 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.AliasElement;
+import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
-import org.quebee.com.notifier.LoadQueryCteDataNotifier;
-import org.quebee.com.notifier.SaveQueryCteDataNotifier;
-import org.quebee.com.notifier.SelectedFieldAddNotifier;
+import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.ComponentUtils;
@@ -144,12 +143,38 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         subscribe(LoadQueryCteDataNotifier.class, this::loadQueryData);
         subscribe(SaveQueryCteDataNotifier.class, this::saveQueryData);
         subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
+        subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
+        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+    }
+
+    private void removeSelectedTable(QBTreeNode node) {
+        var userObject = node.getUserObject();
+        var removeTableName = userObject.getDescription();
+        for (var i = aliasTableModel.getItems().size() - 1; i >= 0; i--) {
+            var name = aliasTableModel.getItem(i).getTableName();
+            if (name.equals(removeTableName)) {
+                aliasTableModel.removeRow(i);
+            }
+        }
+    }
+
+    private void removeSelectedField(TableElement tableElement) {
+        var currentUnion = mainPanel.getCurrentUnion();
+        var removeElement = tableElement.getDescription();
+        for (var i = aliasTableModel.getItems().size() - 1; i >= 0; i--) {
+            var name = aliasTableModel.getItem(i).getAlias().get(currentUnion);
+            if (name.equals(removeElement)) {
+                aliasTableModel.removeRow(i);
+                break;
+            }
+        }
     }
 
     private void addSelectedField(TableElement tableElement) {
         var item = new AliasElement();
         item.setAliasName(tableElement.getColumnName());
-        item.putAlias(mainPanel.currentUnion(), tableElement.getDescription());
+        item.setTableName(tableElement.getTableName());
+        item.putAlias(mainPanel.getCurrentUnion(), tableElement.getDescription());
         aliasTableModel.addRow(item);
     }
 

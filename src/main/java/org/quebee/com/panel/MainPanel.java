@@ -174,8 +174,8 @@ public class MainPanel extends DialogWrapper {
         );
     }
 
-    public String currentUnion() {
-        TabInfo tabInfo = tabsUnion.getSelectedInfo();
+    public String getCurrentUnion() {
+        var tabInfo = tabsUnion.getSelectedInfo();
         return "Union " + (Objects.isNull(tabInfo) ? "0" : tabInfo.getText());
     }
 }

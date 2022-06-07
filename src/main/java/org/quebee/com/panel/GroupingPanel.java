@@ -36,10 +36,10 @@ public class GroupingPanel extends AbstractQueryPanel {
 
     @Override
     public void initListeners() {
-        subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
-        subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
         subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
         subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
+        subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
         subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
     }
 

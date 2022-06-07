@@ -74,6 +74,7 @@ public class OneCte implements Orderable {
                 if (j == 0) {
                     aliasElement.setAliasName(Objects.isNull(item.getAlias()) ? item.getColumnName() : item.getAlias());
                 }
+                aliasElement.setTableName(item.getTableName());
                 aliasElement.putAlias("Union " + j, item.getTableName() + "." + item.getColumnName());
                 j++;
             }
