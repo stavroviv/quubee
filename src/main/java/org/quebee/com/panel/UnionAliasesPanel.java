@@ -170,7 +170,10 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         }
     }
 
-    private void addSelectedField(TableElement tableElement) {
+    private void addSelectedField(TableElement tableElement, boolean interactive) {
+        if (!interactive) {
+            return;
+        }
         var item = new AliasElement();
         item.setAliasName(tableElement.getColumnName());
         item.setTableName(tableElement.getTableName());
