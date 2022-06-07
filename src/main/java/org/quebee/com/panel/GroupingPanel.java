@@ -51,8 +51,8 @@ public class GroupingPanel extends AbstractQueryPanel {
         groupingModel.reload();
     }
 
-    private void addSelectedField(QBTreeNode node) {
-        var tableElement = new TableElement(node);
+    private void addSelectedField(TableElement element) {
+        var tableElement = new TableElement(element);
         tableElement.setColumn(true);
         groupingRoot.insert(new QBTreeNode(tableElement), groupingRoot.getChildCount() - 1);
         groupingModel.nodesWereInserted(groupingRoot, new int[]{groupingRoot.getChildCount() - 2});
@@ -115,7 +115,7 @@ public class GroupingPanel extends AbstractQueryPanel {
 
             @Override
             public @Nullable String valueOf(TableElement o) {
-                return Objects.isNull(o) ? "" : o.getName();
+                return o.getDescription();
             }
         };
 

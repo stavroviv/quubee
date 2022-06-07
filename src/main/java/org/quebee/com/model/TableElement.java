@@ -31,6 +31,8 @@ public class TableElement {
 
     private boolean distinct;
 
+    private String description;
+
     public TableElement(String name) {
         this.name = name;
         this.id = UUID.randomUUID();
@@ -48,26 +50,29 @@ public class TableElement {
         this.id = UUID.randomUUID();
     }
 
-    public TableElement(QBTreeNode node) {
-        var parent = node.getParent().getUserObject();
-        var userObject = node.getUserObject();
-        var tableName = Objects.nonNull(parent.getAlias()) ? parent.getAlias() : parent.getName();
-        this.name = tableName + "." + userObject.getName();
-        this.setTableName(tableName);
+    @SuppressWarnings("CopyConstructorMissesField")
+    public TableElement(TableElement node) {
+        this.name = node.getName();
+        this.alias = node.getAlias();
+        this.columnName = node.getColumnName();
+        this.tableName = node.getTableName();
         this.id = UUID.randomUUID();
     }
-
-//    public String getNameOrAlias() {
-//        return Objects.isNull(alias) ? columnName : alias;
-//    }
 
     public TableElement(String tableName, String columnName) {
         this.tableName = tableName;
         this.columnName = columnName;
     }
 
-    public String getName() {
-        return Objects.nonNull(name) ? name : tableName + "." + columnName;
+    public String getDescription() {
+        if (Objects.nonNull(tableName) && Objects.nonNull(columnName)) {
+            return tableName + "." + columnName;
+        }
+        return getNameWithAlias();
+    }
+
+    public String getNameWithAlias() {
+        return Objects.nonNull(alias) ? alias : name;
     }
 
     public static class Renderer extends ColoredTreeCellRenderer {
@@ -75,11 +80,11 @@ public class TableElement {
         @Override
         public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected,
                                           boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            Object userObject = ((MutableTreeTableNode) value).getUserObject();
+            var userObject = ((MutableTreeTableNode) value).getUserObject();
             if (!(userObject instanceof TableElement)) {
                 return;
             }
-            TableElement element = (TableElement) userObject;
+            var element = (TableElement) userObject;
             if (element.isTable()) {
                 setIcon(DatabaseIcons.Table);
             } else if (element.isColumn()) {
@@ -87,7 +92,7 @@ public class TableElement {
             } else {
                 setIcon(DatabaseIcons.ObjectGroup);
             }
-            append(Objects.nonNull(element.getAlias()) ? element.getAlias() : element.getName());
+            append(element.getDescription());
         }
     }
 }

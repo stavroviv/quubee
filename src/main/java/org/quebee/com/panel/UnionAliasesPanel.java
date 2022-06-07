@@ -9,7 +9,6 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.AliasElement;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.LoadQueryCteDataNotifier;
 import org.quebee.com.notifier.SaveQueryCteDataNotifier;
@@ -147,11 +146,10 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
     }
 
-    private void addSelectedField(QBTreeNode node) {
-        var userObject = node.getUserObject();
+    private void addSelectedField(TableElement tableElement) {
         var item = new AliasElement();
-        item.setAliasName(userObject.getName());
-        item.putAlias(mainPanel.currentUnion(), node.getNameWithAlias());
+        item.setAliasName(tableElement.getColumnName());
+        item.putAlias(mainPanel.currentUnion(), tableElement.getDescription());
         aliasTableModel.addRow(item);
     }
 

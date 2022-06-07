@@ -1,4 +1,7 @@
 package org.quebee.com.notifier;
 
-public interface SelectedFieldAddNotifier extends NodeNotifier {
+import org.quebee.com.model.TableElement;
+
+public interface SelectedFieldAddNotifier {
+    void onAction(TableElement element);
 }

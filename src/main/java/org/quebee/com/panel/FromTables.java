@@ -75,16 +75,17 @@ public class FromTables extends AbstractQueryPanel {
         }
 
         var union = cte.getUnion("" + i1);
-//        union.getSelectedTablesRoot().nodeToList().forEach(x ->
-//                databaseRoot.nodeToList().forEach(node -> {
-//                    var userObject = x.getUserObject();
-//                    if (node.getUserObject().getName().equals(userObject.getName())) {
-//                        getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
-//                    }
-//                })
-//        );
-        ComponentUtils.loadTreeToTree(union.getSelectedTablesRoot(), selectedTablesRoot);
-        ComponentUtils.loadTableToTable(union.getSelectedFieldsModel(), selectedFieldsModel);
+        union.getSelectedTablesRoot().nodeToList().forEach(x ->
+                databaseRoot.nodeToList().forEach(node -> {
+                    var userObject = x.getUserObject();
+                    if (node.getUserObject().getName().equals(userObject.getName())) {
+                        getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
+                    }
+                })
+        );
+        union.getSelectedFieldsModel().getItems().forEach(x ->
+                getPublisher(SelectedFieldAddNotifier.class).onAction(x)
+        );
         selectedTablesModel.reload();
     }
 
@@ -125,11 +126,13 @@ public class FromTables extends AbstractQueryPanel {
                 .noneMatch(x -> x.getUserObject().getName().equals(parentUserObject.getName()))) {
             addSelectedTableNode(parent, alias);
         }
-        getPublisher(SelectedFieldAddNotifier.class).onAction(node);
+        getPublisher(SelectedFieldAddNotifier.class).onAction(
+                new TableElement(parentUserObject.getName(), node.getUserObject().getName())
+        );
     }
 
-    private void addSelectedField(QBTreeNode node) {
-        selectedFieldsModel.addRow(new TableElement(node));
+    private void addSelectedField(TableElement node) {
+        selectedFieldsModel.addRow(node);
     }
 
     private void addSelectedTableNode(QBTreeNode node, String alias) {
@@ -216,7 +219,11 @@ public class FromTables extends AbstractQueryPanel {
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
                 }
-                getPublisher(SelectedFieldAddNotifier.class).onAction(value);
+                var columnObject = value.getUserObject();
+                var tableObject = value.getParent().getUserObject();
+                getPublisher(SelectedFieldAddNotifier.class).onAction(
+                        new TableElement(tableObject.getNameWithAlias(), columnObject.getName())
+                );
             }
         });
         return panel;
@@ -229,7 +236,7 @@ public class FromTables extends AbstractQueryPanel {
 
             @Override
             public @NotNull String valueOf(TableElement o) {
-                return o.getName();
+                return o.getDescription();
             }
 
             @Override
