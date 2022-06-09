@@ -91,4 +91,12 @@ public class OneCte implements Orderable {
     public void setOrder(Integer order) {
         this.order = order;
     }
+
+    public void addUnion(int order) {
+        unionMap.put("" + order, new Union(null, order));
+    }
+
+    public void removeUnion(int index) {
+        unionMap.remove("" + index);
+    }
 }

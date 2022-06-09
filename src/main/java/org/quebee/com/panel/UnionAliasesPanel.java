@@ -1,6 +1,7 @@
 package org.quebee.com.panel;
 
 import com.intellij.ui.JBSplitter;
+import com.intellij.ui.TableUtil;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
@@ -71,6 +72,7 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
     }
 
     private ListTableModel<TableElement> unionTableModel;
+    private TableView<TableElement> unionTable;
 
     private JComponent getUnionTablePanel() {
         var nameInfo = new ColumnInfo<TableElement, String>("Name") {
@@ -111,22 +113,52 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
                 isDistinctInfo
         );
 
-        var unionTable = new TableView<>(unionTableModel);
+        unionTable = new TableView<>(unionTableModel);
         var decorator = ToolbarDecorator.createDecorator(unionTable);
         decorator.setAddAction(button -> addNewUnion(true));
+        decorator.setRemoveAction(button -> removeUnion());
+        decorator.setRemoveActionUpdater(
+                e -> {
+                    if (unionTable.getSelectedRow() == -1) {
+                        return false;
+                    }
+                    return unionTableModel.getRowCount() > 1;
+                }
+        );
         return decorator.createPanel();
+    }
+
+    private void removeUnion() {
+        var unionRow = unionTable.getSelectedObject();
+        if (Objects.isNull(unionRow) || unionTableModel.getRowCount() <= 1) {
+            return;
+        }
+        var columnInfos = aliasTableModel.getColumnInfos();
+
+        var columnIndex = unionTable.getSelectedRow() + 1;
+        var result = new ColumnInfo[columnInfos.length - 1];
+        System.arraycopy(columnInfos, 0, result, 0, columnIndex);
+        if (columnInfos.length != columnIndex) {
+            System.arraycopy(columnInfos, columnIndex + 1, result, columnIndex, columnInfos.length - columnIndex - 1);
+        }
+        aliasTableModel.setColumnInfos(result);
+
+        mainPanel.removeUnion(Integer.parseInt(unionRow.getName().replace("Union ", "")));
+        TableUtil.doRemoveSelectedItems(unionTable, unionTableModel, null);
     }
 
     private int curMaxUnion;
 
-    private void addNewUnion(boolean uiAdd) {
-        if (uiAdd) {
-            var item = new TableElement("Union " + curMaxUnion);
+    private void addNewUnion(boolean interactive) {
+        var newUnion = "Union " + curMaxUnion;
+        if (interactive) {
+            var item = new TableElement(newUnion);
             unionTableModel.addRow(item);
+            mainPanel.addUnion(curMaxUnion);
         }
         var columnInfos = aliasTableModel.getColumnInfos();
         var newColumnInfo = Arrays.copyOf(columnInfos, columnInfos.length + 1);
-        var aliasNameInfo = new ColumnInfo<AliasElement, String>("Union " + curMaxUnion) {
+        var aliasNameInfo = new ColumnInfo<AliasElement, String>(newUnion) {
             @Override
             public String valueOf(AliasElement o) {
                 String s = o.getAlias().get(getName());

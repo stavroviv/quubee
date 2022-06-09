@@ -130,9 +130,14 @@ public class MainPanel extends DialogWrapper {
         fullQuery.getCteNames().forEach(x ->
                 tabsCte.addTab(new TabInfo(Box.createVerticalBox())).setText(x).setIcon(DatabaseIcons.Package)
         );
-        ctePanel.setVisible(tabsCte.getTabCount() > 1);
+        setPanelsVisible();
         loadUnions(fullQuery.getFirstCte());
         dataIsLoading = false;
+    }
+
+    private void setPanelsVisible() {
+        ctePanel.setVisible(tabsCte.getTabCount() > 1);
+        unionPanel.setVisible(tabsUnion.getTabCount() > 1);
     }
 
     private boolean dataIsLoading;
@@ -144,7 +149,7 @@ public class MainPanel extends DialogWrapper {
         cte.getUnionMap().keySet().forEach(y ->
                 tabsUnion.addTab(new TabInfo(Box.createVerticalBox())).setText(y).setIcon(DatabaseIcons.Table)
         );
-        unionPanel.setVisible(tabsUnion.getTabCount() > 1);
+        setPanelsVisible();
         dataIsLoading = false;
     }
 
@@ -177,5 +182,24 @@ public class MainPanel extends DialogWrapper {
     public String getCurrentUnion() {
         var tabInfo = tabsUnion.getSelectedInfo();
         return "Union " + (Objects.isNull(tabInfo) ? "0" : tabInfo.getText());
+    }
+
+    public String getCurrentCte() {
+        var tabInfo = tabsCte.getSelectedInfo();
+        return Objects.isNull(tabInfo) ? "" : tabInfo.getText();
+    }
+
+    public void addUnion(int index) {
+        fullQuery.getCte(getCurrentCte()).addUnion(index);
+        tabsUnion.addTab(new TabInfo(Box.createVerticalBox()).setText("" + index).setIcon(DatabaseIcons.Table));
+        setPanelsVisible();
+    }
+
+    public void removeUnion(int index) {
+        fullQuery.getCte(getCurrentCte()).removeUnion(index);
+        tabsUnion.getTabs().stream()
+                .filter(x -> x.getText().equals(String.valueOf(index)))
+                .findAny().ifPresent(x -> tabsUnion.removeTab(x));
+        setPanelsVisible();
     }
 }

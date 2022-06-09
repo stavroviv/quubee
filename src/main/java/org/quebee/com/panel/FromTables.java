@@ -1,7 +1,10 @@
 package org.quebee.com.panel;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.ui.*;
+import com.intellij.ui.AnActionButton;
+import com.intellij.ui.JBSplitter;
+import com.intellij.ui.TableUtil;
+import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -191,9 +194,7 @@ public class FromTables extends AbstractQueryPanel {
                 getPublisher(SelectedTableRemoveNotifier.class)
                         .onAction((QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0))
         );
-
-        var panel = decorator.createPanel();
-        decorator.getActionsPanel().getAnActionButton(CommonActionsPanel.Buttons.REMOVE).addCustomUpdater(
+        decorator.setRemoveActionUpdater(
                 e -> {
                     if (selectedTablesTree.getSelectedRow() == -1) {
                         return false;
@@ -220,7 +221,7 @@ public class FromTables extends AbstractQueryPanel {
                 );
             }
         });
-        return panel;
+        return decorator.createPanel();
     }
 
     private ListTableModel<TableElement> selectedFieldsModel;
