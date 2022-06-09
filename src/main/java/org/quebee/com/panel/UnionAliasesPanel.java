@@ -7,8 +7,9 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.quebee.com.columns.EditableBooleanColumn;
+import org.quebee.com.columns.EditableStringColumn;
 import org.quebee.com.model.AliasElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
@@ -50,23 +51,7 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
     }
 
     private void initAliasTableModel() {
-        var nameInfo = new ColumnInfo<AliasElement, String>("Field Name") {
-
-            @Override
-            public String valueOf(AliasElement o) {
-                return Objects.isNull(o) ? "" : o.getAliasName();
-            }
-
-            @Override
-            public boolean isCellEditable(AliasElement aliasElement) {
-                return true;
-            }
-
-            @Override
-            public void setValue(AliasElement variable, String value) {
-                variable.setAliasName(value);
-            }
-        };
+        var nameInfo = new EditableStringColumn<>("Field Name", AliasElement::getAliasName, AliasElement::setAliasName);
 
         aliasTableModel = new ListTableModel<>(nameInfo);
     }
@@ -82,32 +67,8 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
                 return Objects.isNull(o) ? "" : o.getName();
             }
         };
-        var isDistinctInfo = new ColumnInfo<TableElement, Boolean>("Distinct") {
-            @Override
-            public int getWidth(JTable table) {
-                return 50;
-            }
+        var isDistinctInfo = new EditableBooleanColumn<>("Distinct", 50, TableElement::isDistinct, TableElement::setDistinct);
 
-            @Override
-            public @NotNull Boolean valueOf(TableElement o) {
-                return o.isDistinct();
-            }
-
-            @Override
-            public void setValue(TableElement variable, Boolean value) {
-                variable.setDistinct(value);
-            }
-
-            @Override
-            public Class<Boolean> getColumnClass() {
-                return Boolean.class;
-            }
-
-            @Override
-            public boolean isCellEditable(TableElement variable) {
-                return true;
-            }
-        };
         unionTableModel = new ListTableModel<>(
                 nameInfo,
                 isDistinctInfo

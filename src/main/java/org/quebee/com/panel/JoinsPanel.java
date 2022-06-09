@@ -9,6 +9,8 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.quebee.com.columns.EditableBooleanColumn;
+import org.quebee.com.columns.EditableStringColumn;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
@@ -40,140 +42,23 @@ public class JoinsPanel extends AbstractQueryPanel {
     public JoinsPanel(MainPanel mainPanel) {
         super(mainPanel);
 
-        var table1Info = new ColumnInfo<LinkElement, String>("Table 1") {
-            @Override
-            public int getWidth(JTable table) {
-                return 150;
-            }
-
-            @Override
-            public void setValue(LinkElement linkElement, String value) {
-                linkElement.setTable1(value);
-            }
-
+        var table1Info = new EditableStringColumn<>("Table 1", 150, LinkElement::getTable1, LinkElement::setTable1) {
             @Override
             public @NotNull TableCellEditor getEditor(LinkElement linkElement) {
                 return availableTablesEditor();
             }
-
-            @Override
-            public boolean isCellEditable(LinkElement linkElement) {
-                return true;
-            }
-
-            @Override
-            public @NotNull String valueOf(LinkElement o) {
-                return Objects.isNull(o) ? "" : o.getTable1();
-            }
         };
+        var allTable1Info = new EditableBooleanColumn<>("All", 25, LinkElement::isAllTable1, LinkElement::setAllTable1);
 
-        var allTable1Info = new ColumnInfo<LinkElement, Boolean>("All") {
-            @Override
-            public int getWidth(JTable table) {
-                return 25;
-            }
-
-            @Override
-            public @NotNull Boolean valueOf(LinkElement o) {
-                return o.isAllTable1();
-            }
-
-            @Override
-            public void setValue(LinkElement variable, Boolean value) {
-                variable.setAllTable1(value);
-            }
-
-            @Override
-            public Class<Boolean> getColumnClass() {
-                return Boolean.class;
-            }
-
-            @Override
-            public boolean isCellEditable(LinkElement variable) {
-                return true;
-            }
-        };
-
-        var table2Info = new ColumnInfo<LinkElement, String>("Table 2") {
-            @Override
-            public int getWidth(JTable table) {
-                return 150;
-            }
-
-            @Override
-            public void setValue(LinkElement linkElement, String value) {
-                linkElement.setTable2(value);
-            }
-
+        var table2Info = new EditableStringColumn<>("Table 2", 150, LinkElement::getTable2, LinkElement::setTable2) {
             @Override
             public @NotNull TableCellEditor getEditor(LinkElement linkElement) {
                 return availableTablesEditor();
             }
-
-            @Override
-            public boolean isCellEditable(LinkElement linkElement) {
-                return true;
-            }
-
-            @Override
-            public @NotNull String valueOf(LinkElement o) {
-                return Objects.isNull(o) ? "" : o.getTable2();
-            }
         };
+        var allTable2Info = new EditableBooleanColumn<>("All", 25, LinkElement::isAllTable2, LinkElement::setAllTable2);
 
-        var allTable2Info = new ColumnInfo<LinkElement, Boolean>("All") {
-            @Override
-            public int getWidth(JTable table) {
-                return 25;
-            }
-
-            @Override
-            public @NotNull Boolean valueOf(LinkElement o) {
-                return o.isAllTable2();
-            }
-
-            @Override
-            public void setValue(LinkElement variable, Boolean value) {
-                variable.setAllTable2(value);
-            }
-
-            @Override
-            public Class<Boolean> getColumnClass() {
-                return Boolean.class;
-            }
-
-            @Override
-            public boolean isCellEditable(LinkElement variable) {
-                return true;
-            }
-        };
-
-        var customInfo = new ColumnInfo<LinkElement, Boolean>("Custom") {
-            @Override
-            public int getWidth(JTable table) {
-                return 50;
-            }
-
-            @Override
-            public @NotNull Boolean valueOf(LinkElement o) {
-                return o.isCustom();
-            }
-
-            @Override
-            public void setValue(LinkElement variable, Boolean value) {
-                variable.setCustom(value);
-            }
-
-            @Override
-            public Class<Boolean> getColumnClass() {
-                return Boolean.class;
-            }
-
-            @Override
-            public boolean isCellEditable(LinkElement variable) {
-                return true;
-            }
-        };
+        var customInfo = new EditableBooleanColumn<>("Custom", 50, LinkElement::isCustom, LinkElement::setCustom);
 
         var linkingConditionInfo = new ColumnInfo<LinkElement, LinkElement>("Linking Condition") {
 
