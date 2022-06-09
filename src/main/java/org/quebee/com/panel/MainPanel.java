@@ -199,7 +199,11 @@ public class MainPanel extends DialogWrapper {
         fullQuery.getCte(getCurrentCte()).removeUnion(index);
         tabsUnion.getTabs().stream()
                 .filter(x -> x.getText().equals(String.valueOf(index)))
-                .findAny().ifPresent(x -> tabsUnion.removeTab(x));
+                .findAny().ifPresent(x -> {
+                    dataIsLoading = true;
+                    tabsUnion.removeTab(x);
+                    dataIsLoading = false;
+                });
         setPanelsVisible();
     }
 }
