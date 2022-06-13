@@ -1,12 +1,16 @@
 package org.quebee.com.panel;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.TableUtil;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
+import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.columns.EditableStringColumn;
@@ -19,8 +23,10 @@ import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
-import java.util.Arrays;
-import java.util.Objects;
+import javax.swing.table.TableCellEditor;
+import java.awt.*;
+import java.util.List;
+import java.util.*;
 
 @Getter
 public class UnionAliasesPanel extends AbstractQueryPanel {
@@ -43,17 +49,12 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
     private ListTableModel<AliasElement> aliasTableModel;
 
     private JComponent getAliasTablePanel() {
-        initAliasTableModel();
+        var nameInfo = new EditableStringColumn<>("Field Name", AliasElement::getAliasName, AliasElement::setAliasName);
+        aliasTableModel = new ListTableModel<>(nameInfo);
         var aliasTable = new TableView<>(aliasTableModel);
         var decorator = ToolbarDecorator.createDecorator(aliasTable);
         decorator.disableAddAction();
         return decorator.createPanel();
-    }
-
-    private void initAliasTableModel() {
-        var nameInfo = new EditableStringColumn<>("Field Name", AliasElement::getAliasName, AliasElement::setAliasName);
-
-        aliasTableModel = new ListTableModel<>(nameInfo);
     }
 
     private ListTableModel<TableElement> unionTableModel;
@@ -78,14 +79,12 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         var decorator = ToolbarDecorator.createDecorator(unionTable);
         decorator.setAddAction(button -> addNewUnion(true));
         decorator.setRemoveAction(button -> removeUnion());
-        decorator.setRemoveActionUpdater(
-                e -> {
-                    if (unionTable.getSelectedRow() == -1) {
-                        return false;
-                    }
-                    return unionTableModel.getRowCount() > 1;
-                }
-        );
+        decorator.setRemoveActionUpdater(e -> {
+            if (unionTable.getSelectedRow() == -1) {
+                return false;
+            }
+            return unionTableModel.getRowCount() > 1;
+        });
         return decorator.createPanel();
     }
 
@@ -122,13 +121,75 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         var aliasNameInfo = new ColumnInfo<AliasElement, String>(newUnion) {
             @Override
             public String valueOf(AliasElement o) {
-                String s = o.getAlias().get(getName());
-                return Objects.isNull(s) ? "" : s;
+                String value = o.getAlias().get(getName());
+                return Objects.isNull(value) ? "" : value;
+            }
+
+            @Override
+            public void setValue(AliasElement o, String value) {
+                o.putAlias(getName(), value);
+            }
+
+            @Override
+            public TableCellEditor getEditor(AliasElement linkElement) {
+                return availableFieldsEditor(getName());
+            }
+
+            @Override
+            public boolean isCellEditable(AliasElement variable) {
+                return true;
             }
         };
+
         newColumnInfo[columnInfos.length] = aliasNameInfo;
         aliasTableModel.setColumnInfos(newColumnInfo);
         curMaxUnion++;
+    }
+
+    @NotNull
+    private AbstractTableCellEditor availableFieldsEditor(String union) {
+        return new AbstractTableCellEditor() {
+
+            private ComboBox<String> stringComboBox;
+
+            @Override
+            public Object getCellEditorValue() {
+                return stringComboBox.getItem();
+            }
+
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value,
+                                                         boolean isSelected, int row, int column) {
+                var hBox = Box.createHorizontalBox();
+                stringComboBox = new ComboBox<>(unionValues.get(union).toArray(String[]::new)) {
+//                    public static ComboBoxUI createUI(JComponent c) {
+//                        return new ColorArrowUI();
+//                    }
+//
+//                    @Override protected JButton createArrowButton() {
+//                        return new BasicArrowButton(
+//                                BasicArrowButton.SOUTH,
+//                                Color.cyan, Color.magenta,
+//                                Color.yellow, Color.blue);
+//                    }
+
+//                    @Override
+//                    public void setUI(ComboBoxUI ui) {
+//                        super.setUI(ui);
+//                    }
+                };
+//                stringComboBox.
+                hBox.add(stringComboBox);
+                var button = new JButton(AllIcons.Actions.Close);
+                button.setPreferredSize(new Dimension(30, 30));
+                button.addActionListener((event) -> {
+                    System.out.println(event);
+                    System.out.println("test");
+                });
+                hBox.add(button);
+                return hBox;
+            }
+        };
     }
 
     @Override
@@ -163,15 +224,25 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         }
     }
 
+    Map<String, List<String>> unionValues = new HashMap<>();
+
     private void addSelectedField(TableElement tableElement, boolean interactive) {
         if (!interactive) {
             return;
         }
         var item = new AliasElement();
-        item.setAliasName(tableElement.getColumnName());
+        var columnName = tableElement.getColumnName();
+        item.setAliasName(columnName);
         item.setTableName(tableElement.getTableName());
-        item.putAlias(mainPanel.getCurrentUnion(), tableElement.getDescription());
+        var description = tableElement.getDescription();
+        item.putAlias(mainPanel.getCurrentUnion(), description);
         aliasTableModel.addRow(item);
+
+        if (unionValues.get(mainPanel.getCurrentUnion()) == null) {
+            unionValues.put(mainPanel.getCurrentUnion(), new ArrayList<>(List.of(description)));
+        } else {
+            unionValues.get(mainPanel.getCurrentUnion()).add(description);
+        }
     }
 
     private void saveQueryData(FullQuery query, String cteName) {

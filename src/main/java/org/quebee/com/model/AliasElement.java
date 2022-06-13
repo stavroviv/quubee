@@ -16,12 +16,6 @@ public class AliasElement {
     public AliasElement() {
     }
 
-//    public AliasElement(AliasElement aliasElement) {
-//        this.aliasName = aliasElement.getAliasName();
-//        this.tableName = aliasElement.getTableName();
-//        this.alias = new HashMap<>(aliasElement.getAlias());
-//    }
-
     public void putAlias(String union, String value) {
         alias.put(union, value);
     }
