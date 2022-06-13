@@ -5,6 +5,9 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.TableUtil;
 import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.components.JBTextField;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
@@ -23,7 +26,9 @@ import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
@@ -52,6 +57,7 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         var nameInfo = new EditableStringColumn<>("Field Name", AliasElement::getAliasName, AliasElement::setAliasName);
         aliasTableModel = new ListTableModel<>(nameInfo);
         var aliasTable = new TableView<>(aliasTableModel);
+        aliasTable.getTableHeader().setReorderingAllowed(false);
         var decorator = ToolbarDecorator.createDecorator(aliasTable);
         decorator.disableAddAction();
         return decorator.createPanel();
@@ -139,6 +145,12 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
             public boolean isCellEditable(AliasElement variable) {
                 return true;
             }
+
+            @Override
+            public TableCellRenderer getRenderer(AliasElement aliasElement) {
+                return (table, value, isSelected, hasFocus, row, column) ->
+                        new JBTextField(aliasElement.getAlias().get(getName()));
+            }
         };
 
         newColumnInfo[columnInfos.length] = aliasNameInfo;
@@ -160,36 +172,34 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
             @Override
             public Component getTableCellEditorComponent(JTable table, Object value,
                                                          boolean isSelected, int row, int column) {
-                var hBox = Box.createHorizontalBox();
-                stringComboBox = new ComboBox<>(unionValues.get(union).toArray(String[]::new)) {
-//                    public static ComboBoxUI createUI(JComponent c) {
-//                        return new ColorArrowUI();
-//                    }
-//
-//                    @Override protected JButton createArrowButton() {
-//                        return new BasicArrowButton(
-//                                BasicArrowButton.SOUTH,
-//                                Color.cyan, Color.magenta,
-//                                Color.yellow, Color.blue);
-//                    }
+                var fields = unionValues.get(union);
+                if (Objects.isNull(fields)) {
+                    stringComboBox = new ComboBox<>();
+                    return stringComboBox;
+                }
 
-//                    @Override
-//                    public void setUI(ComboBoxUI ui) {
-//                        super.setUI(ui);
-//                    }
-                };
-//                stringComboBox.
-                hBox.add(stringComboBox);
-                var button = new JButton(AllIcons.Actions.Close);
-                button.setPreferredSize(new Dimension(30, 30));
-                button.addActionListener((event) -> {
-                    System.out.println(event);
-                    System.out.println("test");
+                stringComboBox = new ComboBox<>(fields.toArray(String[]::new));
+                stringComboBox.setEditable(true);
+                var clearExtension = ExtendableTextComponent.Extension.create(
+                        AllIcons.Actions.Close, AllIcons.Actions.CloseHovered,
+                        "Clear", () -> clearAliasValue()
+                );
+                stringComboBox.setEditor(new BasicComboBoxEditor() {
+                    @Override
+                    protected JTextField createEditorComponent() {
+                        var ecbEditor = new ExtendableTextField();
+                        ecbEditor.addExtension(clearExtension);
+                        ecbEditor.setBorder(null);
+                        return ecbEditor;
+                    }
                 });
-                hBox.add(button);
-                return hBox;
+                return stringComboBox;
             }
         };
+    }
+
+    private void clearAliasValue() {
+
     }
 
     @Override
