@@ -1,7 +1,6 @@
 package org.quebee.com.columns;
 
 import com.intellij.util.ui.ColumnInfo;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Objects;
@@ -14,9 +13,7 @@ public class EditableStringColumn<T> extends ColumnInfo<T, String> {
     private final Function<T, String> getter;
     private final BiConsumer<T, String> setter;
 
-    public EditableStringColumn(String name, int width,
-                                Function<T, String> getter,
-                                BiConsumer<T, String> setter) {
+    public EditableStringColumn(String name, int width, Function<T, String> getter, BiConsumer<T, String> setter) {
         super(name);
         this.width = width;
         this.getter = getter;
@@ -31,13 +28,13 @@ public class EditableStringColumn<T> extends ColumnInfo<T, String> {
     }
 
     @Override
-    public @Nullable String valueOf(T value) {
+    public String valueOf(T value) {
         return Objects.isNull(value) ? "" : getter.apply(value);
     }
 
     @Override
     public int getWidth(JTable table) {
-        return width == 0 ? 50 : width;
+        return width;
     }
 
     @Override
