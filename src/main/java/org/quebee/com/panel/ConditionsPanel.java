@@ -9,7 +9,6 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -20,11 +19,13 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
+import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.model.ConditionElement;
+import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.model.TreeComboTableElement;
+import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -53,38 +54,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
     }
 
     private JComponent getConditionsTable() {
-        var isCustomInfo = new ColumnInfo<ConditionElement, Boolean>("Custom") {
-            @Override
-            public int getWidth(JTable table) {
-                return 50;
-            }
-
-            @Override
-            public @NotNull Boolean valueOf(ConditionElement o) {
-                return o.isCustom();
-            }
-
-            @Override
-            public void setValue(ConditionElement variable, Boolean value) {
-                variable.setCustom(value);
-//                setModified();
-            }
-
-            @Override
-            public Class<Boolean> getColumnClass() {
-                return Boolean.class;
-            }
-
-            @Override
-            public boolean isCellEditable(ConditionElement variable) {
-                return true;
-            }
-
-            @Override
-            public @NotNull String getTooltipText() {
-                return "Custom condition";
-            }
-        };
+        var isCustomInfo = new EditableBooleanColumn<>("Custom", 50, ConditionElement::isCustom, ConditionElement::setCustom);
 
         var conditionInfo = new ColumnInfo<ConditionElement, ConditionElement>("Condition") {
             @Override
@@ -215,33 +185,32 @@ public class ConditionsPanel extends AbstractQueryPanel {
         return decorator.createPanel();
     }
 
+    private QBTreeNode allFieldsRoot;
+    private ListTreeTableModel allFieldsModel;
+
     private JComponent getFieldsTree() {
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode("test");
-        ListTreeTableModel model = new ListTreeTableModel(root, new ColumnInfo[]{
+        allFieldsRoot = new QBTreeNode(new TableElement("empty"));
+        allFieldsModel = new ListTreeTableModel(allFieldsRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Fields")
         });
-        TreeTable table = new TreeTable(model);
-        table.setRootVisible(false);
+        var table = new TreeTable(allFieldsModel);
         table.setTreeCellRenderer(new TableElement.Renderer());
-        JBScrollPane jbScrollPane = new JBScrollPane(table);
-//
-//        ListTableModel model = new ListTableModel(new ColumnInfo[]{getTitleColumnInfo("Fields")});
-//        TableView table = new TableView(model);
+        table.setRootVisible(false);
 
-//        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(table);
-//        decorator.setAddAction(button -> {
-//            model.addRow(new DefaultMutableTreeTableNode("test" + new Random(1000).nextInt()));
-//            //    model.reload();
-//        });
-//        decorator.setRemoveAction(button -> {
-//            System.out.println(button);
-//            // myTableModel.addRow();
-//        });
-        return jbScrollPane;
+        var decorator = ToolbarDecorator.createDecorator(table);
+        return decorator.createPanel();
     }
 
     @Override
     public void initListeners() {
+        subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
+    }
 
+    private void addSelectedTable(QBTreeNode node) {
+        var newUserObject = new TableElement(node.getUserObject());
+        var newTableNode = new QBTreeNode(newUserObject);
+        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
+        allFieldsRoot.add(newTableNode);
+        allFieldsModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
     }
 }
