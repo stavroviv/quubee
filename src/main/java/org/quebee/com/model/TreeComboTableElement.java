@@ -8,27 +8,18 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class TreeComboTableElement extends DefaultMutableTreeNode implements TreeComboBox.CustomPresentation {
-    private String text;
-    private Icon icon;
+    private final String text;
+    private final Icon icon;
 
     @Override
     public String toString() {
         return text;
     }
 
-    public TreeComboTableElement(String test, Icon icon) {
-        this.text = test;
+    public TreeComboTableElement(String text, Icon icon) {
+        this.text = text;
         this.icon = icon;
     }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
 
     @Override
     public void append(SimpleColoredComponent component, int index) {

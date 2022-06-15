@@ -25,6 +25,10 @@ public class QBTreeNode extends DefaultMutableTreeTableNode {
         return (QBTreeNode) this.parent;
     }
 
+    public QBTreeNode getChildAt(int childIndex) {
+        return (QBTreeNode) this.children.get(childIndex);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
