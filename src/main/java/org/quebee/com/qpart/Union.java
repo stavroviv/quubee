@@ -9,6 +9,7 @@ import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
+import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.LinkElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
@@ -32,6 +33,9 @@ public class Union implements Orderable {
     private ListTableModel<TableElement> groupingTableModel = new ListTableModel<>();
     private ListTableModel<TableElement> aggregateTableModel = new ListTableModel<>();
 
+    // conditions
+    private ListTableModel<ConditionElement> conditionTableModel = new ListTableModel<>();
+
     public Union(SelectBody selectBody, Integer order) {
         this.order = order;
         if (Objects.isNull(selectBody)) {
@@ -41,6 +45,36 @@ public class Union implements Orderable {
         fillFromTablesModels(select);
         fillSelectedFieldsModels(select);
         fillJoinTableModel(select);
+        fillConditionTableModel(select);
+    }
+
+    private void fillConditionTableModel(PlainSelect pSelect) {
+        var where = pSelect.getWhere();
+        if (where == null) {
+            return;
+        }
+        if (where instanceof AndExpression) {
+            parseAndExpression((AndExpression) where);
+        } else {
+            var conditionElement = new ConditionElement(where.toString());
+            conditionElement.setCustom(!(where instanceof ComparisonOperator));
+            conditionTableModel.addRow(conditionElement);
+        }
+    }
+
+    private void parseAndExpression(AndExpression where) {
+        var conditionElement = new ConditionElement(where.getRightExpression().toString());
+        conditionTableModel.insertRow(0, conditionElement);
+
+        var leftExpression = where.getLeftExpression();
+        while (leftExpression instanceof AndExpression) {
+            var left = (AndExpression) leftExpression;
+            ConditionElement condition = new ConditionElement(left.getRightExpression().toString());
+            conditionTableModel.insertRow(0, condition);
+            leftExpression = left.getLeftExpression();
+        }
+        var condition = new ConditionElement(leftExpression.toString());
+        conditionTableModel.insertRow(0, condition);
     }
 
     private void fillJoinTableModel(PlainSelect select) {

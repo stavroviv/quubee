@@ -11,4 +11,12 @@ public class ConditionElement {
     private String conditionLeft;
     private String conditionComparison;
     private String conditionRight;
+
+    public ConditionElement() {
+    }
+
+    public ConditionElement(String condition) {
+        this.condition = condition;
+        this.custom = true;
+    }
 }

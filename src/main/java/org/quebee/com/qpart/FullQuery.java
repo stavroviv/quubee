@@ -1,6 +1,7 @@
 package org.quebee.com.qpart;
 
 import lombok.SneakyThrows;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParser;
@@ -207,31 +208,31 @@ public class FullQuery {
     }
 
     private static void saveConditions(PlainSelect selectBody, OneCte cte, String unionName) {
-//        Union union = cte.getUnionMap().get(unionName);
-//        TableView<ConditionElement> conditionTableResults = union.getConditionTableResults();
-//        if (conditionTableResults.getItems().size() == 0) {
-//            selectBody.setWhere(null);
-//            return;
-//        }
-//        StringBuilder where = new StringBuilder();
-//        for (ConditionElement item : conditionTableResults.getItems()) {
-//            String whereExpr = item.getCondition();
-//            if (whereExpr.isEmpty()) {
-//                whereExpr = item.getLeftExpression() + item.getExpression() + item.getRightExpression();
-//            }
-//            where.append(whereExpr).append(" AND ");
-//        }
-//        Statement stmt = null;
-//        try {
-//            stmt = CCJSqlParserUtil.parse(
-//                    "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
-//            );
-//        } catch (JSQLParserException e) {
-//            e.printStackTrace();
-//        }
-//        Select select = (Select) stmt;
-//        Expression whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
-//        selectBody.setWhere(whereExpression);
+        var union = cte.getUnionMap().get(unionName);
+        var conditionTableResults = union.getConditionTableModel();
+        if (conditionTableResults.getRowCount() == 0) {
+            selectBody.setWhere(null);
+            return;
+        }
+        var where = new StringBuilder();
+        for (var item : conditionTableResults.getItems()) {
+            var whereExpr = item.getCondition();
+            if (whereExpr.isEmpty()) {
+                whereExpr = item.getConditionLeft() + item.getConditionComparison() + item.getConditionRight();
+            }
+            where.append(whereExpr).append(" AND ");
+        }
+        Statement stmt = null;
+        try {
+            stmt = CCJSqlParserUtil.parse(
+                    "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
+            );
+        } catch (JSQLParserException e) {
+            e.printStackTrace();
+        }
+        var select = (Select) stmt;
+        var whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
+        selectBody.setWhere(whereExpression);
     }
 
     private static void saveGroupBy(PlainSelect select, OneCte cte, String union) {
