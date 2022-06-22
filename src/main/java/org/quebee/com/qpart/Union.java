@@ -65,7 +65,6 @@ public class Union implements Orderable {
     private void parseAndExpression(AndExpression where) {
         var conditionElement = new ConditionElement(where.getRightExpression().toString());
         conditionTableModel.insertRow(0, conditionElement);
-
         var leftExpression = where.getLeftExpression();
         while (leftExpression instanceof AndExpression) {
             var left = (AndExpression) leftExpression;
