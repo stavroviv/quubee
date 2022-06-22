@@ -75,10 +75,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 }
                 return (table, value, isSelected, hasFocus, row, column) -> {
                     var hBox = Box.createHorizontalBox();
-//                    var comp = new JBTextField(variable.getConditionLeft());
-//                    comp.setPreferredSize(new Dimension(200, 15));
-//                    comp.setBorder(new LineBorder(JBColor.RED, 1));
-                    hBox.add(new ComboBox<>(new String[]{variable.getConditionLeft()}));
+                    hBox.add(getTreeComboWithValue(variable));
                     hBox.add(new ComboBox<>(new String[]{variable.getConditionComparison()}));
                     hBox.add(new JBTextField(variable.getConditionRight()));
                     return hBox;
@@ -112,6 +109,19 @@ public class ConditionsPanel extends AbstractQueryPanel {
         return decorator.createPanel();
     }
 
+    @NotNull
+    private JComponent getTreeComboWithValue(ConditionElement variable) {
+        if (Objects.isNull(variable.getConditionLeft())) {
+            return new ComboBox<String>();
+        }
+        var split = variable.getConditionLeft().split("\\.");
+        var root = new TreeComboTableElement(split[1], split[0], DatabaseIcons.Col);
+        var model = new ListTreeTableModel(root, new ColumnInfo[]{new TreeColumnInfo("Tables")});
+        var treeComboBox = new TreeComboBox(model);
+        treeComboBox.setSelectedItem(root);
+        return treeComboBox;
+    }
+
     private QBTreeNode allFieldsRoot;
     private ListTreeTableModel allFieldsModel;
 
@@ -135,18 +145,18 @@ public class ConditionsPanel extends AbstractQueryPanel {
 
         public CustomConditionEditor(ConditionElement variable) {
             this.variable = variable;
+            this.conditionLeftCombo = getTreeComboBox();
         }
 
         @NotNull
         private TreeComboBox getTreeComboBox() {
-            // https://stackoverflow.com/questions/7732331/modify-combobox-display-in-swing
-            https://stackoverflow.com/a/7732429
-            var root = new TreeComboTableElement("root", null);
+            var root = new TreeComboTableElement("root", null, null);
             for (var table : tables) {
-                var tableNode = new TreeComboTableElement(table.getUserObject().getDescription(), DatabaseIcons.Table);
+                String tableName = table.getUserObject().getDescription();
+                var tableNode = new TreeComboTableElement(tableName, null, DatabaseIcons.Table);
                 for (int i = 0; i < table.getChildCount(); i++) {
                     var column = table.getChildAt(i);
-                    tableNode.add(new TreeComboTableElement(column.getUserObject().getName(), DatabaseIcons.Col));
+                    tableNode.add(new TreeComboTableElement(column.getUserObject().getName(), tableName, DatabaseIcons.Col));
                 }
                 root.add(tableNode);
             }
@@ -154,7 +164,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
             return new TreeComboBox(model, false);
         }
 
-        private final TreeComboBox conditionLeftCombo = getTreeComboBox();
+        private final TreeComboBox conditionLeftCombo;
         private final JBTextField conditionRight = new JBTextField();
         private final ComboBox<String> comparisonCombo = new ComboBox<>(new String[]{"=", "!=", ">", "<", ">=", "<=", "like"});
         private final JBTextField conditionCustom = new JBTextField();
@@ -167,7 +177,28 @@ public class ConditionsPanel extends AbstractQueryPanel {
             }
             var hBox = Box.createHorizontalBox();
 //            conditionLeftCombo.setPreferredSize(new Dimension(200, 15));
-            conditionLeftCombo.setPrototypeDisplayValue(conditionLeftCombo.getItemAt(3));
+            if (Objects.nonNull(variable.getConditionLeft())) {
+                var split = variable.getConditionLeft().split("\\.");
+                var treeModel = conditionLeftCombo.getTreeModel();
+                var root = treeModel.getRoot();
+                TreeComboTableElement find = null;
+                for (int i = 0; i < treeModel.getChildCount(root); i++) {
+                    var tableEl = (TreeComboTableElement) treeModel.getChild(root, i);
+                    if (tableEl.getText().equals(split[0])) {
+                        for (int j = 0; j < treeModel.getChildCount(tableEl); j++) {
+                            var columnEl = (TreeComboTableElement) treeModel.getChild(tableEl, j);
+                            if (columnEl.getText().equals(split[1])) {
+                                find = columnEl;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (find != null) {
+                    conditionLeftCombo.setSelectedItem(find);
+                }
+            }
+
             hBox.add(conditionLeftCombo);
             comparisonCombo.setItem(variable.getConditionComparison());
             hBox.add(comparisonCombo);
