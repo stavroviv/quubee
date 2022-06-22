@@ -23,8 +23,12 @@ import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.model.TreeComboTableElement;
+import org.quebee.com.notifier.LoadQueryDataNotifier;
+import org.quebee.com.notifier.SaveQueryDataNotifier;
 import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
 import org.quebee.com.notifier.SelectedTableRemoveNotifier;
+import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -49,7 +53,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         component.setSecondComponent(getConditionsTable());
     }
 
-    private ListTableModel<ConditionElement> conditionElementTableModel;
+    private ListTableModel<ConditionElement> conditionTableModel;
 
     private JComponent getConditionsTable() {
         var isCustomInfo = new EditableBooleanColumn<>("Custom", 50, ConditionElement::isCustom, ConditionElement::setCustom);
@@ -93,12 +97,12 @@ public class ConditionsPanel extends AbstractQueryPanel {
             }
         };
 
-        conditionElementTableModel = new ListTableModel<>(isCustomInfo, conditionInfo);
-        var table = new TableView<>(conditionElementTableModel);
+        conditionTableModel = new ListTableModel<>(isCustomInfo, conditionInfo);
+        var table = new TableView<>(conditionTableModel);
 
         var decorator = ToolbarDecorator.createDecorator(table);
         decorator.setAddAction(button -> {
-            conditionElementTableModel.addRow(new ConditionElement());
+            conditionTableModel.addRow(new ConditionElement());
             //    model.reload();
         });
         decorator.addExtraAction(new AnActionButton("Copy", AllIcons.Actions.Copy) {
@@ -153,7 +157,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 var item = new ConditionElement();
                 item.setConditionLeft(tableObject.getName() + "." + columnObject.getName());
                 item.setConditionComparison("=");
-                conditionElementTableModel.addRow(item);
+                conditionTableModel.addRow(item);
             }
         });
         var decorator = ToolbarDecorator.createDecorator(table);
@@ -261,8 +265,21 @@ public class ConditionsPanel extends AbstractQueryPanel {
     public void initListeners() {
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
         subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(LoadQueryDataNotifier.class, this::loadQueryData);
     }
 
+    private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
+        var union = fullQuery.getCte(cteName).getUnion("" + i1);
+        ComponentUtils.loadTableToTable(union.getConditionTableModel(), conditionTableModel);
+    }
+
+    private void saveQueryData(FullQuery fullQuery, String cteName, int id) {
+        var union = fullQuery.getCte(cteName).getUnion("" + id);
+        ComponentUtils.loadTableToTable(conditionTableModel, union.getConditionTableModel());
+        ComponentUtils.clearTable(conditionTableModel);
+        tables.clear();
+    }
     private final Set<QBTreeNode> tables = new HashSet<>();
 
     private void addSelectedTable(QBTreeNode node) {
