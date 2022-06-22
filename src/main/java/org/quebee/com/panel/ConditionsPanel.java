@@ -139,10 +139,11 @@ public class ConditionsPanel extends AbstractQueryPanel {
 
         @NotNull
         private TreeComboBox getTreeComboBox() {
+            // https://stackoverflow.com/questions/7732331/modify-combobox-display-in-swing
+            https://stackoverflow.com/a/7732429
             var root = new TreeComboTableElement("root", null);
             for (var table : tables) {
                 var tableNode = new TreeComboTableElement(table.getUserObject().getDescription(), DatabaseIcons.Table);
-
                 for (int i = 0; i < table.getChildCount(); i++) {
                     var column = table.getChildAt(i);
                     tableNode.add(new TreeComboTableElement(column.getUserObject().getName(), DatabaseIcons.Col));
@@ -166,7 +167,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
             }
             var hBox = Box.createHorizontalBox();
 //            conditionLeftCombo.setPreferredSize(new Dimension(200, 15));
-//            conditionLeftCombo.setSelectedItem();
+            conditionLeftCombo.setPrototypeDisplayValue(conditionLeftCombo.getItemAt(3));
             hBox.add(conditionLeftCombo);
             comparisonCombo.setItem(variable.getConditionComparison());
             hBox.add(comparisonCombo);
