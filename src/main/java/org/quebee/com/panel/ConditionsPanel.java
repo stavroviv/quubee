@@ -30,12 +30,15 @@ import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
 @Getter
 public class ConditionsPanel extends AbstractQueryPanel {
+    public static final int COMBO_DEFAULT_WIDTH = 170;
     private final String header = "Conditions";
     private final JBSplitter component = new JBSplitter();
 
@@ -45,6 +48,8 @@ public class ConditionsPanel extends AbstractQueryPanel {
         component.setFirstComponent(getFieldsTree());
         component.setSecondComponent(getConditionsTable());
     }
+
+    private ListTableModel<ConditionElement> conditionElementTableModel;
 
     private JComponent getConditionsTable() {
         var isCustomInfo = new EditableBooleanColumn<>("Custom", 50, ConditionElement::isCustom, ConditionElement::setCustom);
@@ -88,12 +93,12 @@ public class ConditionsPanel extends AbstractQueryPanel {
             }
         };
 
-        var model = new ListTableModel<ConditionElement>(isCustomInfo, conditionInfo);
-        var table = new TableView<>(model);
+        conditionElementTableModel = new ListTableModel<>(isCustomInfo, conditionInfo);
+        var table = new TableView<>(conditionElementTableModel);
 
         var decorator = ToolbarDecorator.createDecorator(table);
         decorator.setAddAction(button -> {
-            model.addRow(new ConditionElement());
+            conditionElementTableModel.addRow(new ConditionElement());
             //    model.reload();
         });
         decorator.addExtraAction(new AnActionButton("Copy", AllIcons.Actions.Copy) {
@@ -102,23 +107,22 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 System.out.println("test");
             }
         });
-//        decorator.setRemoveAction(button -> {
-//            System.out.println(button);
-//            // myTableModel.addRow();
-//        });
         return decorator.createPanel();
     }
 
     @NotNull
     private JComponent getTreeComboWithValue(ConditionElement variable) {
         if (Objects.isNull(variable.getConditionLeft())) {
-            return new ComboBox<String>();
+            var stringComboBox = new ComboBox<>();
+            stringComboBox.setPreferredSize(new Dimension(COMBO_DEFAULT_WIDTH, 15));
+            return stringComboBox;
         }
         var split = variable.getConditionLeft().split("\\.");
         var root = new TreeComboTableElement(split[1], split[0], DatabaseIcons.Col);
         var model = new ListTreeTableModel(root, new ColumnInfo[]{new TreeColumnInfo("Tables")});
         var treeComboBox = new TreeComboBox(model);
         treeComboBox.setSelectedItem(root);
+        treeComboBox.setPreferredSize(new Dimension(COMBO_DEFAULT_WIDTH, 15));
         return treeComboBox;
     }
 
@@ -133,13 +137,30 @@ public class ConditionsPanel extends AbstractQueryPanel {
         var table = new TreeTable(allFieldsModel);
         table.setTreeCellRenderer(new TableElement.Renderer());
         table.setRootVisible(false);
-
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+                var table = (TreeTable) mouseEvent.getSource();
+                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
+                    return;
+                }
+                var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
+                if (Objects.isNull(value.getParent().getParent())) {
+                    return;
+                }
+                var columnObject = value.getUserObject();
+                var tableObject = value.getParent().getUserObject();
+                var item = new ConditionElement();
+                item.setConditionLeft(tableObject.getName() + "." + columnObject.getName());
+                item.setConditionComparison("=");
+                conditionElementTableModel.addRow(item);
+            }
+        });
         var decorator = ToolbarDecorator.createDecorator(table);
         return decorator.createPanel();
     }
 
     private class CustomConditionEditor extends AbstractTableCellEditor {
-
 
         private final ConditionElement variable;
 
@@ -152,7 +173,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         private TreeComboBox getTreeComboBox() {
             var root = new TreeComboTableElement("root", null, null);
             for (var table : tables) {
-                String tableName = table.getUserObject().getDescription();
+                var tableName = table.getUserObject().getDescription();
                 var tableNode = new TreeComboTableElement(tableName, null, DatabaseIcons.Table);
                 for (int i = 0; i < table.getChildCount(); i++) {
                     var column = table.getChildAt(i);
@@ -161,7 +182,19 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 root.add(tableNode);
             }
             var model = new ListTreeTableModel(root, new ColumnInfo[]{new TreeColumnInfo("Tables")});
-            return new TreeComboBox(model, false);
+            return new TreeComboBox(model, false) {
+                @Override
+                public void setSelectedItem(Object anObject) {
+                    if (Objects.isNull(anObject)) {
+                        return;
+                    }
+                    var item = (TreeComboTableElement) anObject;
+                    if (Objects.nonNull(item.getParent()) && item.getParent().equals(root)) {
+                        return;
+                    }
+                    super.setSelectedItem(anObject);
+                }
+            };
         }
 
         private final TreeComboBox conditionLeftCombo;
@@ -176,7 +209,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 return conditionCustom;
             }
             var hBox = Box.createHorizontalBox();
-//            conditionLeftCombo.setPreferredSize(new Dimension(200, 15));
+            conditionLeftCombo.setPreferredSize(new Dimension(COMBO_DEFAULT_WIDTH, 15));
             if (Objects.nonNull(variable.getConditionLeft())) {
                 var split = variable.getConditionLeft().split("\\.");
                 var treeModel = conditionLeftCombo.getTreeModel();
@@ -214,7 +247,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
             if (selectedItem != null) {
                 var selectedItem1 = (TreeComboTableElement) selectedItem;
                 if (selectedItem1.getParent() != null) {
-                    elem.setConditionLeft(selectedItem1.getParent().toString() + "." + selectedItem1.toString());
+                    elem.setConditionLeft(selectedItem1.getParent().toString() + "." + selectedItem1);
                 }
             }
             elem.setConditionRight(conditionRight.getText());
