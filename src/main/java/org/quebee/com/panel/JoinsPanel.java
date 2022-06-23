@@ -3,6 +3,7 @@ package org.quebee.com.panel;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBTextField;
+import com.intellij.ui.components.fields.ExpandableTextField;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
@@ -123,7 +124,7 @@ public class JoinsPanel extends AbstractQueryPanel {
         private final ComboBox<String> conditionComparison = new ComboBox<>(
                 new String[]{"=", "!=", ">", "<", ">=", "<="}
         );
-        private final JBTextField conditionCustom = new JBTextField();
+        private final JBTextField conditionCustom = new ExpandableTextField();
 
         public LinkingConditionEditor(LinkElement variable) {
             this.variable = variable;

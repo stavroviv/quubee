@@ -1,13 +1,16 @@
 package org.quebee.com.panel;
 
+import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TreeComboBox;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBTextField;
+import com.intellij.ui.components.fields.ExpandableTextField;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -31,8 +34,10 @@ import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -54,6 +59,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
     }
 
     private ListTableModel<ConditionElement> conditionTableModel;
+    private TableView<ConditionElement> conditionTable;
 
     private JComponent getConditionsTable() {
         var isCustomInfo = new EditableBooleanColumn<>("Custom", 50, ConditionElement::isCustom, ConditionElement::setCustom);
@@ -98,9 +104,11 @@ public class ConditionsPanel extends AbstractQueryPanel {
         };
 
         conditionTableModel = new ListTableModel<>(isCustomInfo, conditionInfo);
-        var table = new TableView<>(conditionTableModel);
+        conditionTableModel.addTableModelListener(this::conditionTableListener);
 
-        var decorator = ToolbarDecorator.createDecorator(table);
+        conditionTable = new TableView<>(conditionTableModel);
+
+        var decorator = ToolbarDecorator.createDecorator(conditionTable);
         decorator.setAddAction(button -> {
             var item = new ConditionElement();
             item.setConditionComparison("=");
@@ -113,6 +121,42 @@ public class ConditionsPanel extends AbstractQueryPanel {
             }
         });
         return decorator.createPanel();
+    }
+
+    private void conditionTableListener(TableModelEvent e) {
+        var column = e.getColumn();
+        if (column < 0) {
+            return;
+        }
+        var model = (TableModel) e.getSource();
+        var columnName = model.getColumnName(column);
+        int firstRow = e.getFirstRow();
+        customColumnChanged(firstRow, column, model, columnName);
+    }
+
+    private void customColumnChanged(int firstRow, int column, TableModel model, String columnName) {
+        if (!"Custom".equals(columnName)) {
+            return;
+        }
+        var value = (boolean) model.getValueAt(firstRow, column);
+        var row = conditionTable.getSelectedObject();
+        if (Objects.isNull(row)) {
+            return;
+        }
+        if (value) {
+            var left = Strings.nullToEmpty(row.getConditionLeft());
+            var right = Strings.nullToEmpty(row.getConditionRight());
+            row.setCondition(left + row.getConditionComparison() + right);
+        } else {
+            if (!canBeParsed(row.getCondition())) {
+                row.setCustom(true);
+                Messages.showInfoMessage("Cannot convert to simple condition. Continue?", "Warning");
+            }
+        }
+    }
+
+    private boolean canBeParsed(String currentRow) {
+        return false;
     }
 
     @NotNull
@@ -168,10 +212,17 @@ public class ConditionsPanel extends AbstractQueryPanel {
     private class CustomConditionEditor extends AbstractTableCellEditor {
 
         private final ConditionElement variable;
+        private final TreeComboBox conditionLeftCombo;
+        private final JBTextField conditionRight;
+        private final ComboBox<String> comparisonCombo;
+        private final JBTextField conditionCustom;
 
         public CustomConditionEditor(ConditionElement variable) {
             this.variable = variable;
             this.conditionLeftCombo = getTreeComboBox();
+            this.conditionRight = new ExpandableTextField();
+            this.comparisonCombo = new ComboBox<>(new String[]{"=", "!=", ">", "<", ">=", "<=", "like"});
+            this.conditionCustom = new ExpandableTextField();
         }
 
         @NotNull
@@ -201,11 +252,6 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 }
             };
         }
-
-        private final TreeComboBox conditionLeftCombo;
-        private final JBTextField conditionRight = new JBTextField();
-        private final ComboBox<String> comparisonCombo = new ComboBox<>(new String[]{"=", "!=", ">", "<", ">=", "<=", "like"});
-        private final JBTextField conditionCustom = new JBTextField();
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
@@ -281,6 +327,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         ComponentUtils.clearTable(conditionTableModel);
         tables.clear();
     }
+
     private final Set<QBTreeNode> tables = new HashSet<>();
 
     private void addSelectedTable(QBTreeNode node) {
