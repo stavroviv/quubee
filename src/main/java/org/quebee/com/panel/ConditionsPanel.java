@@ -32,6 +32,7 @@ import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
 import org.quebee.com.notifier.SelectedTableRemoveNotifier;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.QueryUtils;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -148,15 +149,15 @@ public class ConditionsPanel extends AbstractQueryPanel {
             var right = Strings.nullToEmpty(row.getConditionRight());
             row.setCondition(left + row.getConditionComparison() + right);
         } else {
-            if (!canBeParsed(row.getCondition())) {
+            if (!canBeParsed(row)) {
                 row.setCustom(true);
                 Messages.showInfoMessage("Cannot convert to simple condition. Continue?", "Warning");
             }
         }
     }
 
-    private boolean canBeParsed(String currentRow) {
-        return false;
+    private boolean canBeParsed(ConditionElement row) {
+        return QueryUtils.ff(row.getCondition()) != null;
     }
 
     @NotNull
