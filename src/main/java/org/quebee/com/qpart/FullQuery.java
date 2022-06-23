@@ -216,23 +216,24 @@ public class FullQuery {
         }
         var where = new StringBuilder();
         for (var item : conditionTableResults.getItems()) {
-            var whereExpr = item.getCondition();
-            if (whereExpr.isEmpty()) {
+            String whereExpr = "";
+            if (item.isCustom()) {
+                whereExpr = item.getCondition();
+            } else {
                 whereExpr = item.getConditionLeft() + item.getConditionComparison() + item.getConditionRight();
             }
             where.append(whereExpr).append(" AND ");
         }
-        Statement stmt = null;
         try {
-            stmt = CCJSqlParserUtil.parse(
+            var stmt = CCJSqlParserUtil.parse(
                     "SELECT * FROM TABLES WHERE " + where.substring(0, where.length() - 4)
             );
+            var select = (Select) stmt;
+            var whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
+            selectBody.setWhere(whereExpression);
         } catch (JSQLParserException e) {
             e.printStackTrace();
         }
-        var select = (Select) stmt;
-        var whereExpression = ((PlainSelect) select.getSelectBody()).getWhere();
-        selectBody.setWhere(whereExpression);
     }
 
     private static void saveGroupBy(PlainSelect select, OneCte cte, String union) {

@@ -56,23 +56,35 @@ public class Union implements Orderable {
         if (where instanceof AndExpression) {
             parseAndExpression((AndExpression) where);
         } else {
-            var conditionElement = new ConditionElement(where.toString());
-            conditionElement.setCustom(!(where instanceof ComparisonOperator));
-            conditionTableModel.addRow(conditionElement);
+            conditionTableModel.addRow(getConditionFromExpression(where));
         }
     }
 
+    private ConditionElement getConditionFromExpression(Expression where) {
+        var conditionElement = new ConditionElement();
+        if (where instanceof ComparisonOperator) {
+            ComparisonOperator where1 = (ComparisonOperator) where;
+            conditionElement.setConditionLeft(where1.getLeftExpression().toString());
+            conditionElement.setConditionComparison(where1.getStringExpression());
+            conditionElement.setConditionRight(where1.getRightExpression().toString());
+        } else {
+            conditionElement.setCondition(where.toString());
+            conditionElement.setCustom(true);
+        }
+        return conditionElement;
+    }
+
     private void parseAndExpression(AndExpression where) {
-        var conditionElement = new ConditionElement(where.getRightExpression().toString());
+        var conditionElement = getConditionFromExpression(where.getRightExpression());
         conditionTableModel.insertRow(0, conditionElement);
         var leftExpression = where.getLeftExpression();
         while (leftExpression instanceof AndExpression) {
             var left = (AndExpression) leftExpression;
-            ConditionElement condition = new ConditionElement(left.getRightExpression().toString());
+            var condition = getConditionFromExpression(left.getRightExpression());
             conditionTableModel.insertRow(0, condition);
             leftExpression = left.getLeftExpression();
         }
-        var condition = new ConditionElement(leftExpression.toString());
+        var condition = getConditionFromExpression(leftExpression);
         conditionTableModel.insertRow(0, condition);
     }
 

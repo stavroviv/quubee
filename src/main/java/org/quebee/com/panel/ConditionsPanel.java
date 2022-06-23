@@ -102,8 +102,9 @@ public class ConditionsPanel extends AbstractQueryPanel {
 
         var decorator = ToolbarDecorator.createDecorator(table);
         decorator.setAddAction(button -> {
-            conditionTableModel.addRow(new ConditionElement());
-            //    model.reload();
+            var item = new ConditionElement();
+            item.setConditionComparison("=");
+            conditionTableModel.addRow(item);
         });
         decorator.addExtraAction(new AnActionButton("Copy", AllIcons.Actions.Copy) {
             @Override
