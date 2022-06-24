@@ -387,6 +387,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         var union = fullQuery.getCte(cteName).getUnion("" + id);
         ComponentUtils.loadTableToTable(conditionTableModel, union.getConditionTableModel());
         ComponentUtils.clearTable(conditionTableModel);
+        ComponentUtils.clearTree(allFieldsRoot);
         tables.clear();
     }
 
