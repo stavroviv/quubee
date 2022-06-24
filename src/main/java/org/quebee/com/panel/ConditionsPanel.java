@@ -139,6 +139,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 conditionTableModel.addRow(item);
                 conditionTable.setSelection(Collections.singleton(item));
             }
+
             @Override
             public void updateButton(@NotNull AnActionEvent e) {
                 super.updateButton(e);
@@ -434,5 +435,25 @@ public class ConditionsPanel extends AbstractQueryPanel {
                     allFieldsModel.nodesWereRemoved(allFieldsRoot, new int[]{index}, new Object[]{x});
                 });
         tables.remove(node);
+        removeConditionsByTable(node);
+    }
+
+    private void removeConditionsByTable(QBTreeNode node) {
+        var removeTableName = node.getUserObject().getDescription();
+        for (var i = conditionTableModel.getItems().size() - 1; i >= 0; i--) {
+            var item = conditionTableModel.getItem(i);
+            if (item.isCustom() && item.getCondition().contains(removeTableName + ".")) {
+                conditionTableModel.removeRow(i);
+                continue;
+            }
+            var conditionLeft = item.getConditionLeft();
+            if (Objects.isNull(conditionLeft)) {
+                continue;
+            }
+            var split = conditionLeft.split("\\.");
+            if (split.length == 2 && removeTableName.equals(split[0])) {
+                conditionTableModel.removeRow(i);
+            }
+        }
     }
 }
