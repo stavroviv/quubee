@@ -13,7 +13,6 @@ import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.columns.EditableStringColumn;
@@ -138,7 +137,7 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
 
             @Override
             public TableCellEditor getEditor(AliasElement linkElement) {
-                return availableFieldsEditor(getName());
+                return new AvailableFieldsEditor(getName());
             }
 
             @Override
@@ -158,44 +157,45 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         curMaxUnion++;
     }
 
-    @NotNull
-    private AbstractTableCellEditor availableFieldsEditor(String union) {
-        return new AbstractTableCellEditor() {
+    private class AvailableFieldsEditor extends AbstractTableCellEditor {
+        private final String union;
+        private ComboBox<String> stringComboBox;
 
-            private ComboBox<String> stringComboBox;
+        public AvailableFieldsEditor(String union) {
+            this.union = union;
+        }
 
-            @Override
-            public Object getCellEditorValue() {
-                return stringComboBox.getItem();
-            }
+        @Override
+        public Object getCellEditorValue() {
+            return stringComboBox.getItem();
+        }
 
-            @Override
-            public Component getTableCellEditorComponent(JTable table, Object value,
-                                                         boolean isSelected, int row, int column) {
-                var fields = unionValues.get(union);
-                if (Objects.isNull(fields)) {
-                    stringComboBox = new ComboBox<>();
-                    return stringComboBox;
-                }
-
-                stringComboBox = new ComboBox<>(fields.toArray(String[]::new));
-                stringComboBox.setEditable(true);
-                var clearExtension = ExtendableTextComponent.Extension.create(
-                        AllIcons.Actions.Close, AllIcons.Actions.CloseHovered,
-                        "Clear", () -> clearAliasValue()
-                );
-                stringComboBox.setEditor(new BasicComboBoxEditor() {
-                    @Override
-                    protected JTextField createEditorComponent() {
-                        var ecbEditor = new ExtendableTextField();
-                        ecbEditor.addExtension(clearExtension);
-                        ecbEditor.setBorder(null);
-                        return ecbEditor;
-                    }
-                });
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                                                     boolean isSelected, int row, int column) {
+            var fields = unionValues.get(union);
+            if (Objects.isNull(fields)) {
+                stringComboBox = new ComboBox<>();
                 return stringComboBox;
             }
-        };
+
+            stringComboBox = new ComboBox<>(fields.toArray(String[]::new));
+            stringComboBox.setEditable(true);
+            var clearExtension = ExtendableTextComponent.Extension.create(
+                    AllIcons.Actions.Close, AllIcons.Actions.CloseHovered,
+                    "Clear", () -> clearAliasValue()
+            );
+            stringComboBox.setEditor(new BasicComboBoxEditor() {
+                @Override
+                protected JTextField createEditorComponent() {
+                    var ecbEditor = new ExtendableTextField();
+                    ecbEditor.addExtension(clearExtension);
+                    ecbEditor.setBorder(null);
+                    return ecbEditor;
+                }
+            });
+            return stringComboBox;
+        }
     }
 
     private void clearAliasValue() {
@@ -248,10 +248,14 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         item.putAlias(mainPanel.getCurrentUnion(), description);
         aliasTableModel.addRow(item);
 
-        if (unionValues.get(mainPanel.getCurrentUnion()) == null) {
-            unionValues.put(mainPanel.getCurrentUnion(), new ArrayList<>(List.of(description)));
+        addAliasToComboboxValues(description, mainPanel.getCurrentUnion());
+    }
+
+    private void addAliasToComboboxValues(String description, String union) {
+        if (unionValues.get(union) == null) {
+            unionValues.put(union, new ArrayList<>(List.of(description)));
         } else {
-            unionValues.get(mainPanel.getCurrentUnion()).add(description);
+            unionValues.get(union).add(description);
         }
     }
 
@@ -269,8 +273,17 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
             return;
         }
         clearAndAddUnionColumns(cte);
+        loadAliasComboValues(cte);
         ComponentUtils.loadTableToTable(cte.getAliasTable(), aliasTableModel);
         ComponentUtils.loadTableToTable(cte.getUnionTable(), unionTableModel);
+    }
+
+    private void loadAliasComboValues(OneCte cte) {
+        for (var entry : cte.getUnionMap().entrySet()) {
+            for (var item : entry.getValue().getSelectedFieldsModel().getItems()) {
+                addAliasToComboboxValues(item.getDescription(), "Union " + entry.getKey());
+            }
+        }
     }
 
     private void clearAndAddUnionColumns(OneCte cte) {

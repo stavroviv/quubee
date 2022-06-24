@@ -8,6 +8,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TreeComboBox;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.JBSplitter;
+import com.intellij.ui.TableUtil;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.ExpandableTextField;
@@ -49,6 +50,7 @@ import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -123,15 +125,26 @@ public class ConditionsPanel extends AbstractQueryPanel {
             var item = new ConditionElement();
             item.setConditionComparison("=");
             conditionTableModel.addRow(item);
+            conditionTable.setSelection(Collections.singleton(item));
         });
         decorator.addExtraAction(new AnActionButton("Copy", AllIcons.Actions.Copy) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
+                TableUtil.stopEditing(conditionTable);
                 var selectedObject = conditionTable.getSelectedObject();
                 if (Objects.isNull(selectedObject)) {
                     return;
                 }
-                conditionTableModel.addRow(new ConditionElement(selectedObject));
+                var item = new ConditionElement(selectedObject);
+                conditionTableModel.addRow(item);
+                conditionTable.setSelection(Collections.singleton(item));
+            }
+            @Override
+            public void updateButton(@NotNull AnActionEvent e) {
+                super.updateButton(e);
+                if (conditionTableModel.getRowCount() == 0 || conditionTable.getSelectedRow() == -1) {
+                    e.getPresentation().setEnabled(false);
+                }
             }
         });
         return decorator.createPanel();
