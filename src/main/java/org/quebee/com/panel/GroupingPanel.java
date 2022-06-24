@@ -56,15 +56,12 @@ public class GroupingPanel extends AbstractQueryPanel {
     private void removeSelectedTable(QBTreeNode node) {
         var userObject = node.getUserObject();
         var removeTableName = userObject.getDescription();
-        allFieldsRoot.nodeToList().stream()
-                .filter(x -> x.getUserObject().getDescription().equals(removeTableName))
-                .findFirst().ifPresent(x -> {
-                    var index = allFieldsRoot.getIndex(x);
-                    allFieldsRoot.remove(x);
-                    groupingModel.nodesWereRemoved(allFieldsRoot, new int[]{index}, new Object[]{x});
-                });
+        ComponentUtils.removeNodeByTable(node, allFieldsRoot, groupingModel);
         groupingRoot.nodeToList().stream()
-                .filter(x -> x.getUserObject().getTableName().equals(removeTableName))
+                .filter(x -> {
+                    var tableName = x.getUserObject().getTableName();
+                    return Objects.nonNull(tableName) && tableName.equals(removeTableName);
+                })
                 .forEach(x -> {
                     var index = groupingRoot.getIndex(x);
                     groupingRoot.remove(x);

@@ -425,15 +425,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
     }
 
     private void removeSelectedTable(QBTreeNode node) {
-        var userObject = node.getUserObject();
-        var removeTableName = userObject.getDescription();
-        allFieldsRoot.nodeToList().stream()
-                .filter(x -> x.getUserObject().getDescription().equals(removeTableName))
-                .findFirst().ifPresent(x -> {
-                    var index = allFieldsRoot.getIndex(x);
-                    allFieldsRoot.remove(x);
-                    allFieldsModel.nodesWereRemoved(allFieldsRoot, new int[]{index}, new Object[]{x});
-                });
+        ComponentUtils.removeNodeByTable(node, allFieldsRoot, allFieldsModel);
         tables.remove(node);
         removeConditionsByTable(node);
     }

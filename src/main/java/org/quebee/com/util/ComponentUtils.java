@@ -1,5 +1,6 @@
 package org.quebee.com.util;
 
+import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.util.ui.ListTableModel;
 import org.quebee.com.model.QBTreeNode;
 
@@ -25,5 +26,17 @@ public class ComponentUtils {
     public static void loadTreeToTree(QBTreeNode source, QBTreeNode destination) {
         clearTree(destination);
         source.nodeToList().forEach(destination::add);
+    }
+
+    public static void removeNodeByTable(QBTreeNode node, QBTreeNode root, ListTreeTableModel treeTableModel) {
+        var userObject = node.getUserObject();
+        var removeTableName = userObject.getDescription();
+        root.nodeToList().stream()
+                .filter(x -> x.getUserObject().getDescription().equals(removeTableName))
+                .findFirst().ifPresent(x -> {
+                    var index = root.getIndex(x);
+                    root.remove(x);
+                    treeTableModel.nodesWereRemoved(root, new int[]{index}, new Object[]{x});
+                });
     }
 }
