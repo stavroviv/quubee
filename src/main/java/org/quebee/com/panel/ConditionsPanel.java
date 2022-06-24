@@ -20,6 +20,14 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.model.ConditionElement;
@@ -32,7 +40,6 @@ import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
 import org.quebee.com.notifier.SelectedTableRemoveNotifier;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
-import org.quebee.com.util.QueryUtils;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -48,7 +55,9 @@ import java.util.Set;
 
 @Getter
 public class ConditionsPanel extends AbstractQueryPanel {
-    public static final int COMBO_DEFAULT_WIDTH = 170;
+    private static final int COMBO_DEFAULT_WIDTH = 170;
+    private static final String COLUMN_CUSTOM = "Custom";
+
     private final String header = "Conditions";
     private final JBSplitter component = new JBSplitter();
 
@@ -63,7 +72,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
     private TableView<ConditionElement> conditionTable;
 
     private JComponent getConditionsTable() {
-        var isCustomInfo = new EditableBooleanColumn<>("Custom", 50, ConditionElement::isCustom, ConditionElement::setCustom);
+        var isCustomInfo = new EditableBooleanColumn<>(COLUMN_CUSTOM, 50, ConditionElement::isCustom, ConditionElement::setCustom);
 
         var conditionInfo = new ColumnInfo<ConditionElement, ConditionElement>("Condition") {
             @Override
@@ -118,7 +127,11 @@ public class ConditionsPanel extends AbstractQueryPanel {
         decorator.addExtraAction(new AnActionButton("Copy", AllIcons.Actions.Copy) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-                System.out.println("test");
+                var selectedObject = conditionTable.getSelectedObject();
+                if (Objects.isNull(selectedObject)) {
+                    return;
+                }
+                conditionTableModel.addRow(new ConditionElement(selectedObject));
             }
         });
         return decorator.createPanel();
@@ -136,7 +149,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
     }
 
     private void customColumnChanged(int firstRow, int column, TableModel model, String columnName) {
-        if (!"Custom".equals(columnName)) {
+        if (!COLUMN_CUSTOM.equals(columnName)) {
             return;
         }
         var value = (boolean) model.getValueAt(firstRow, column);
@@ -144,20 +157,68 @@ public class ConditionsPanel extends AbstractQueryPanel {
         if (Objects.isNull(row)) {
             return;
         }
+
         if (value) {
             var left = Strings.nullToEmpty(row.getConditionLeft());
             var right = Strings.nullToEmpty(row.getConditionRight());
-            row.setCondition(left + row.getConditionComparison() + right);
+            row.setCondition(left + " " + row.getConditionComparison() + " " + right);
+            return;
+        }
+
+        var whereExpression = getExpression(row.getCondition());
+        if (canBeParsed(whereExpression)) {
+            var where1 = (BinaryExpression) whereExpression;
+            row.setConditionLeft(where1.getLeftExpression().toString());
+            row.setConditionComparison(where1.getStringExpression());
+            row.setConditionRight(where1.getRightExpression().toString());
         } else {
-            if (!canBeParsed(row)) {
-                row.setCustom(true);
-                Messages.showInfoMessage("Cannot convert to simple condition. Continue?", "Warning");
+            row.setCustom(true);
+            int i = Messages.showOkCancelDialog(
+                    "Cannot convert to simple condition. Continue?", "Warning", "Ok", "Cancel",
+                    Messages.getWarningIcon()
+            );
+            if (i == 0) {
+                row.setCustom(false);
+                row.setConditionLeft(null);
+                row.setConditionComparison("=");
+                row.setConditionRight(null);
+                conditionTableModel.fireTableDataChanged();
             }
         }
     }
 
-    private boolean canBeParsed(ConditionElement row) {
-        return QueryUtils.ff(row.getCondition()) != null;
+    private boolean canBeParsed(Expression expression) {
+        if (!(expression instanceof ComparisonOperator || expression instanceof LikeExpression)) {
+            return false;
+        }
+        var binaryExpression = (BinaryExpression) expression;
+        var expr = binaryExpression.getLeftExpression().toString();
+        var split = expr.split("\\.");
+        if (split.length != 2) {
+            return false;
+        }
+        for (var table : tables) {
+            if (!table.getUserObject().getName().equals(split[0])) {
+                continue;
+            }
+            for (var i = 0; i < table.getChildCount(); i++) {
+                var childAt = table.getChildAt(i);
+                if (childAt.getUserObject().getName().equals(split[1])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static Expression getExpression(String where) {
+        try {
+            var stmt = CCJSqlParserUtil.parse("SELECT * FROM TABLES WHERE " + where);
+            var select = (Select) stmt;
+            return ((PlainSelect) select.getSelectBody()).getWhere();
+        } catch (JSQLParserException ignored) {
+        }
+        return null;
     }
 
     @NotNull
@@ -222,7 +283,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
             this.variable = variable;
             this.conditionLeftCombo = getTreeComboBox();
             this.conditionRight = new ExpandableTextField();
-            this.comparisonCombo = new ComboBox<>(new String[]{"=", "!=", ">", "<", ">=", "<=", "like"});
+            this.comparisonCombo = new ComboBox<>(new String[]{"=", "!=", ">", "<", ">=", "<=", "LIKE"});
             this.conditionCustom = new ExpandableTextField();
         }
 

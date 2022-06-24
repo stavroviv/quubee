@@ -3,9 +3,11 @@ package org.quebee.com.qpart;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
 import lombok.Setter;
+import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
@@ -62,8 +64,8 @@ public class Union implements Orderable {
 
     private ConditionElement getConditionFromExpression(Expression where) {
         var conditionElement = new ConditionElement();
-        if (where instanceof ComparisonOperator) {
-            ComparisonOperator where1 = (ComparisonOperator) where;
+        if (where instanceof ComparisonOperator || where instanceof LikeExpression) {
+            var where1 = (BinaryExpression) where;
             conditionElement.setConditionLeft(where1.getLeftExpression().toString());
             conditionElement.setConditionComparison(where1.getStringExpression());
             conditionElement.setConditionRight(where1.getRightExpression().toString());

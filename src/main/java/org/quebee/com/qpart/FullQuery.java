@@ -216,7 +216,7 @@ public class FullQuery {
         }
         var where = new StringBuilder();
         for (var item : conditionTableResults.getItems()) {
-            String whereExpr = "";
+            var whereExpr = "";
             if (item.isCustom()) {
                 whereExpr = item.getCondition();
             } else {
