@@ -4,12 +4,14 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.PlatformCoreDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.tabs.JBTabsPosition;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.TabsListener;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
+import com.intellij.ui.tabs.impl.TabLabel;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -79,7 +81,11 @@ public class MainPanel extends DialogWrapper {
         var actionRemove = new AnAction("Remove", "Remove", AllIcons.General.Remove) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-                System.out.println();
+                var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
+                if (Objects.isNull(data)) {
+                    return;
+                }
+                removeCte(data.getInfo());
             }
         };
         group.add(actionRemove);
@@ -124,6 +130,7 @@ public class MainPanel extends DialogWrapper {
         mainPanel.add(horizontalBox, BorderLayout.EAST);
         return mainPanel;
     }
+
 
     @Override
     protected void createDefaultActions() {
@@ -277,5 +284,9 @@ public class MainPanel extends DialogWrapper {
         tabsCte.addTab(info).setText(name).setIcon(DatabaseIcons.Package);
         tabsCte.select(info, true);
         queryTabs.select(queryTabs.getTabAt(0), true);
+    }
+
+    private void removeCte(TabInfo text) {
+        tabsCte.removeTab(text);
     }
 }
