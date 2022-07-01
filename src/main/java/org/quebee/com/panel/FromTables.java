@@ -259,7 +259,7 @@ public class FromTables extends AbstractQueryPanel {
 //        });
         decorator.setRemoveAction(button -> {
             getPublisher(SelectedFieldRemoveNotifier.class).onAction(selectedFieldsTable.getSelectedObject());
-            TableUtil.doRemoveSelectedItems(selectedFieldsTable, selectedFieldsModel, null);
+            TableUtil.removeSelectedItems(selectedFieldsTable);
         });
         return decorator.createPanel();
     }

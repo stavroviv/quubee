@@ -1,5 +1,9 @@
 package org.quebee.com.panel;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.tabs.JBTabsPosition;
@@ -8,6 +12,7 @@ import com.intellij.ui.tabs.TabsListener;
 import com.intellij.ui.tabs.impl.JBTabsImpl;
 import icons.DatabaseIcons;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.quebee.com.notifier.LoadQueryCteDataNotifier;
 import org.quebee.com.notifier.LoadQueryDataNotifier;
 import org.quebee.com.notifier.SaveQueryCteDataNotifier;
@@ -23,6 +28,7 @@ import java.util.UUID;
 
 public class MainPanel extends DialogWrapper {
 
+    private JBTabsImpl queryTabs;
     private JBTabsImpl tabsCte;
     private JBTabsImpl tabsUnion;
     private Box unionPanel;
@@ -44,6 +50,7 @@ public class MainPanel extends DialogWrapper {
         initListeners();
         loadCte();
         abstractQueryPanels.forEach(AbstractQueryPanel::initListeners);
+//        JetSelectMessages.getPublisher(id, LoadAllCteDataNotifier.class).onAction(fullQuery);
     }
 
     @Override
@@ -52,10 +59,47 @@ public class MainPanel extends DialogWrapper {
         super.dispose();
     }
 
+    private int maxUnion;
+
     @Override
     protected JComponent createCenterPanel() {
         tabsCte = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
+
+        var group = new DefaultActionGroup();
+        var actionAdd = new AnAction("Add", "Add", AllIcons.General.Add) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                var name = "Table_expression_" + (maxUnion + 1);
+                addCte(name);
+                maxUnion++;
+            }
+        };
+        group.add(actionAdd);
+        var actionRemove = new AnAction("Remove", "Remove", AllIcons.General.Remove) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                System.out.println();
+            }
+        };
+        group.add(actionRemove);
+        var actionMoveUp = new AnAction("Up", "Up", AllIcons.Actions.MoveUp) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                System.out.println();
+            }
+        };
+        group.add(actionMoveUp);
+        var actionMoveDown = new AnAction("Down", "Down", AllIcons.Actions.MoveDown) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                System.out.println();
+            }
+        };
+        group.add(actionMoveDown);
+
+        tabsCte.setPopupGroup(group, "Test", true);
+
 
         ctePanel = Box.createVerticalBox();
         ctePanel.add(Box.createVerticalStrut(25));
@@ -67,8 +111,8 @@ public class MainPanel extends DialogWrapper {
         unionPanel.add(Box.createVerticalStrut(25));
         unionPanel.add(tabsUnion);
 
-        var tabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
-        addQueryTabs(tabs);
+        queryTabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
+        addQueryTabs(queryTabs);
 
         var horizontalBox = Box.createHorizontalBox();
         horizontalBox.add(unionPanel);
@@ -76,7 +120,7 @@ public class MainPanel extends DialogWrapper {
 
         var mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
-        mainPanel.add(tabs, BorderLayout.CENTER);
+        mainPanel.add(queryTabs, BorderLayout.CENTER);
         mainPanel.add(horizontalBox, BorderLayout.EAST);
         return mainPanel;
     }
@@ -88,6 +132,23 @@ public class MainPanel extends DialogWrapper {
     }
 
     private void initListeners() {
+//        queryTabs.addListener(new TabsListener() {
+//            @Override
+//            public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
+//                if (dataIsLoading) {
+//                    return;
+//                }
+//                if (Objects.isNull(newSelection)) {
+//                    return;
+//                }
+//                if (newSelection.getText().equals(CtePanel.header())) {
+//                    ctePanel.setVisible(false);
+//                    unionPanel.setVisible(false);
+//                } else {
+//                    setPanelsVisible();
+//                }
+//            }
+//        });
         tabsCte.addListener(new TabsListener() {
             @Override
             public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
@@ -136,7 +197,7 @@ public class MainPanel extends DialogWrapper {
     }
 
     private void setPanelsVisible() {
-        ctePanel.setVisible(tabsCte.getTabCount() > 1);
+//        ctePanel.setVisible(tabsCte.getTabCount() > 1);
         unionPanel.setVisible(tabsUnion.getTabCount() > 1);
     }
 
@@ -173,9 +234,12 @@ public class MainPanel extends DialogWrapper {
                 new ConditionsPanel(this),
                 new UnionAliasesPanel(this),
                 new OrderPanel(this)
+//                new CtePanel(this)
         );
         abstractQueryPanels.forEach(queryTab ->
-                tabs.addTab(new TabInfo(queryTab.getComponent()).setText(queryTab.getHeader()))
+                tabs.addTab(new TabInfo(queryTab.getComponent())
+                        .setText(queryTab.getHeader())
+                        .setTooltipText(queryTab.getTooltipText()))
         );
     }
 
@@ -205,5 +269,13 @@ public class MainPanel extends DialogWrapper {
                     dataIsLoading = false;
                 });
         setPanelsVisible();
+    }
+
+    public void addCte(String name) {
+        fullQuery.addCte(name);
+        var info = new TabInfo(Box.createVerticalBox());
+        tabsCte.addTab(info).setText(name).setIcon(DatabaseIcons.Package);
+        tabsCte.select(info, true);
+        queryTabs.select(queryTabs.getTabAt(0), true);
     }
 }

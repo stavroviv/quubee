@@ -31,4 +31,8 @@ public abstract class AbstractQueryPanel {
     protected <L> L getPublisher(Class<L> handler) {
         return JetSelectMessages.getPublisher(mainPanel.getId(), handler);
     }
+
+    public String getTooltipText() {
+        return "";
+    }
 }

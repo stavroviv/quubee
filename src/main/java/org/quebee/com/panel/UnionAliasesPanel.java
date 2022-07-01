@@ -109,7 +109,7 @@ public class UnionAliasesPanel extends AbstractQueryPanel {
         aliasTableModel.setColumnInfos(result);
 
         mainPanel.removeUnion(Integer.parseInt(unionRow.getName().replace("Union ", "")));
-        TableUtil.doRemoveSelectedItems(unionTable, unionTableModel, null);
+        TableUtil.removeSelectedItems(unionTable);
     }
 
     private int curMaxUnion;
