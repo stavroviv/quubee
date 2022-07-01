@@ -51,6 +51,10 @@ public class FullQuery {
         cteMap.put(cteName, new OneCte(cteName, null, cteMap.size() + 1));
     }
 
+    public void removeCte(String cteName) {
+        cteMap.remove(cteName);
+    }
+
     public void addCte(String cteName, SelectBody selectBody, int order) {
         cteMap.put(cteName, new OneCte(cteName, selectBody, order));
     }

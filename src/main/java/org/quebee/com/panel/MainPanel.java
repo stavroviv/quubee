@@ -286,7 +286,8 @@ public class MainPanel extends DialogWrapper {
         queryTabs.select(queryTabs.getTabAt(0), true);
     }
 
-    private void removeCte(TabInfo text) {
-        tabsCte.removeTab(text);
+    private void removeCte(TabInfo tabInfo) {
+        fullQuery.removeCte(tabInfo.getText());
+        tabsCte.removeTab(tabInfo);
     }
 }
