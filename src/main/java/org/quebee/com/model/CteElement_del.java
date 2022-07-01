@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CteElement_del {
+public class CteElement_del  {
     private String name;
 
     public CteElement_del(String name) {
