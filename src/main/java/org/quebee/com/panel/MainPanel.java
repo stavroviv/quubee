@@ -15,15 +15,14 @@ import com.intellij.ui.tabs.impl.TabLabel;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.quebee.com.notifier.LoadQueryCteDataNotifier;
-import org.quebee.com.notifier.LoadQueryDataNotifier;
-import org.quebee.com.notifier.SaveQueryCteDataNotifier;
-import org.quebee.com.notifier.SaveQueryDataNotifier;
+import org.quebee.com.database.DBTables;
+import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.JetSelectMessages;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -139,23 +138,6 @@ public class MainPanel extends DialogWrapper {
     }
 
     private void initListeners() {
-//        queryTabs.addListener(new TabsListener() {
-//            @Override
-//            public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
-//                if (dataIsLoading) {
-//                    return;
-//                }
-//                if (Objects.isNull(newSelection)) {
-//                    return;
-//                }
-//                if (newSelection.getText().equals(CtePanel.header())) {
-//                    ctePanel.setVisible(false);
-//                    unionPanel.setVisible(false);
-//                } else {
-//                    setPanelsVisible();
-//                }
-//            }
-//        });
         tabsCte.addListener(new TabsListener() {
             @Override
             public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
@@ -167,6 +149,7 @@ public class MainPanel extends DialogWrapper {
                     JetSelectMessages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, oldSelection.getText());
                 }
                 loadUnions(newSelection.getText());
+                loadCteTree(newSelection.getText());
                 JetSelectMessages.getPublisher(id, LoadQueryDataNotifier.class).onAction(fullQuery, newSelection.getText(), 0);
                 JetSelectMessages.getPublisher(id, LoadQueryCteDataNotifier.class).onAction(fullQuery, newSelection.getText());
             }
@@ -191,6 +174,22 @@ public class MainPanel extends DialogWrapper {
                 );
             }
         });
+    }
+
+    private void loadCteTree(String text) {
+        var commonExpressions = new DBTables();
+        for (var cteName : fullQuery.getCteNames()) {
+            if (text.equals(cteName)) {
+                break;
+            }
+            var cte = fullQuery.getCte(cteName);
+            var columns = new ArrayList<String>();
+            for (var item : cte.getAliasTable().getItems()) {
+                columns.add(item.getAliasName());
+            }
+            commonExpressions.getDbElements().put(cteName, columns);
+        }
+        JetSelectMessages.getPublisher(id, ReloadCteTablesNotifier.class).onAction(commonExpressions);
     }
 
     private void loadCte() {

@@ -64,15 +64,12 @@ public class FullQuery {
     }
 
     public static <T extends Orderable> Map<String, T> sortByOrder(Map<String, T> map) {
-        List<Map.Entry<String, T>> list = new LinkedList<>(map.entrySet());
-
+        var list = new LinkedList<>(map.entrySet());
         list.sort(Comparator.comparing(o -> o.getValue().getOrder()));
-
-        Map<String, T> sortedMap = new LinkedHashMap<>();
-        for (Map.Entry<String, T> entry : list) {
+        var sortedMap = new LinkedHashMap<String, T>();
+        for (var entry : list) {
             sortedMap.put(entry.getKey(), entry.getValue());
         }
-
         return sortedMap;
     }
 

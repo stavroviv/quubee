@@ -33,7 +33,10 @@ public class FromTables extends AbstractQueryPanel {
     private final String header = "Tables and Fields";
     private final JComponent component;
 
-    private QBTreeNode databaseRoot;
+    private final QBTreeNode sourceRoot = new QBTreeNode(new TableElement("database_root"));
+    private final QBTreeNode tablesRoot = new QBTreeNode(new TableElement("tables"));
+    private final QBTreeNode cteRoot = new QBTreeNode(new TableElement("common table expressions"));
+
     private ListTreeTableModel databaseModel;
 
     public FromTables(MainPanel mainPanel) {
@@ -53,6 +56,7 @@ public class FromTables extends AbstractQueryPanel {
     @Override
     public void initListeners() {
         subscribe(ReloadDbTablesNotifier.class, this::setDatabaseTables);
+        subscribe(ReloadCteTablesNotifier.class, this::setCteTables);
         subscribe(SelectedTableAddNotifier.class, this::addSelectedTable);
         subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
         subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
@@ -76,12 +80,21 @@ public class FromTables extends AbstractQueryPanel {
 
         var union = cte.getUnion("" + i1);
         union.getSelectedTablesRoot().nodeToList().forEach(x ->
-                databaseRoot.nodeToList().forEach(node -> {
-                    var userObject = x.getUserObject();
-                    if (node.getUserObject().getName().equals(userObject.getName())) {
-                        getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
-                    }
-                })
+                {
+                    tablesRoot.nodeToList().forEach(node -> {
+                        var userObject = x.getUserObject();
+                        if (node.getUserObject().getName().equals(userObject.getName())) {
+                            getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
+                        }
+                    });
+                    // FIXME
+                    cteRoot.nodeToList().forEach(node -> {
+                        var userObject = x.getUserObject();
+                        if (node.getUserObject().getName().equals(userObject.getName())) {
+                            getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
+                        }
+                    });
+                }
         );
         union.getSelectedFieldsModel().getItems().forEach(x ->
                 getPublisher(SelectedFieldAddNotifier.class).onAction(x, false)
@@ -110,10 +123,12 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     private void addSelectedTable(QBTreeNode node, String alias) {
-        if (Objects.isNull(node.getParent())) {
+        var parent1 = node.getParent();
+        if (Objects.nonNull(parent1) && parent1.equals(sourceRoot)) {
             return;
         }
-        if (Objects.isNull(node.getParent().getParent())) {
+        var parent2 = parent1.getParent();
+        if (Objects.nonNull(parent2) && parent2.equals(sourceRoot)) {
             addSelectedTableNode(node, alias);
             return;
         }
@@ -265,26 +280,17 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     public JComponent databaseTables() {
-        databaseRoot = new QBTreeNode(new TableElement("tables"));
-        databaseModel = new ListTreeTableModel(databaseRoot, new ColumnInfo[]{
+//        databaseRoot = new QBTreeNode(new TableElement("database_root"));
+//        tablesRoot = new QBTreeNode(new TableElement("tables"));
+        sourceRoot.add(tablesRoot);
+        databaseModel = new ListTreeTableModel(sourceRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Database")
         });
         final var treeTable = new TreeTable(databaseModel);
-        // make own component?
-//        treeTable.getTree().addTreeWillExpandListener(new TreeWillExpandListener() {
-//            @Override
-//            public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
-//                throw new ExpandVetoException(event);
-//            }
-//
-//            @Override
-//            public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
-//
-//            }
-//        });
         treeTable.addMouseListener(fieldsMouseListener(treeTable));
         treeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         treeTable.setTreeCellRenderer(new TableElement.Renderer());
+        treeTable.setRootVisible(false);
 
         var decorator = ToolbarDecorator.createDecorator(treeTable);
         decorator.addExtraAction(new AnActionButton("Empty", IconUtil.getEmptyIcon(false)) {
@@ -313,17 +319,32 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     public void setDatabaseTables(DBTables dbStructure) {
-        for (var stringListEntry : dbStructure.getDbElements().entrySet()) {
-            var table = new TableElement(stringListEntry.getKey());
+        loadStructureToTree(dbStructure, tablesRoot);
+        databaseModel.reload();
+    }
+
+    private void setCteTables(DBTables dbStructure) {
+        ComponentUtils.clearTree(cteRoot);
+        if (dbStructure.getDbElements().isEmpty()) {
+            sourceRoot.remove(cteRoot);
+        } else {
+            sourceRoot.add(cteRoot);
+            loadStructureToTree(dbStructure, cteRoot);
+        }
+        databaseModel.reload();
+    }
+
+    private void loadStructureToTree(DBTables dbStructure, QBTreeNode root) {
+        for (var entry : dbStructure.getDbElements().entrySet()) {
+            var table = new TableElement(entry.getKey());
             table.setTable(true);
             var child = new QBTreeNode(table);
-            databaseRoot.add(child);
-            for (var columnName : stringListEntry.getValue()) {
+            root.add(child);
+            for (var columnName : entry.getValue()) {
                 var column = new TableElement(columnName);
                 column.setColumn(true);
                 child.add(new QBTreeNode(column));
             }
         }
-        databaseModel.reload();
     }
 }
