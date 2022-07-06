@@ -280,8 +280,6 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     public JComponent databaseTables() {
-//        databaseRoot = new QBTreeNode(new TableElement("database_root"));
-//        tablesRoot = new QBTreeNode(new TableElement("tables"));
         sourceRoot.add(tablesRoot);
         databaseModel = new ListTreeTableModel(sourceRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Database")
@@ -326,12 +324,17 @@ public class FromTables extends AbstractQueryPanel {
     private void setCteTables(DBTables dbStructure) {
         ComponentUtils.clearTree(cteRoot);
         if (dbStructure.getDbElements().isEmpty()) {
+            var index = sourceRoot.getIndex(cteRoot);
             sourceRoot.remove(cteRoot);
+            databaseModel.nodesWereRemoved(sourceRoot, new int[]{index}, new Object[]{cteRoot});
         } else {
-            sourceRoot.add(cteRoot);
+            if (!sourceRoot.nodeToList().contains(cteRoot)) {
+                sourceRoot.add(cteRoot);
+                databaseModel.nodesWereInserted(sourceRoot, new int[]{sourceRoot.getChildCount() - 1});
+            }
             loadStructureToTree(dbStructure, cteRoot);
+            databaseModel.reload(cteRoot);
         }
-        databaseModel.reload();
     }
 
     private void loadStructureToTree(DBTables dbStructure, QBTreeNode root) {
