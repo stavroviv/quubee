@@ -317,7 +317,7 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     public void setDatabaseTables(DBTables dbStructure) {
-        loadStructureToTree(dbStructure, tablesRoot);
+        loadStructureToTree(dbStructure, tablesRoot, true);
         databaseModel.reload();
     }
 
@@ -332,15 +332,19 @@ public class FromTables extends AbstractQueryPanel {
                 sourceRoot.add(cteRoot);
                 databaseModel.nodesWereInserted(sourceRoot, new int[]{sourceRoot.getChildCount() - 1});
             }
-            loadStructureToTree(dbStructure, cteRoot);
+            loadStructureToTree(dbStructure, cteRoot, false);
             databaseModel.reload(cteRoot);
         }
     }
 
-    private void loadStructureToTree(DBTables dbStructure, QBTreeNode root) {
+    private void loadStructureToTree(DBTables dbStructure, QBTreeNode root, boolean isTable) {
         for (var entry : dbStructure.getDbElements().entrySet()) {
             var table = new TableElement(entry.getKey());
-            table.setTable(true);
+            if (isTable) {
+                table.setTable(true);
+            } else {
+                table.setCte(true);
+            }
             var child = new QBTreeNode(table);
             root.add(child);
             for (var columnName : entry.getValue()) {

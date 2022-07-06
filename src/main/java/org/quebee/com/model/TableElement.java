@@ -23,10 +23,12 @@ public class TableElement {
     private boolean root;
     private boolean notSelectable;
     private boolean nested;
-    private boolean cte;
-    private boolean cteRoot;
 
+//    private boolean cteRoot;
+
+    // FIXME
     private boolean table;
+    private boolean cte;
     private boolean column;
 
     private boolean distinct;
@@ -89,6 +91,8 @@ public class TableElement {
             var element = (TableElement) userObject;
             if (element.isTable()) {
                 setIcon(DatabaseIcons.Table);
+            } else if (element.isCte()) {
+                setIcon(DatabaseIcons.Tablespace);
             } else if (element.isColumn()) {
                 setIcon(DatabaseIcons.Col);
             } else {
