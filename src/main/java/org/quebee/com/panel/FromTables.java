@@ -278,18 +278,20 @@ public class FromTables extends AbstractQueryPanel {
         return decorator.createPanel();
     }
 
+    private TreeTable tablesTreeTable;
+
     public JComponent databaseTables() {
         sourceRoot.add(tablesRoot);
         databaseModel = new ListTreeTableModel(sourceRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Database")
         });
-        final var treeTable = new TreeTable(databaseModel);
-        treeTable.addMouseListener(fieldsMouseListener(treeTable));
-        treeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        treeTable.setTreeCellRenderer(new TableElement.Renderer());
-        treeTable.setRootVisible(false);
+        tablesTreeTable = new TreeTable(databaseModel);
+        tablesTreeTable.addMouseListener(fieldsMouseListener(tablesTreeTable));
+        tablesTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tablesTreeTable.setTreeCellRenderer(new TableElement.Renderer());
+        tablesTreeTable.setRootVisible(false);
 
-        var decorator = ToolbarDecorator.createDecorator(treeTable);
+        var decorator = ToolbarDecorator.createDecorator(tablesTreeTable);
         decorator.addExtraAction(new AnActionButton("Empty", IconUtil.getEmptyIcon(false)) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
@@ -318,6 +320,7 @@ public class FromTables extends AbstractQueryPanel {
     public void setDatabaseTables(DBTables dbStructure) {
         loadStructureToTree(dbStructure, tablesRoot, DatabaseIcons.Table);
         databaseModel.reload();
+        tablesTreeTable.getTree().expandRow(sourceRoot.getIndex(tablesRoot));
     }
 
     private void setCteTables(DBTables dbStructure) {
@@ -327,12 +330,19 @@ public class FromTables extends AbstractQueryPanel {
             sourceRoot.remove(cteRoot);
             databaseModel.nodesWereRemoved(sourceRoot, new int[]{index}, new Object[]{cteRoot});
         } else {
+            boolean expand;
             if (!sourceRoot.nodeToList().contains(cteRoot)) {
                 sourceRoot.add(cteRoot);
                 databaseModel.nodesWereInserted(sourceRoot, new int[]{sourceRoot.getChildCount() - 1});
+                expand = true;
+            } else {
+                expand = tablesTreeTable.getTree().isExpanded(databaseModel.getChildCount(tablesRoot) + 1);
             }
             loadStructureToTree(dbStructure, cteRoot, DatabaseIcons.Tablespace);
             databaseModel.reload(cteRoot);
+            if (expand) {
+                tablesTreeTable.getTree().expandRow(databaseModel.getChildCount(tablesRoot) + 1);
+            }
         }
     }
 
