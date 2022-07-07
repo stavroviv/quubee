@@ -67,44 +67,7 @@ public class MainPanel extends DialogWrapper {
         tabsCte = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         tabsCte.getPresentation().setTabsPosition(JBTabsPosition.right);
 
-        var group = new DefaultActionGroup();
-        var actionAdd = new AnAction("Add", "Add", AllIcons.General.Add) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                var name = "Table_expression_" + (maxUnion + 1);
-                addCte(name);
-                maxUnion++;
-            }
-        };
-        group.add(actionAdd);
-        var actionRemove = new AnAction("Remove", "Remove", AllIcons.General.Remove) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
-                if (Objects.isNull(data)) {
-                    return;
-                }
-                removeCte(data.getInfo());
-            }
-        };
-        group.add(actionRemove);
-        var actionMoveUp = new AnAction("Up", "Up", AllIcons.Actions.MoveUp) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                System.out.println();
-            }
-        };
-        group.add(actionMoveUp);
-        var actionMoveDown = new AnAction("Down", "Down", AllIcons.Actions.MoveDown) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                System.out.println();
-            }
-        };
-        group.add(actionMoveDown);
-
-        tabsCte.setPopupGroup(group, "Test", true);
-
+        setCtePopupMenu();
 
         ctePanel = Box.createVerticalBox();
         ctePanel.add(Box.createVerticalStrut(25));
@@ -130,6 +93,68 @@ public class MainPanel extends DialogWrapper {
         return mainPanel;
     }
 
+    private void setCtePopupMenu() {
+        var group = new DefaultActionGroup();
+        var actionAdd = new AnAction("Add", "Add", AllIcons.General.Add) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                var name = "Table_expression_" + (maxUnion + 1);
+                addCte(name);
+                maxUnion++;
+            }
+        };
+        group.add(actionAdd);
+        var actionRemove = new AnAction("Remove", "Remove", AllIcons.General.Remove) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
+                if (Objects.isNull(data)) {
+                    return;
+                }
+                removeCte(data.getInfo());
+            }
+        };
+        group.add(actionRemove);
+
+        var actionRename = new AnAction("Rename...", "Rename...", null) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
+                if (Objects.isNull(data)) {
+                    return;
+                }
+                renameCte(data.getInfo());
+            }
+        };
+        group.add(actionRename);
+
+        var actionMoveUp = new AnAction("Up", "Up", AllIcons.Actions.MoveUp) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                System.out.println();
+            }
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
+                if (Objects.isNull(data)) {
+                    return;
+                }
+//                tabsCte.getTargetInfo()data.getInfo().get
+                e.getPresentation().setEnabled(false);
+            }
+        };
+//        actionMoveUp.isEnabledInModalContext();
+        group.add(actionMoveUp);
+        var actionMoveDown = new AnAction("Down", "Down", AllIcons.Actions.MoveDown) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                System.out.println();
+            }
+        };
+        group.add(actionMoveDown);
+
+        tabsCte.setPopupGroup(group, "Test", true);
+    }
 
     @Override
     protected void createDefaultActions() {
@@ -289,4 +314,9 @@ public class MainPanel extends DialogWrapper {
         fullQuery.removeCte(tabInfo.getText());
         tabsCte.removeTab(tabInfo);
     }
+
+    private void renameCte(TabInfo info) {
+        info.setText("Stubbbb");
+    }
+
 }
