@@ -157,8 +157,7 @@ public class FromTables extends AbstractQueryPanel {
             }
         }
 
-        var newUserObject = new TableElement(userObject.getName());
-        newUserObject.setTable(true);
+        var newUserObject = new TableElement(userObject.getName(), userObject.getIcon());
         if (existNumber > 0 && Objects.isNull(alias)) {
             newUserObject.setAlias(newUserObject.getName() + existNumber);
         } else {
@@ -317,7 +316,7 @@ public class FromTables extends AbstractQueryPanel {
     }
 
     public void setDatabaseTables(DBTables dbStructure) {
-        loadStructureToTree(dbStructure, tablesRoot, true);
+        loadStructureToTree(dbStructure, tablesRoot, DatabaseIcons.Table);
         databaseModel.reload();
     }
 
@@ -332,24 +331,18 @@ public class FromTables extends AbstractQueryPanel {
                 sourceRoot.add(cteRoot);
                 databaseModel.nodesWereInserted(sourceRoot, new int[]{sourceRoot.getChildCount() - 1});
             }
-            loadStructureToTree(dbStructure, cteRoot, false);
+            loadStructureToTree(dbStructure, cteRoot, DatabaseIcons.Tablespace);
             databaseModel.reload(cteRoot);
         }
     }
 
-    private void loadStructureToTree(DBTables dbStructure, QBTreeNode root, boolean isTable) {
+    private void loadStructureToTree(DBTables dbStructure, QBTreeNode root, Icon icon) {
         for (var entry : dbStructure.getDbElements().entrySet()) {
-            var table = new TableElement(entry.getKey());
-            if (isTable) {
-                table.setTable(true);
-            } else {
-                table.setCte(true);
-            }
+            var table = new TableElement(entry.getKey(), icon);
             var child = new QBTreeNode(table);
             root.add(child);
             for (var columnName : entry.getValue()) {
-                var column = new TableElement(columnName);
-                column.setColumn(true);
+                var column = new TableElement(columnName, DatabaseIcons.Col);
                 child.add(new QBTreeNode(column));
             }
         }

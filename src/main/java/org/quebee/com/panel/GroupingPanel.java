@@ -9,6 +9,7 @@ import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -79,7 +80,7 @@ public class GroupingPanel extends AbstractQueryPanel {
 
     private void addSelectedField(TableElement element, boolean interactive) {
         var tableElement = new TableElement(element);
-        tableElement.setColumn(true);
+        tableElement.setIcon(DatabaseIcons.Col);
         groupingRoot.insert(new QBTreeNode(tableElement), groupingRoot.getChildCount() - 1);
         groupingModel.nodesWereInserted(groupingRoot, new int[]{groupingRoot.getChildCount() - 2});
     }

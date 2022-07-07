@@ -24,12 +24,7 @@ public class TableElement {
     private boolean notSelectable;
     private boolean nested;
 
-//    private boolean cteRoot;
-
-    // FIXME
-    private boolean table;
-    private boolean cte;
-    private boolean column;
+    private Icon icon;
 
     private boolean distinct;
 
@@ -38,6 +33,11 @@ public class TableElement {
     public TableElement(String name) {
         this.name = name;
         this.id = UUID.randomUUID();
+    }
+
+    public TableElement(String name, Icon icon) {
+        this(name);
+        this.icon = icon;
     }
 
     private String tableName;
@@ -58,8 +58,7 @@ public class TableElement {
         this.alias = tableElement.getAlias();
         this.columnName = tableElement.getColumnName();
         this.tableName = tableElement.getTableName();
-        this.table = tableElement.isTable();
-        this.column = tableElement.isColumn();
+        this.icon = tableElement.getIcon();
         this.id = UUID.randomUUID();
     }
 
@@ -89,12 +88,8 @@ public class TableElement {
                 return;
             }
             var element = (TableElement) userObject;
-            if (element.isTable()) {
-                setIcon(DatabaseIcons.Table);
-            } else if (element.isCte()) {
-                setIcon(DatabaseIcons.Tablespace);
-            } else if (element.isColumn()) {
-                setIcon(DatabaseIcons.Col);
+            if (Objects.nonNull(element.getIcon())) {
+                setIcon(element.getIcon());
             } else {
                 setIcon(DatabaseIcons.ObjectGroup);
             }

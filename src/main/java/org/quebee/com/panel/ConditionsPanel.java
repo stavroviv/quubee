@@ -305,8 +305,9 @@ public class ConditionsPanel extends AbstractQueryPanel {
         private TreeComboBox getTreeComboBox() {
             var root = new TreeComboTableElement("root", null, null);
             for (var table : tables) {
-                var tableName = table.getUserObject().getDescription();
-                var tableNode = new TreeComboTableElement(tableName, null, DatabaseIcons.Table);
+                var userObject = table.getUserObject();
+                var tableName = userObject.getDescription();
+                var tableNode = new TreeComboTableElement(tableName, null, userObject.getIcon());
                 for (int i = 0; i < table.getChildCount(); i++) {
                     var column = table.getChildAt(i);
                     tableNode.add(new TreeComboTableElement(column.getUserObject().getName(), tableName, DatabaseIcons.Col));
@@ -316,15 +317,15 @@ public class ConditionsPanel extends AbstractQueryPanel {
             var model = new ListTreeTableModel(root, new ColumnInfo[]{new TreeColumnInfo("Tables")});
             return new TreeComboBox(model, false) {
                 @Override
-                public void setSelectedItem(Object anObject) {
-                    if (Objects.isNull(anObject)) {
+                public void setSelectedItem(Object object) {
+                    if (Objects.isNull(object)) {
                         return;
                     }
-                    var item = (TreeComboTableElement) anObject;
+                    var item = (TreeComboTableElement) object;
                     if (Objects.nonNull(item.getParent()) && item.getParent().equals(root)) {
                         return;
                     }
-                    super.setSelectedItem(anObject);
+                    super.setSelectedItem(object);
                 }
             };
         }
