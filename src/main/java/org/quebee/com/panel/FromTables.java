@@ -1,10 +1,8 @@
 package org.quebee.com.panel;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.ui.AnActionButton;
-import com.intellij.ui.JBSplitter;
-import com.intellij.ui.TableUtil;
-import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.*;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -21,6 +19,7 @@ import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.RenameDialogWrapper;
 
 import javax.swing.*;
 import javax.swing.tree.TreeNode;
@@ -193,30 +192,50 @@ public class FromTables extends AbstractQueryPanel {
         //  JBScrollPane jbScrollPane = new JBScrollPane(treeTable);
 
         var decorator = ToolbarDecorator.createDecorator(selectedTablesTree);
+
+        var actionRename = new AnActionButton("Rename Table", AllIcons.Actions.Edit) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                var value = (QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0);
+                var userObject = value.getUserObject();
+                var input = userObject.getName();
+                var dialog = new RenameDialogWrapper(input, "Rename table and its usages to:") {
+                    @Override
+                    protected void doOKAction() {
+//                        info.setText(getResult().getText());
+                        super.doOKAction();
+                    }
+
+                    @Override
+                    protected String validateSource() {
+                        var result = getResult().getText();
+                        if (selectedTablesRoot.nodeToList().stream()
+                                .map(x -> x.getUserObject().getName())
+                                .anyMatch(x -> x.equals(result) && !x.equals(input))) {
+                            return "Table with name <b>" + result + "</b> already exists";
+                        }
+                        return null;
+                    }
+                };
+                dialog.show();
+            }
+        };
+        actionRename.addCustomUpdater(activeTableUpdater());
+        decorator.addExtraAction(actionRename);
+
         decorator.addExtraAction(new AnActionButton("Inner Query", DatabaseIcons.Database) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 System.out.println("test");
             }
         });
-//        decorator.setAddAction(button -> {
-////            selectedTablesRoot.add(getTest("test" + new Random(1000).nextInt()));
-//            selectedTablesModel.reload();
-//        });
 
         decorator.setRemoveAction(button ->
                 getPublisher(SelectedTableRemoveNotifier.class)
                         .onAction((QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0))
         );
-        decorator.setRemoveActionUpdater(
-                e -> {
-                    if (selectedTablesTree.getSelectedRow() == -1) {
-                        return false;
-                    }
-                    var value = (TreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0);
-                    return Objects.isNull(value.getParent().getParent());
-                }
-        );
+        decorator.setRemoveActionUpdater(activeTableUpdater());
+
         selectedTablesTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
@@ -236,6 +255,16 @@ public class FromTables extends AbstractQueryPanel {
             }
         });
         return decorator.createPanel();
+    }
+
+    private AnActionButtonUpdater activeTableUpdater() {
+        return e -> {
+            if (selectedTablesTree.getSelectedRow() == -1) {
+                return false;
+            }
+            var value = (TreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0);
+            return Objects.isNull(value.getParent().getParent());
+        };
     }
 
     private ListTableModel<TableElement> selectedFieldsModel;

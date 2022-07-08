@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class MainPanel extends DefaultDialogWrapper {
 
@@ -125,6 +126,11 @@ public class MainPanel extends DefaultDialogWrapper {
                 }
                 renameCte(data.getInfo());
             }
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                disabledForLast(e);
+            }
         };
         group.add(actionRename);
 
@@ -153,17 +159,21 @@ public class MainPanel extends DefaultDialogWrapper {
 
             @Override
             public void update(@NotNull AnActionEvent e) {
-                var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
-                if (Objects.isNull(data)) {
-                    return;
-                }
-                boolean enabled = tabsCte.getTabs().indexOf(data.getInfo()) != tabsCte.getTabs().size() - 1;
-                e.getPresentation().setEnabled(enabled);
+                disabledForLast(e);
             }
         };
         group.add(actionMoveDown);
 
         tabsCte.setPopupGroup(group, "JetSelectCtePopup", true);
+    }
+
+    private void disabledForLast(@NotNull AnActionEvent e) {
+        var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
+        if (Objects.isNull(data)) {
+            return;
+        }
+        boolean enabled = tabsCte.getTabs().indexOf(data.getInfo()) != tabsCte.getTabs().size() - 1;
+        e.getPresentation().setEnabled(enabled);
     }
 
     private void initListeners() {
@@ -319,11 +329,25 @@ public class MainPanel extends DefaultDialogWrapper {
     }
 
     private void renameCte(TabInfo info) {
-        var dialog = new RenameDialogWrapper(info.getText()) {
+        var input = info.getText();
+        var dialog = new RenameDialogWrapper(input, "Rename common table expression and its usages to:") {
             @Override
             protected void doOKAction() {
-                super.doOKAction();
                 info.setText(getResult().getText());
+                super.doOKAction();
+            }
+
+            @Override
+            protected String validateSource() {
+                var tabNames = tabsCte.getTabs().stream()
+                        .map(TabInfo::getText)
+                        .filter(text -> !text.equals(input))
+                        .collect(Collectors.toList());
+                var text = getResult().getText();
+                if (tabNames.contains(text)) {
+                    return "Common table expression with name <b>" + text + "</b> already exists";
+                }
+                return null;
             }
         };
         dialog.show();
