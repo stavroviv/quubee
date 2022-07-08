@@ -1,11 +1,16 @@
 package org.quebee.com.model;
 
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jetbrains.annotations.NotNull;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QBTreeNode extends DefaultMutableTreeTableNode {
+public class QBTreeNode extends DefaultMutableTreeTableNode implements Transferable {
 
     private final TableElement usObject;
 
@@ -45,5 +50,21 @@ public class QBTreeNode extends DefaultMutableTreeTableNode {
     @Override
     public int hashCode() {
         return getUserObject().hashCode();
+    }
+
+    @Override
+    public DataFlavor[] getTransferDataFlavors() {
+        return new DataFlavor[0];
+    }
+
+    @Override
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+        return null;
     }
 }

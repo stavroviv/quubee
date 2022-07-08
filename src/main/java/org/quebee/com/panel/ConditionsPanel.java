@@ -30,6 +30,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.QBTreeNode;
@@ -48,6 +49,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
@@ -119,7 +121,73 @@ public class ConditionsPanel extends AbstractQueryPanel {
         conditionTableModel.addTableModelListener(this::conditionTableListener);
 
         conditionTable = new TableView<>(conditionTableModel);
+//        conditionTable.setDragEnabled(true);
+        conditionTable.setDropMode(DropMode.INSERT_ROWS);
+        conditionTable.setTransferHandler(new TransferHandler() {
+            //            protected @Nullable Transferable createTransferable(JComponent c) {
+////                TreePath path = InspectionsConfigTreeTable.this.getTree().getPathForRow(InspectionsConfigTreeTable.this.getTree().getLeadSelectionRow());
+////                return path != null ? new TextTransferable(StringUtil.join(ContainerUtil.mapNotNull(path.getPath(), (o) -> {
+////                    return o == path.getPath()[0] ? null : o.toString();
+////                }), " | ")) : null;
+//                return new QBTreeNode(new TableElement("test"));
+//            }
+//
+//            public int getSourceActions(JComponent c) {
+//                return 1;
+//            }
+            public boolean canImport(TransferSupport support) {
+//    // for the demo, we'll only support drops (not clipboard paste)
+//    if (!support.isDrop()) {
+//        return false;
+//    }
+//
+//    // we only import Strings
+//    if (!support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+//        return false;
+//    }
 
+                return true;
+            }
+
+            public boolean importData(TransferSupport support) {
+                // if we can't handle the import, say so
+                if (!canImport(support)) {
+                    return false;
+                }
+//
+//                // fetch the drop location
+//                JTable.DropLocation dl = (JTable.DropLocation)support.getDropLocation();
+//
+//                int row = dl.getRow();
+//
+//                // fetch the data and bail if this fails
+//                String data;
+//                try {
+//                    data = (String)support.getTransferable().getTransferData(DataFlavor.stringFlavor);
+//                } catch (UnsupportedFlavorException e) {
+//                    return false;
+//                } catch (IOException e) {
+//                    return false;
+//                }
+//
+//                String[] rowData = data.split(",");
+//                tableModel.insertRow(row, rowData);
+//
+//                Rectangle rect = table.getCellRect(row, 0, false);
+//                if (rect != null) {
+//                    table.scrollRectToVisible(rect);
+//                }
+//
+//                // demo stuff - remove for blog
+//                model.removeAllElements();
+//                model.insertElementAt(getNextString(count++), 0);
+//                // end demo stuff
+
+                return true;
+            }
+        });
+
+//    });
         var decorator = ToolbarDecorator.createDecorator(conditionTable);
         decorator.setAddAction(button -> {
             var item = new ConditionElement();
@@ -262,6 +330,20 @@ public class ConditionsPanel extends AbstractQueryPanel {
         var table = new TreeTable(allFieldsModel);
         table.setTreeCellRenderer(new TableElement.Renderer());
         table.setRootVisible(false);
+        table.setDragEnabled(true);
+        table.setTransferHandler(new TransferHandler() {
+            protected @Nullable Transferable createTransferable(JComponent c) {
+//                TreePath path = InspectionsConfigTreeTable.this.getTree().getPathForRow(InspectionsConfigTreeTable.this.getTree().getLeadSelectionRow());
+//                return path != null ? new TextTransferable(StringUtil.join(ContainerUtil.mapNotNull(path.getPath(), (o) -> {
+//                    return o == path.getPath()[0] ? null : o.toString();
+//                }), " | ")) : null;
+                return new QBTreeNode(new TableElement("test"));
+            }
+
+            public int getSourceActions(JComponent c) {
+                return 1;
+            }
+        });
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
