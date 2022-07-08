@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.tabs.JBTabsPosition;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.tabs.TabsListener;
@@ -18,7 +17,9 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.util.DefaultDialogWrapper;
 import org.quebee.com.util.JetSelectMessages;
+import org.quebee.com.util.RenameDialogWrapper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class MainPanel extends DialogWrapper {
+public class MainPanel extends DefaultDialogWrapper {
 
     private JBTabsImpl queryTabs;
     private JBTabsImpl tabsCte;
@@ -40,7 +41,7 @@ public class MainPanel extends DialogWrapper {
     private final FullQuery fullQuery;
 
     public MainPanel(FullQuery fullQuery) {
-        super(null, false, DialogWrapper.IdeModalityType.PROJECT);
+        super(null, false);
         setModal(false);
         setResizable(true);
         setTitle("Jet Select");
@@ -51,7 +52,6 @@ public class MainPanel extends DialogWrapper {
         initListeners();
         loadCte();
         abstractQueryPanels.forEach(AbstractQueryPanel::initListeners);
-//        JetSelectMessages.getPublisher(id, LoadAllCteDataNotifier.class).onAction(fullQuery);
     }
 
     @Override
@@ -133,33 +133,37 @@ public class MainPanel extends DialogWrapper {
             public void actionPerformed(@NotNull AnActionEvent e) {
                 System.out.println();
             }
+
             @Override
             public void update(@NotNull AnActionEvent e) {
                 var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
                 if (Objects.isNull(data)) {
                     return;
                 }
-//                tabsCte.getTargetInfo()data.getInfo().get
-                e.getPresentation().setEnabled(false);
+                e.getPresentation().setEnabled(tabsCte.getTabs().indexOf(data.getInfo()) != 0);
             }
         };
-//        actionMoveUp.isEnabledInModalContext();
         group.add(actionMoveUp);
+
         var actionMoveDown = new AnAction("Down", "Down", AllIcons.Actions.MoveDown) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 System.out.println();
             }
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                var data = (TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT);
+                if (Objects.isNull(data)) {
+                    return;
+                }
+                boolean enabled = tabsCte.getTabs().indexOf(data.getInfo()) != tabsCte.getTabs().size() - 1;
+                e.getPresentation().setEnabled(enabled);
+            }
         };
         group.add(actionMoveDown);
 
-        tabsCte.setPopupGroup(group, "Test", true);
-    }
-
-    @Override
-    protected void createDefaultActions() {
-        super.createDefaultActions();
-        init();
+        tabsCte.setPopupGroup(group, "JetSelectCtePopup", true);
     }
 
     private void initListeners() {
@@ -265,7 +269,6 @@ public class MainPanel extends DialogWrapper {
                 new ConditionsPanel(this),
                 new UnionAliasesPanel(this),
                 new OrderPanel(this)
-//                new CtePanel(this)
         );
         abstractQueryPanels.forEach(queryTab ->
                 tabs.addTab(new TabInfo(queryTab.getComponent())
@@ -316,7 +319,13 @@ public class MainPanel extends DialogWrapper {
     }
 
     private void renameCte(TabInfo info) {
-        info.setText("Stubbbb");
+        var dialog = new RenameDialogWrapper(info.getText()) {
+            @Override
+            protected void doOKAction() {
+                super.doOKAction();
+                info.setText(getResult().getText());
+            }
+        };
+        dialog.show();
     }
-
 }
