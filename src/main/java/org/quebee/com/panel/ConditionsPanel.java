@@ -2,14 +2,13 @@ package org.quebee.com.panel;
 
 import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.dnd.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TreeComboBox;
-import com.intellij.ui.AnActionButton;
-import com.intellij.ui.JBSplitter;
-import com.intellij.ui.TableUtil;
-import com.intellij.ui.ToolbarDecorator;
+import com.intellij.openapi.util.Pair;
+import com.intellij.ui.*;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.ExpandableTextField;
 import com.intellij.ui.table.TableView;
@@ -19,6 +18,7 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import com.intellij.util.ui.UIUtil;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import net.sf.jsqlparser.JSQLParserException;
@@ -30,7 +30,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.QBTreeNode;
@@ -49,9 +48,12 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -70,6 +72,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         component.setProportion(0.3f);
         component.setFirstComponent(getFieldsTree());
         component.setSecondComponent(getConditionsTable());
+       extracted();
     }
 
     private ListTableModel<ConditionElement> conditionTableModel;
@@ -121,73 +124,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         conditionTableModel.addTableModelListener(this::conditionTableListener);
 
         conditionTable = new TableView<>(conditionTableModel);
-//        conditionTable.setDragEnabled(true);
-        conditionTable.setDropMode(DropMode.INSERT_ROWS);
-        conditionTable.setTransferHandler(new TransferHandler() {
-            //            protected @Nullable Transferable createTransferable(JComponent c) {
-////                TreePath path = InspectionsConfigTreeTable.this.getTree().getPathForRow(InspectionsConfigTreeTable.this.getTree().getLeadSelectionRow());
-////                return path != null ? new TextTransferable(StringUtil.join(ContainerUtil.mapNotNull(path.getPath(), (o) -> {
-////                    return o == path.getPath()[0] ? null : o.toString();
-////                }), " | ")) : null;
-//                return new QBTreeNode(new TableElement("test"));
-//            }
-//
-//            public int getSourceActions(JComponent c) {
-//                return 1;
-//            }
-            public boolean canImport(TransferSupport support) {
-//    // for the demo, we'll only support drops (not clipboard paste)
-//    if (!support.isDrop()) {
-//        return false;
-//    }
-//
-//    // we only import Strings
-//    if (!support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-//        return false;
-//    }
-
-                return true;
-            }
-
-            public boolean importData(TransferSupport support) {
-                // if we can't handle the import, say so
-                if (!canImport(support)) {
-                    return false;
-                }
-//
-//                // fetch the drop location
-//                JTable.DropLocation dl = (JTable.DropLocation)support.getDropLocation();
-//
-//                int row = dl.getRow();
-//
-//                // fetch the data and bail if this fails
-//                String data;
-//                try {
-//                    data = (String)support.getTransferable().getTransferData(DataFlavor.stringFlavor);
-//                } catch (UnsupportedFlavorException e) {
-//                    return false;
-//                } catch (IOException e) {
-//                    return false;
-//                }
-//
-//                String[] rowData = data.split(",");
-//                tableModel.insertRow(row, rowData);
-//
-//                Rectangle rect = table.getCellRect(row, 0, false);
-//                if (rect != null) {
-//                    table.scrollRectToVisible(rect);
-//                }
-//
-//                // demo stuff - remove for blog
-//                model.removeAllElements();
-//                model.insertElementAt(getNextString(count++), 0);
-//                // end demo stuff
-
-                return true;
-            }
-        });
-
-//    });
+        extracted();
         var decorator = ToolbarDecorator.createDecorator(conditionTable);
         decorator.setAddAction(button -> {
             var item = new ConditionElement();
@@ -321,29 +258,16 @@ public class ConditionsPanel extends AbstractQueryPanel {
 
     private QBTreeNode allFieldsRoot;
     private ListTreeTableModel allFieldsModel;
-
+    private TreeTable table;
     private JComponent getFieldsTree() {
         allFieldsRoot = new QBTreeNode(new TableElement("empty"));
         allFieldsModel = new ListTreeTableModel(allFieldsRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Fields")
         });
-        var table = new TreeTable(allFieldsModel);
+        table = new TreeTable(allFieldsModel);
         table.setTreeCellRenderer(new TableElement.Renderer());
         table.setRootVisible(false);
-        table.setDragEnabled(true);
-        table.setTransferHandler(new TransferHandler() {
-            protected @Nullable Transferable createTransferable(JComponent c) {
-//                TreePath path = InspectionsConfigTreeTable.this.getTree().getPathForRow(InspectionsConfigTreeTable.this.getTree().getLeadSelectionRow());
-//                return path != null ? new TextTransferable(StringUtil.join(ContainerUtil.mapNotNull(path.getPath(), (o) -> {
-//                    return o == path.getPath()[0] ? null : o.toString();
-//                }), " | ")) : null;
-                return new QBTreeNode(new TableElement("test"));
-            }
 
-            public int getSourceActions(JComponent c) {
-                return 1;
-            }
-        });
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
@@ -355,16 +279,192 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
                 }
-                var columnObject = value.getUserObject();
-                var tableObject = value.getParent().getUserObject();
-                var item = new ConditionElement();
-                item.setConditionLeft(tableObject.getName() + "." + columnObject.getName());
-                item.setConditionComparison("=");
-                conditionTableModel.addRow(item);
+                addCondition(value);
             }
         });
         var decorator = ToolbarDecorator.createDecorator(table);
         return decorator.createPanel();
+    }
+
+    private void addCondition(QBTreeNode value) {
+        var columnObject = value.getUserObject();
+        var tableObject = value.getParent().getUserObject();
+        var item = new ConditionElement();
+        item.setConditionLeft(tableObject.getName() + "." + columnObject.getName());
+        item.setConditionComparison("=");
+        conditionTableModel.addRow(item);
+    }
+
+    private void extracted() {
+        DnDManager.getInstance().registerTarget(new MyDnDTarget(), conditionTable);
+        DnDManager.getInstance().registerSource(new MyDnDSource(), table);
+    }
+
+    private class MyDnDSource implements DnDSource {
+//        TreeTable tablehhh;
+//
+//        private MyDnDSource(TreeTable tablehhh) {
+//            this.tablehhh = tablehhh;
+//        }
+
+        public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
+            return true;
+        }
+
+        public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
+//            if (dragOrigin == null) {
+//                $$$reportNull$$$0(1);
+//            }
+//
+//            Object[] selection = JBIterable.of(tablehhh.getSelectionModel()).map((path) -> {
+//                DbDataSource dataSource = DatabaseView.findDbDataSourceInPath(path);
+//                DasObject o = (DasObject) TreeUtil.findObjectInPath(path, DasObject.class);
+//                DbElement e = DbImplUtilCore.findElement(dataSource, o);
+//                return ObjectUtils.notNull(e, path.getLastPathComponent());
+//            }).unique().toList().toArray();
+//            return new DnDDragStartBean(selection.length == 0 ? null : new DatabaseView.MyTransferable(selection), dragOrigin);
+            var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
+
+            return new DnDDragStartBean(new MyTransferable(value), dragOrigin);
+        }
+
+        public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action, Point dragOrigin, @NotNull DnDDragStartBean bean) {
+//            if (bean == null) {
+//                $$$reportNull$$$0(2);
+//            }
+//
+//            Object[] objects = ((DatabaseView.MyTransferable)bean.getAttachedObject()).objects;
+//            ItemPresentation presentation = (ItemPresentation)Objects.requireNonNull((ItemPresentation) ReadAction.compute(() -> {
+//                return ((DatabaseView.MyRenderer)DatabaseView.this.myTree.getCellRenderer()).getPresentationInner(objects[0]);
+//            }));
+            SimpleColoredComponent c = new SimpleColoredComponent();
+//            c.setForeground(RenderingUtil.getForeground(DatabaseView.this.myTree));
+//            c.setBackground(RenderingUtil.getBackground(DatabaseView.this.myTree));
+//            c.setIcon(presentation.getIcon(false));
+//            if (presentation instanceof PresentationData) {
+//                Iterator var7 = ((PresentationData)presentation).getColoredText().iterator();
+//
+//                while(var7.hasNext()) {
+//                    PresentableNodeDescriptor.ColoredFragment fragment = (PresentableNodeDescriptor.ColoredFragment)var7.next();
+//                    c.append(fragment.getText(), fragment.getAttributes());
+//                }
+//            }
+//
+//            if (objects.length > 1) {
+//                c.append(" +" + (objects.length - 1), SimpleTextAttributes.ERROR_ATTRIBUTES);
+//            }
+//
+            Dimension size = c.getPreferredSize();
+            c.setSize(size);
+            BufferedImage image = UIUtil.createImage(c, size.width, size.height, 2);
+//            c.setOpaque(false);
+//            Graphics2D g = image.createGraphics();
+//            c.paint(g);
+//            g.dispose();
+            Pair var10000 = Pair.create(image, new Point(0, 0));
+//            if (var10000 == null) {
+//                $$$reportNull$$$0(3);
+//            }
+
+            return var10000;
+        }
+    }
+
+    private final class MyTransferable implements Transferable {
+        public QBTreeNode getObjects() {
+            return objects;
+        }
+
+        final QBTreeNode objects;
+
+        MyTransferable(QBTreeNode objects) {
+            super();
+            this.objects = objects;
+        }
+
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{DataFlavor.stringFlavor, DnDEventImpl.ourDataFlavor};
+        }
+
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return true;
+        }
+
+        public @NotNull Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+            if (DataFlavor.stringFlavor.equals(flavor)) {
+                StringBuilder sb = new StringBuilder();
+//                Object[] var3 = this.objects;
+//                int var4 = var3.length;
+//
+//                for(int var5 = 0; var5 < var4; ++var5) {
+//                    Object object = var3[var5];
+//                    if (object instanceof PsiNamedElement) {
+//                        if (sb.length() > 0) {
+//                            sb.append("\n");
+//                        }
+//
+//                        sb.append(((PsiNamedElement)object).getName());
+//                    }
+//                }
+
+                String var7 = sb.toString();
+//                if (var7 == null) {
+//                    $$$reportNull$$$0(1);
+//                }
+
+                return this.objects;
+            } else if (DnDEventImpl.ourDataFlavor.equals(flavor)) {
+//                String var10000 = this.objects;
+//                if (var10000 == null) {
+//                    $$$reportNull$$$0(2);
+//                }
+
+                return this.objects;
+            } else {
+                throw new UnsupportedFlavorException(flavor);
+            }
+        }
+    }
+
+    private class MyDnDTarget implements DnDNativeTarget {
+
+        public boolean update(DnDEvent aEvent) {
+            System.out.println("update");
+//            Point point = aEvent.getPointOn(DatabaseView.this.myTree);
+//            boolean canCreateDataSource = this.hasDdlDataSourceFiles(aEvent);
+//            DnDTarget target = DatabaseView.this.findDndTargetAt(point, canCreateDataSource);
+//            boolean targetOk = target != null && aEvent.delegateUpdateTo(target);
+//            boolean ok = targetOk || canCreateDataSource;
+            aEvent.setDropPossible(true);
+//            if (ok) {
+//                RelativeRectangle rectangle;
+//                Rectangle bounds;
+//                if (targetOk) {
+//                    bounds = (Rectangle)Objects.requireNonNull(DatabaseView.this.myTree.getPathBounds(DatabaseView.this.myTree.getClosestPathForLocation(point.x, point.y)));
+//                    rectangle = new RelativeRectangle(DatabaseView.this.myTree, bounds);
+//                } else {
+//                    bounds = DatabaseView.this.getBounds();
+//                    rectangle = new RelativeRectangle(DatabaseView.this, bounds);
+//                }
+//
+//                aEvent.setHighlighting(rectangle, 1);
+//            }
+
+            return true;
+        }
+
+        public void drop(DnDEvent aEvent) {
+            System.out.println("drop");
+            addCondition(((MyTransferable) aEvent.getAttachedObject()).getObjects());
+//            boolean canCreateDataSource = this.hasDdlDataSourceFiles(aEvent);
+//            DnDTarget target = DatabaseView.this.findDndTargetAt(aEvent.getPointOn(DatabaseView.this.myTree), canCreateDataSource);
+//            if (target != null && aEvent.delegateUpdateTo(target)) {
+//                aEvent.delegateDropTo(target);
+//            } else {
+//                DataSourceUiUtil.createDataSourceFromFiles(DatabaseView.this.myProject, FileCopyPasteUtil.getVirtualFileListFromAttachedObject(aEvent.getAttachedObject()));
+//            }
+
+        }
     }
 
     private class CustomConditionEditor extends AbstractTableCellEditor {
