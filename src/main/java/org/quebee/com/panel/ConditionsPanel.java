@@ -46,13 +46,12 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Getter
 public class ConditionsPanel extends AbstractQueryPanel {
@@ -296,36 +295,36 @@ public class ConditionsPanel extends AbstractQueryPanel {
 //        target
 //        DnDManager.getInstance().registerTarget(target, conditionTable, mainPanel.getDisposable());
         RowsDnDSupport.install(conditionTable, (EditableModel)conditionTable.getModel());
-        try {
-            conditionTable.getDropTarget().addDropTargetListener(new DropTargetListener() {
-                @Override
-                public void dragEnter(DropTargetDragEvent dtde) {
-                    System.out.println("drop");
-                }
-
-                @Override
-                public void dragOver(DropTargetDragEvent dtde) {
-                    System.out.println("drop");
-                }
-
-                @Override
-                public void dropActionChanged(DropTargetDragEvent dtde) {
-                    System.out.println("drop");
-                }
-
-                @Override
-                public void dragExit(DropTargetEvent dte) {
-                    System.out.println("drop");
-                }
-
-                @Override
-                public void drop(DropTargetDropEvent dtde) {
-                    System.out.println("drop");
-                }
-            });
-        } catch (TooManyListenersException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            conditionTable.getDropTarget().addDropTargetListener(new DropTargetListener() {
+//                @Override
+//                public void dragEnter(DropTargetDragEvent dtde) {
+//                    System.out.println("drop");
+//                }
+//
+//                @Override
+//                public void dragOver(DropTargetDragEvent dtde) {
+//                    System.out.println("drop");
+//                }
+//
+//                @Override
+//                public void dropActionChanged(DropTargetDragEvent dtde) {
+//                    System.out.println("drop");
+//                }
+//
+//                @Override
+//                public void dragExit(DropTargetEvent dte) {
+//                    System.out.println("drop");
+//                }
+//
+//                @Override
+//                public void drop(DropTargetDropEvent dtde) {
+//                    System.out.println("drop");
+//                }
+//            });
+//        } catch (TooManyListenersException e) {
+//            throw new RuntimeException(e);
+//        }
 //        conditionTableModel. addDropTargetListener
         //???????????
 //
