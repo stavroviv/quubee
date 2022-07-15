@@ -11,14 +11,12 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.ExpandableTextField;
+import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.intellij.util.ui.AbstractTableCellEditor;
-import com.intellij.util.ui.ColumnInfo;
-import com.intellij.util.ui.ListTableModel;
-import com.intellij.util.ui.UIUtil;
+import com.intellij.util.ui.*;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import net.sf.jsqlparser.JSQLParserException;
@@ -48,16 +46,13 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 public class ConditionsPanel extends AbstractQueryPanel {
@@ -296,146 +291,86 @@ public class ConditionsPanel extends AbstractQueryPanel {
     }
 
     private void extracted() {
-        DnDManager.getInstance().registerTarget(new MyDnDTarget(), conditionTable);
-        DnDManager.getInstance().registerSource(new MyDnDSource(), table);
+        DnDManager.getInstance().registerSource(new MyDnDSource(), table, mainPanel.getDisposable());
+//        MyDnDTarget target = new MyDnDTarget();
+//        target
+//        DnDManager.getInstance().registerTarget(target, conditionTable, mainPanel.getDisposable());
+        RowsDnDSupport.install(conditionTable, (EditableModel)conditionTable.getModel());
+        try {
+            conditionTable.getDropTarget().addDropTargetListener(new DropTargetListener() {
+                @Override
+                public void dragEnter(DropTargetDragEvent dtde) {
+                    System.out.println("drop");
+                }
+
+                @Override
+                public void dragOver(DropTargetDragEvent dtde) {
+                    System.out.println("drop");
+                }
+
+                @Override
+                public void dropActionChanged(DropTargetDragEvent dtde) {
+                    System.out.println("drop");
+                }
+
+                @Override
+                public void dragExit(DropTargetEvent dte) {
+                    System.out.println("drop");
+                }
+
+                @Override
+                public void drop(DropTargetDropEvent dtde) {
+                    System.out.println("drop");
+                }
+            });
+        } catch (TooManyListenersException e) {
+            throw new RuntimeException(e);
+        }
+//        conditionTableModel. addDropTargetListener
+        //???????????
+//
     }
 
     private class MyDnDSource implements DnDSource {
-//        TreeTable tablehhh;
-//
-//        private MyDnDSource(TreeTable tablehhh) {
-//            this.tablehhh = tablehhh;
-//        }
 
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
             return true;
         }
 
         public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
-//            if (dragOrigin == null) {
-//                $$$reportNull$$$0(1);
-//            }
-//
-//            Object[] selection = JBIterable.of(tablehhh.getSelectionModel()).map((path) -> {
-//                DbDataSource dataSource = DatabaseView.findDbDataSourceInPath(path);
-//                DasObject o = (DasObject) TreeUtil.findObjectInPath(path, DasObject.class);
-//                DbElement e = DbImplUtilCore.findElement(dataSource, o);
-//                return ObjectUtils.notNull(e, path.getLastPathComponent());
-//            }).unique().toList().toArray();
-//            return new DnDDragStartBean(selection.length == 0 ? null : new DatabaseView.MyTransferable(selection), dragOrigin);
             var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
-
-            return new DnDDragStartBean(new MyTransferable(value), dragOrigin);
+            return new DnDDragStartBean(value, dragOrigin);
         }
 
         public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action, Point dragOrigin, @NotNull DnDDragStartBean bean) {
-//            if (bean == null) {
-//                $$$reportNull$$$0(2);
-//            }
-//
-//            Object[] objects = ((DatabaseView.MyTransferable)bean.getAttachedObject()).objects;
-//            ItemPresentation presentation = (ItemPresentation)Objects.requireNonNull((ItemPresentation) ReadAction.compute(() -> {
-//                return ((DatabaseView.MyRenderer)DatabaseView.this.myTree.getCellRenderer()).getPresentationInner(objects[0]);
-//            }));
             SimpleColoredComponent c = new SimpleColoredComponent();
-//            c.setForeground(RenderingUtil.getForeground(DatabaseView.this.myTree));
-//            c.setBackground(RenderingUtil.getBackground(DatabaseView.this.myTree));
-//            c.setIcon(presentation.getIcon(false));
-//            if (presentation instanceof PresentationData) {
-//                Iterator var7 = ((PresentationData)presentation).getColoredText().iterator();
-//
-//                while(var7.hasNext()) {
-//                    PresentableNodeDescriptor.ColoredFragment fragment = (PresentableNodeDescriptor.ColoredFragment)var7.next();
-//                    c.append(fragment.getText(), fragment.getAttributes());
-//                }
-//            }
-//
-//            if (objects.length > 1) {
-//                c.append(" +" + (objects.length - 1), SimpleTextAttributes.ERROR_ATTRIBUTES);
-//            }
-//
-            Dimension size = c.getPreferredSize();
+            c.setForeground(RenderingUtil.getForeground(table));
+            c.setBackground(RenderingUtil.getBackground(table));
+            c.setIcon(DatabaseIcons.Col);
+
+            var attachedObject = (QBTreeNode) bean.getAttachedObject();
+            c.append(" +" + attachedObject.getUserObject().getDescription(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+
+            var size = c.getPreferredSize();
             c.setSize(size);
-            BufferedImage image = UIUtil.createImage(c, size.width, size.height, 2);
-//            c.setOpaque(false);
-//            Graphics2D g = image.createGraphics();
-//            c.paint(g);
-//            g.dispose();
-            Pair var10000 = Pair.create(image, new Point(0, 0));
-//            if (var10000 == null) {
-//                $$$reportNull$$$0(3);
-//            }
+            var image = UIUtil.createImage(c, size.width, size.height, 2);
+            c.setOpaque(false);
+            var g = image.createGraphics();
+            c.paint(g);
+            g.dispose();
 
-            return var10000;
-        }
-    }
-
-    private final class MyTransferable implements Transferable {
-        public QBTreeNode getObjects() {
-            return objects;
-        }
-
-        final QBTreeNode objects;
-
-        MyTransferable(QBTreeNode objects) {
-            super();
-            this.objects = objects;
-        }
-
-        public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{DataFlavor.stringFlavor, DnDEventImpl.ourDataFlavor};
-        }
-
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return true;
-        }
-
-        public @NotNull Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-            if (DataFlavor.stringFlavor.equals(flavor)) {
-                StringBuilder sb = new StringBuilder();
-//                Object[] var3 = this.objects;
-//                int var4 = var3.length;
-//
-//                for(int var5 = 0; var5 < var4; ++var5) {
-//                    Object object = var3[var5];
-//                    if (object instanceof PsiNamedElement) {
-//                        if (sb.length() > 0) {
-//                            sb.append("\n");
-//                        }
-//
-//                        sb.append(((PsiNamedElement)object).getName());
-//                    }
-//                }
-
-                String var7 = sb.toString();
-//                if (var7 == null) {
-//                    $$$reportNull$$$0(1);
-//                }
-
-                return this.objects;
-            } else if (DnDEventImpl.ourDataFlavor.equals(flavor)) {
-//                String var10000 = this.objects;
-//                if (var10000 == null) {
-//                    $$$reportNull$$$0(2);
-//                }
-
-                return this.objects;
-            } else {
-                throw new UnsupportedFlavorException(flavor);
-            }
+            return Pair.create(image, new Point(-20, 5));
         }
     }
 
     private class MyDnDTarget implements DnDNativeTarget {
 
         public boolean update(DnDEvent aEvent) {
-            System.out.println("update");
 //            Point point = aEvent.getPointOn(DatabaseView.this.myTree);
 //            boolean canCreateDataSource = this.hasDdlDataSourceFiles(aEvent);
 //            DnDTarget target = DatabaseView.this.findDndTargetAt(point, canCreateDataSource);
 //            boolean targetOk = target != null && aEvent.delegateUpdateTo(target);
 //            boolean ok = targetOk || canCreateDataSource;
-            aEvent.setDropPossible(true);
 //            if (ok) {
 //                RelativeRectangle rectangle;
 //                Rectangle bounds;
@@ -449,21 +384,15 @@ public class ConditionsPanel extends AbstractQueryPanel {
 //
 //                aEvent.setHighlighting(rectangle, 1);
 //            }
-
+            aEvent.setDropPossible(true);
             return true;
         }
 
         public void drop(DnDEvent aEvent) {
-            System.out.println("drop");
-            addCondition(((MyTransferable) aEvent.getAttachedObject()).getObjects());
-//            boolean canCreateDataSource = this.hasDdlDataSourceFiles(aEvent);
-//            DnDTarget target = DatabaseView.this.findDndTargetAt(aEvent.getPointOn(DatabaseView.this.myTree), canCreateDataSource);
-//            if (target != null && aEvent.delegateUpdateTo(target)) {
-//                aEvent.delegateDropTo(target);
-//            } else {
-//                DataSourceUiUtil.createDataSourceFromFiles(DatabaseView.this.myProject, FileCopyPasteUtil.getVirtualFileListFromAttachedObject(aEvent.getAttachedObject()));
-//            }
-
+//            aEvent.setHighlighting();
+            if (aEvent.getAttachedObject() instanceof QBTreeNode) {
+                addCondition((QBTreeNode) aEvent.getAttachedObject());
+            }
         }
     }
 
