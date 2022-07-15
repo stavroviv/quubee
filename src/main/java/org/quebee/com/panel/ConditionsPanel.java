@@ -119,6 +119,13 @@ public class ConditionsPanel extends AbstractQueryPanel {
 
         conditionTable = new TableView<>(conditionTableModel);
         extracted();
+        conditionTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                RowsDnDSupport.install(conditionTable, (EditableModel)conditionTable.getModel());
+            }
+        });
         var decorator = ToolbarDecorator.createDecorator(conditionTable);
         decorator.setAddAction(button -> {
             var item = new ConditionElement();
@@ -265,6 +272,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
+                DnDManager.getInstance().registerTarget(new MyDnDTarget(), conditionTable, mainPanel.getDisposable());
                 var table = (TreeTable) mouseEvent.getSource();
                 if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
                     return;
@@ -293,41 +301,9 @@ public class ConditionsPanel extends AbstractQueryPanel {
         DnDManager.getInstance().registerSource(new MyDnDSource(), table, mainPanel.getDisposable());
 //        MyDnDTarget target = new MyDnDTarget();
 //        target
-//        DnDManager.getInstance().registerTarget(target, conditionTable, mainPanel.getDisposable());
-        RowsDnDSupport.install(conditionTable, (EditableModel)conditionTable.getModel());
-//        try {
-//            conditionTable.getDropTarget().addDropTargetListener(new DropTargetListener() {
-//                @Override
-//                public void dragEnter(DropTargetDragEvent dtde) {
-//                    System.out.println("drop");
-//                }
 //
-//                @Override
-//                public void dragOver(DropTargetDragEvent dtde) {
-//                    System.out.println("drop");
-//                }
 //
-//                @Override
-//                public void dropActionChanged(DropTargetDragEvent dtde) {
-//                    System.out.println("drop");
-//                }
-//
-//                @Override
-//                public void dragExit(DropTargetEvent dte) {
-//                    System.out.println("drop");
-//                }
-//
-//                @Override
-//                public void drop(DropTargetDropEvent dtde) {
-//                    System.out.println("drop");
-//                }
-//            });
-//        } catch (TooManyListenersException e) {
-//            throw new RuntimeException(e);
-//        }
-//        conditionTableModel. addDropTargetListener
-        //???????????
-//
+
     }
 
     private class MyDnDSource implements DnDSource {
