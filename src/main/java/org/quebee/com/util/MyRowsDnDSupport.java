@@ -47,10 +47,8 @@ public final class MyRowsDnDSupport {
                 if (model instanceof RefinedDropSupport) {
                     var cellBounds = getCellBounds(component, newIndex);
                     var position = ((RefinedDropSupport) model).isDropInto(component, oldIndex, newIndex)
-                            ? RefinedDropSupport.Position.INTO
-                            : (event.getPoint().y < cellBounds.y + cellBounds.height / 2)
-                            ? RefinedDropSupport.Position.ABOVE
-                            : RefinedDropSupport.Position.BELOW;
+                            ? RefinedDropSupport.Position.INTO : (event.getPoint().y < cellBounds.y + cellBounds.height / 2)
+                            ? RefinedDropSupport.Position.ABOVE : RefinedDropSupport.Position.BELOW;
                     if (((RefinedDropSupport) model).canDrop(oldIndex, newIndex, position)) {
                         ((RefinedDropSupport) model).drop(oldIndex, newIndex, position);
                     }

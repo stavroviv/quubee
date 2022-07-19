@@ -31,6 +31,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.model.ConditionElement;
 import org.quebee.com.model.QBTreeNode;
@@ -122,14 +123,8 @@ public class ConditionsPanel extends AbstractQueryPanel {
         conditionTableModel.addTableModelListener(this::conditionTableListener);
 
         conditionTable = new TableView<>(conditionTableModel);
-        enableDragAndDrop();
         var decorator = ToolbarDecorator.createDecorator(conditionTable);
-        decorator.setAddAction(button -> {
-            var item = new ConditionElement();
-            item.setConditionComparison("=");
-            conditionTableModel.addRow(item);
-            conditionTable.setSelection(Collections.singleton(item));
-        });
+        decorator.setAddAction(button -> addCondition(null, -1));
         decorator.addExtraAction(new AnActionButton("Copy", AllIcons.Actions.Copy) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
@@ -257,6 +252,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
     private QBTreeNode allFieldsRoot;
     private ListTreeTableModel allFieldsModel;
     private TreeTable table;
+
     private JComponent getFieldsTree() {
         allFieldsRoot = new QBTreeNode(new TableElement("empty"));
         allFieldsModel = new ListTreeTableModel(allFieldsRoot, new ColumnInfo[]{
@@ -284,11 +280,13 @@ public class ConditionsPanel extends AbstractQueryPanel {
         return decorator.createPanel();
     }
 
-    private void addCondition(QBTreeNode value, int newIndex) {
-        var columnObject = value.getUserObject();
-        var tableObject = value.getParent().getUserObject();
+    private void addCondition(@Nullable QBTreeNode value, int newIndex) {
         var item = new ConditionElement();
-        item.setConditionLeft(tableObject.getName() + "." + columnObject.getName());
+        if (value != null) {
+            var columnObject = value.getUserObject();
+            var tableObject = value.getParent().getUserObject();
+            item.setConditionLeft(tableObject.getName() + "." + columnObject.getName());
+        }
         item.setConditionComparison("=");
         if (newIndex == -1) {
             conditionTableModel.addRow(item);
