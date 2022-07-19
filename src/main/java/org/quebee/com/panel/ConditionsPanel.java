@@ -302,9 +302,9 @@ public class ConditionsPanel extends AbstractQueryPanel {
         DnDManager.getInstance().registerSource(new MyDnDSource(), table, mainPanel.getDisposable());
         MyRowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel(), (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
-                final Point p = event.getPoint();
-                int i = conditionTable.rowAtPoint(p);
-                addCondition((QBTreeNode) event.getAttachedObject(), i + 1);
+                var p = event.getPoint();
+                var i = conditionTable.rowAtPoint(p);
+                addCondition((QBTreeNode) event.getAttachedObject(), i);
             }
         });
     }
