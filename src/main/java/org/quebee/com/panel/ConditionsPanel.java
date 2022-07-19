@@ -66,7 +66,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         component.setProportion(0.3f);
         component.setFirstComponent(getFieldsTree());
         component.setSecondComponent(getConditionsTable());
-       extracted();
+        enableDragAndDrop();
     }
 
     private ListTableModel<ConditionElement> conditionTableModel;
@@ -118,14 +118,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         conditionTableModel.addTableModelListener(this::conditionTableListener);
 
         conditionTable = new TableView<>(conditionTableModel);
-        extracted();
-        conditionTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                RowsDnDSupport.install(conditionTable, (EditableModel)conditionTable.getModel());
-            }
-        });
+        enableDragAndDrop();
         var decorator = ToolbarDecorator.createDecorator(conditionTable);
         decorator.setAddAction(button -> {
             var item = new ConditionElement();
@@ -272,7 +265,6 @@ public class ConditionsPanel extends AbstractQueryPanel {
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
-                DnDManager.getInstance().registerTarget(new MyDnDTarget(), conditionTable, mainPanel.getDisposable());
                 var table = (TreeTable) mouseEvent.getSource();
                 if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
                     return;
@@ -297,14 +289,120 @@ public class ConditionsPanel extends AbstractQueryPanel {
         conditionTableModel.addRow(item);
     }
 
-    private void extracted() {
+    private void enableDragAndDrop() {
         DnDManager.getInstance().registerSource(new MyDnDSource(), table, mainPanel.getDisposable());
-//        MyDnDTarget target = new MyDnDTarget();
-//        target
-//
-//
-
+        DnDManager.getInstance().registerTarget(new MyDnDTarget(), conditionTable, mainPanel.getDisposable());
+        RowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel());
     }
+
+//    private static void installImpl(@NotNull final JComponent component, @NotNull final EditableModel model) {
+//        component.setTransferHandler(new TransferHandler(null));
+//        DnDSupport.createBuilder(component)
+//                .setBeanProvider(info -> {
+//                    final Point p = info.getPoint();
+//                    return new DnDDragStartBean(new RowsDnDSupport.RowDragInfo(component, Integer.valueOf(getRow(component, p))));
+//                })
+//                .setTargetChecker(new DnDTargetChecker() {
+//                    @Override
+//                    public boolean update(DnDEvent event) {
+//                        final Object o = event.getAttachedObject();
+//                        if (! (o instanceof RowsDnDSupport.RowDragInfo) || ((RowsDnDSupport.RowDragInfo)o).component != component) {
+//                            event.setDropPossible(false, "");
+//                            return true;
+//                        }
+//                        event.setDropPossible(true);
+//                        int oldIndex = ((RowsDnDSupport.RowDragInfo)o).row;
+//                        int newIndex = getRow(component, event.getPoint());
+//
+//                        if (newIndex == -1) {
+//                            event.setDropPossible(false, "");
+//                            return true;
+//                        }
+//
+//                        Rectangle cellBounds = getCellBounds(component, newIndex);
+//                        if (model instanceof RowsDnDSupport.RefinedDropSupport) {
+//                            RowsDnDSupport.RefinedDropSupport.Position position = ((RowsDnDSupport.RefinedDropSupport)model).isDropInto(component, oldIndex, newIndex)
+//                                    ? INTO
+//                                    : (event.getPoint().y < cellBounds.y + cellBounds.height / 2)
+//                                    ? ABOVE
+//                                    : BELOW;
+//                            boolean canDrop = ((RowsDnDSupport.RefinedDropSupport)model).canDrop(oldIndex, newIndex, position);
+//                            event.setDropPossible(canDrop);
+//                            if (canDrop && oldIndex != newIndex) {
+//                                switch (position) {
+//                                    case INTO:
+//                                        event.setHighlighting(new RelativeRectangle(component, cellBounds), DnDEvent.DropTargetHighlightingType.RECTANGLE);
+//                                        break;
+//                                    case BELOW:
+//                                        cellBounds.y += cellBounds.height;
+//                                    case ABOVE:
+//                                        cellBounds.y -= -1;
+//                                        cellBounds.height = 2;
+//                                        event.setHighlighting(new RelativeRectangle(component, cellBounds), DnDEvent.DropTargetHighlightingType.FILLED_RECTANGLE);
+//                                        break;
+//                                }
+//                            }
+//                            else {
+//                                event.hideHighlighter();
+//                            }
+//                        }
+//                        else if (oldIndex != newIndex) {
+//                            // Drag&Drop always starts with new==old and we shouldn't display 'rejecting' cursor if they are equal
+//                            boolean canExchange = model.canExchangeRows(oldIndex, newIndex);
+//                            if (canExchange) {
+//                                if (oldIndex < newIndex) {
+//                                    cellBounds.y += cellBounds.height - 2;
+//                                }
+//                                RelativeRectangle rectangle = new RelativeRectangle(component, cellBounds);
+//                                rectangle.getDimension().height = 2;
+//                                event.setDropPossible(true);
+//                                event.setHighlighting(rectangle, DnDEvent.DropTargetHighlightingType.FILLED_RECTANGLE);
+//                            }
+//                            else {
+//                                event.setDropPossible(false);
+//                            }
+//                        }
+//                        return true;
+//                    }
+//                })
+//                .setDropHandler(new DnDDropHandler() {
+//                    @Override
+//                    public void drop(DnDEvent event) {
+//                        final Object o = event.getAttachedObject();
+//                        final Point p = event.getPoint();
+//                        if (o instanceof RowsDnDSupport.RowDragInfo && ((RowsDnDSupport.RowDragInfo)o).component == component) {
+//                            int oldIndex = ((RowsDnDSupport.RowDragInfo)o).row;
+//                            if (oldIndex == -1) return;
+//                            int newIndex = getRow(component, p);
+//                            if (newIndex == -1) {
+//                                newIndex = getRowCount(component) - 1;
+//                            }
+//
+//                            if (oldIndex != newIndex) {
+//                                if (model instanceof RowsDnDSupport.RefinedDropSupport) {
+//                                    Rectangle cellBounds = getCellBounds(component, newIndex);
+//                                    RowsDnDSupport.RefinedDropSupport.Position position = ((RowsDnDSupport.RefinedDropSupport)model).isDropInto(component, oldIndex, newIndex)
+//                                            ? INTO
+//                                            : (event.getPoint().y < cellBounds.y + cellBounds.height / 2)
+//                                            ? ABOVE
+//                                            : BELOW;
+//                                    if (((RowsDnDSupport.RefinedDropSupport)model).canDrop(oldIndex, newIndex, position)) {
+//                                        ((RowsDnDSupport.RefinedDropSupport)model).drop(oldIndex, newIndex, position);
+//                                    }
+//                                }
+//                                else {
+//                                    if (model.canExchangeRows(oldIndex, newIndex)) {
+//                                        model.exchangeRows(oldIndex, newIndex);
+//                                        setSelectedRow(component, newIndex);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        event.hideHighlighter();
+//                    }
+//                })
+//                .install();
+//    }
 
     private class MyDnDSource implements DnDSource {
 
