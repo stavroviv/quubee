@@ -2,7 +2,10 @@ package org.quebee.com.panel;
 
 import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.dnd.*;
+import com.intellij.ide.dnd.DnDAction;
+import com.intellij.ide.dnd.DnDDragStartBean;
+import com.intellij.ide.dnd.DnDManager;
+import com.intellij.ide.dnd.DnDSource;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
@@ -39,6 +42,7 @@ import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
 import org.quebee.com.notifier.SelectedTableRemoveNotifier;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.MyRowsDnDSupport;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -273,136 +277,37 @@ public class ConditionsPanel extends AbstractQueryPanel {
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
                 }
-                addCondition(value);
+                addCondition(value, -1);
             }
         });
         var decorator = ToolbarDecorator.createDecorator(table);
         return decorator.createPanel();
     }
 
-    private void addCondition(QBTreeNode value) {
+    private void addCondition(QBTreeNode value, int newIndex) {
         var columnObject = value.getUserObject();
         var tableObject = value.getParent().getUserObject();
         var item = new ConditionElement();
         item.setConditionLeft(tableObject.getName() + "." + columnObject.getName());
         item.setConditionComparison("=");
-        conditionTableModel.addRow(item);
+        if (newIndex == -1) {
+            conditionTableModel.addRow(item);
+        } else {
+            conditionTableModel.insertRow(newIndex, item);
+        }
+        conditionTable.setSelection(Collections.singleton(item));
     }
 
     private void enableDragAndDrop() {
         DnDManager.getInstance().registerSource(new MyDnDSource(), table, mainPanel.getDisposable());
-        DnDManager.getInstance().registerTarget(new MyDnDTarget(), conditionTable, mainPanel.getDisposable());
-        RowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel());
+        MyRowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel(), (event) -> {
+            if (event.getAttachedObject() instanceof QBTreeNode) {
+                final Point p = event.getPoint();
+                int i = conditionTable.rowAtPoint(p);
+                addCondition((QBTreeNode) event.getAttachedObject(), i + 1);
+            }
+        });
     }
-
-//    private static void installImpl(@NotNull final JComponent component, @NotNull final EditableModel model) {
-//        component.setTransferHandler(new TransferHandler(null));
-//        DnDSupport.createBuilder(component)
-//                .setBeanProvider(info -> {
-//                    final Point p = info.getPoint();
-//                    return new DnDDragStartBean(new RowsDnDSupport.RowDragInfo(component, Integer.valueOf(getRow(component, p))));
-//                })
-//                .setTargetChecker(new DnDTargetChecker() {
-//                    @Override
-//                    public boolean update(DnDEvent event) {
-//                        final Object o = event.getAttachedObject();
-//                        if (! (o instanceof RowsDnDSupport.RowDragInfo) || ((RowsDnDSupport.RowDragInfo)o).component != component) {
-//                            event.setDropPossible(false, "");
-//                            return true;
-//                        }
-//                        event.setDropPossible(true);
-//                        int oldIndex = ((RowsDnDSupport.RowDragInfo)o).row;
-//                        int newIndex = getRow(component, event.getPoint());
-//
-//                        if (newIndex == -1) {
-//                            event.setDropPossible(false, "");
-//                            return true;
-//                        }
-//
-//                        Rectangle cellBounds = getCellBounds(component, newIndex);
-//                        if (model instanceof RowsDnDSupport.RefinedDropSupport) {
-//                            RowsDnDSupport.RefinedDropSupport.Position position = ((RowsDnDSupport.RefinedDropSupport)model).isDropInto(component, oldIndex, newIndex)
-//                                    ? INTO
-//                                    : (event.getPoint().y < cellBounds.y + cellBounds.height / 2)
-//                                    ? ABOVE
-//                                    : BELOW;
-//                            boolean canDrop = ((RowsDnDSupport.RefinedDropSupport)model).canDrop(oldIndex, newIndex, position);
-//                            event.setDropPossible(canDrop);
-//                            if (canDrop && oldIndex != newIndex) {
-//                                switch (position) {
-//                                    case INTO:
-//                                        event.setHighlighting(new RelativeRectangle(component, cellBounds), DnDEvent.DropTargetHighlightingType.RECTANGLE);
-//                                        break;
-//                                    case BELOW:
-//                                        cellBounds.y += cellBounds.height;
-//                                    case ABOVE:
-//                                        cellBounds.y -= -1;
-//                                        cellBounds.height = 2;
-//                                        event.setHighlighting(new RelativeRectangle(component, cellBounds), DnDEvent.DropTargetHighlightingType.FILLED_RECTANGLE);
-//                                        break;
-//                                }
-//                            }
-//                            else {
-//                                event.hideHighlighter();
-//                            }
-//                        }
-//                        else if (oldIndex != newIndex) {
-//                            // Drag&Drop always starts with new==old and we shouldn't display 'rejecting' cursor if they are equal
-//                            boolean canExchange = model.canExchangeRows(oldIndex, newIndex);
-//                            if (canExchange) {
-//                                if (oldIndex < newIndex) {
-//                                    cellBounds.y += cellBounds.height - 2;
-//                                }
-//                                RelativeRectangle rectangle = new RelativeRectangle(component, cellBounds);
-//                                rectangle.getDimension().height = 2;
-//                                event.setDropPossible(true);
-//                                event.setHighlighting(rectangle, DnDEvent.DropTargetHighlightingType.FILLED_RECTANGLE);
-//                            }
-//                            else {
-//                                event.setDropPossible(false);
-//                            }
-//                        }
-//                        return true;
-//                    }
-//                })
-//                .setDropHandler(new DnDDropHandler() {
-//                    @Override
-//                    public void drop(DnDEvent event) {
-//                        final Object o = event.getAttachedObject();
-//                        final Point p = event.getPoint();
-//                        if (o instanceof RowsDnDSupport.RowDragInfo && ((RowsDnDSupport.RowDragInfo)o).component == component) {
-//                            int oldIndex = ((RowsDnDSupport.RowDragInfo)o).row;
-//                            if (oldIndex == -1) return;
-//                            int newIndex = getRow(component, p);
-//                            if (newIndex == -1) {
-//                                newIndex = getRowCount(component) - 1;
-//                            }
-//
-//                            if (oldIndex != newIndex) {
-//                                if (model instanceof RowsDnDSupport.RefinedDropSupport) {
-//                                    Rectangle cellBounds = getCellBounds(component, newIndex);
-//                                    RowsDnDSupport.RefinedDropSupport.Position position = ((RowsDnDSupport.RefinedDropSupport)model).isDropInto(component, oldIndex, newIndex)
-//                                            ? INTO
-//                                            : (event.getPoint().y < cellBounds.y + cellBounds.height / 2)
-//                                            ? ABOVE
-//                                            : BELOW;
-//                                    if (((RowsDnDSupport.RefinedDropSupport)model).canDrop(oldIndex, newIndex, position)) {
-//                                        ((RowsDnDSupport.RefinedDropSupport)model).drop(oldIndex, newIndex, position);
-//                                    }
-//                                }
-//                                else {
-//                                    if (model.canExchangeRows(oldIndex, newIndex)) {
-//                                        model.exchangeRows(oldIndex, newIndex);
-//                                        setSelectedRow(component, newIndex);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        event.hideHighlighter();
-//                    }
-//                })
-//                .install();
-//    }
 
     private class MyDnDSource implements DnDSource {
 
@@ -416,7 +321,7 @@ public class ConditionsPanel extends AbstractQueryPanel {
         }
 
         public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action, Point dragOrigin, @NotNull DnDDragStartBean bean) {
-            SimpleColoredComponent c = new SimpleColoredComponent();
+            var c = new SimpleColoredComponent();
             c.setForeground(RenderingUtil.getForeground(table));
             c.setBackground(RenderingUtil.getBackground(table));
             c.setIcon(DatabaseIcons.Col);
@@ -433,39 +338,6 @@ public class ConditionsPanel extends AbstractQueryPanel {
             g.dispose();
 
             return Pair.create(image, new Point(-20, 5));
-        }
-    }
-
-    private class MyDnDTarget implements DnDNativeTarget {
-
-        public boolean update(DnDEvent aEvent) {
-//            Point point = aEvent.getPointOn(DatabaseView.this.myTree);
-//            boolean canCreateDataSource = this.hasDdlDataSourceFiles(aEvent);
-//            DnDTarget target = DatabaseView.this.findDndTargetAt(point, canCreateDataSource);
-//            boolean targetOk = target != null && aEvent.delegateUpdateTo(target);
-//            boolean ok = targetOk || canCreateDataSource;
-//            if (ok) {
-//                RelativeRectangle rectangle;
-//                Rectangle bounds;
-//                if (targetOk) {
-//                    bounds = (Rectangle)Objects.requireNonNull(DatabaseView.this.myTree.getPathBounds(DatabaseView.this.myTree.getClosestPathForLocation(point.x, point.y)));
-//                    rectangle = new RelativeRectangle(DatabaseView.this.myTree, bounds);
-//                } else {
-//                    bounds = DatabaseView.this.getBounds();
-//                    rectangle = new RelativeRectangle(DatabaseView.this, bounds);
-//                }
-//
-//                aEvent.setHighlighting(rectangle, 1);
-//            }
-            aEvent.setDropPossible(true);
-            return true;
-        }
-
-        public void drop(DnDEvent aEvent) {
-//            aEvent.setHighlighting();
-            if (aEvent.getAttachedObject() instanceof QBTreeNode) {
-                addCondition((QBTreeNode) aEvent.getAttachedObject());
-            }
         }
     }
 
