@@ -177,31 +177,28 @@ public class ConditionsPanel extends AbstractQueryPanel {
             return;
         }
 
-        var whereExpression = getExpression(row.getCondition());
-        if (canBeParsed(whereExpression)) {
-            var where1 = (BinaryExpression) whereExpression;
-            row.setConditionLeft(where1.getLeftExpression().toString());
-            row.setConditionComparison(where1.getStringExpression());
-            row.setConditionRight(where1.getRightExpression().toString());
-        } else {
-            row.setCustom(true);
-            int i = Messages.showOkCancelDialog(
-                    "Cannot convert to simple condition. Continue?", "Warning", "Ok", "Cancel",
-                    Messages.getWarningIcon()
-            );
-            if (i == 0) {
-                row.setCustom(false);
-                row.setConditionLeft(null);
-                row.setConditionComparison("=");
-                row.setConditionRight(null);
-                conditionTableModel.fireTableDataChanged();
-            }
+        if (canBeParsed(row)) {
+            return;
+        }
+
+        row.setCustom(true);
+        int i = Messages.showOkCancelDialog(
+                "Cannot convert to simple condition. Continue?", "Warning", "Ok", "Cancel",
+                Messages.getWarningIcon()
+        );
+        if (i == 0) {
+            row.setCustom(false);
+            row.setConditionLeft(null);
+            row.setConditionComparison("=");
+            row.setConditionRight(null);
+            conditionTableModel.fireTableDataChanged();
         }
     }
 
-    private boolean canBeParsed(Expression expression) {
+    private boolean canBeParsed(ConditionElement row) {
+        var expression = getExpression(row.getCondition());
         if (!(expression instanceof ComparisonOperator || expression instanceof LikeExpression)) {
-            return false;
+            return tryFillAsSimpleExpression(row);
         }
         var binaryExpression = (BinaryExpression) expression;
         var expr = binaryExpression.getLeftExpression().toString();
@@ -209,18 +206,50 @@ public class ConditionsPanel extends AbstractQueryPanel {
         if (split.length != 2) {
             return false;
         }
+        if (checkLeftCondition(split)) {
+            fillRowFromExpression(row, binaryExpression);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkLeftCondition(String[] split) {
         for (var table : tables) {
-            if (!table.getUserObject().getName().equals(split[0])) {
+            if (!table.getUserObject().getName().equals(split[0].replaceAll(" ", ""))) {
                 continue;
             }
             for (var i = 0; i < table.getChildCount(); i++) {
                 var childAt = table.getChildAt(i);
-                if (childAt.getUserObject().getName().equals(split[1])) {
+                if (childAt.getUserObject().getName().equals(split[1].replaceAll(" ", ""))) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private boolean tryFillAsSimpleExpression(ConditionElement row) {
+        var condition = row.getCondition();
+        var splitSimple = condition.split("[>=<!]+");
+        if (splitSimple.length < 1) {
+            return false;
+        }
+        var split = splitSimple[0].split("\\.");
+        if (split.length != 2) {
+            return false;
+        }
+        if (checkLeftCondition(split)) {
+            row.setConditionLeft(splitSimple[0].replaceAll(" ", ""));
+            row.setConditionComparison(condition.replaceAll(splitSimple[0], ""));
+            return true;
+        }
+        return false;
+    }
+
+    private void fillRowFromExpression(ConditionElement row, BinaryExpression expression) {
+        row.setConditionLeft(expression.getLeftExpression().toString());
+        row.setConditionComparison(expression.getStringExpression());
+        row.setConditionRight(expression.getRightExpression().toString());
     }
 
     public static Expression getExpression(String where) {
