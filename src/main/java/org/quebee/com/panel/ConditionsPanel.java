@@ -280,12 +280,16 @@ public class ConditionsPanel extends AbstractQueryPanel {
         return decorator.createPanel();
     }
 
+    private String getFieldDescription(QBTreeNode value) {
+        var columnObject = value.getUserObject();
+        var tableObject = value.getParent().getUserObject();
+        return tableObject.getName() + "." + columnObject.getName();
+    }
+
     private void addCondition(@Nullable QBTreeNode value, int newIndex) {
         var item = new ConditionElement();
         if (value != null) {
-            var columnObject = value.getUserObject();
-            var tableObject = value.getParent().getUserObject();
-            item.setConditionLeft(tableObject.getName() + "." + columnObject.getName());
+            item.setConditionLeft(getFieldDescription(value));
         }
         item.setConditionComparison("=");
         if (newIndex == -1) {
@@ -310,7 +314,8 @@ public class ConditionsPanel extends AbstractQueryPanel {
     private class MyDnDSource implements DnDSource {
 
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
-            return true;
+            var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
+            return !allFieldsRoot.equals(value.getParent());
         }
 
         public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
@@ -322,10 +327,15 @@ public class ConditionsPanel extends AbstractQueryPanel {
             var c = new SimpleColoredComponent();
             c.setForeground(RenderingUtil.getForeground(table));
             c.setBackground(RenderingUtil.getBackground(table));
-            c.setIcon(DatabaseIcons.Col);
-
             var attachedObject = (QBTreeNode) bean.getAttachedObject();
-            c.append(" +" + attachedObject.getUserObject().getDescription(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+            var userObject = attachedObject.getUserObject();
+            c.setIcon(userObject.getIcon());
+
+            var description = getFieldDescription(attachedObject);
+            if (allFieldsRoot.equals(attachedObject.getParent())) {
+                description = attachedObject.getUserObject().getDescription();
+            }
+            c.append(" +" + description, SimpleTextAttributes.REGULAR_ATTRIBUTES);
 
             var size = c.getPreferredSize();
             c.setSize(size);

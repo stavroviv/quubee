@@ -1,8 +1,11 @@
 package org.quebee.com.panel;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.dnd.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.util.Pair;
 import com.intellij.ui.*;
+import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -10,6 +13,7 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import com.intellij.util.ui.UIUtil;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -19,10 +23,12 @@ import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.MyRowsDnDSupport;
 import org.quebee.com.util.RenameDialogWrapper;
 
 import javax.swing.*;
 import javax.swing.tree.TreeNode;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
@@ -50,6 +56,66 @@ public class FromTables extends AbstractQueryPanel {
         splitterLeft.setSecondComponent(splitterRight);
 
         this.component = splitterLeft;
+        enableDragAndDrop();
+    }
+
+    private void enableDragAndDrop() {
+        DnDManager.getInstance().registerSource(new MyDnDSource(), tablesTreeTable, mainPanel.getDisposable());
+        DnDManager.getInstance().registerTarget(new MyDnDTargetST(), selectedTablesTree, mainPanel.getDisposable());
+//        DnDManager.getInstance().registerTarget(new MyDnDTargetSF(), selectedFieldsTable, mainPanel.getDisposable());
+        MyRowsDnDSupport.install(selectedFieldsTable, selectedFieldsModel, (event) -> {
+            if (event.getAttachedObject() instanceof QBTreeNode) {
+//                var p = event.getPoint();
+//                var i = conditionTable.rowAtPoint(p);
+//                addCondition((QBTreeNode) event.getAttachedObject(), i);
+            }
+        });
+    }
+
+    private class MyDnDTargetST implements DnDTarget {
+
+        @Override
+        public void drop(DnDEvent event) {
+
+        }
+
+        @Override
+        public boolean update(DnDEvent event) {
+            event.setDropPossible(true);
+            return true;
+        }
+    }
+
+    private class MyDnDSource implements DnDSource {
+
+        public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
+            return true;
+        }
+
+        public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
+            var value = (QBTreeNode) tablesTreeTable.getValueAt(tablesTreeTable.getSelectedRow(), 0);
+            return new DnDDragStartBean(value, dragOrigin);
+        }
+
+        public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action, Point dragOrigin, @NotNull DnDDragStartBean bean) {
+            var c = new SimpleColoredComponent();
+            c.setForeground(RenderingUtil.getForeground(tablesTreeTable));
+            c.setBackground(RenderingUtil.getBackground(tablesTreeTable));
+            c.setIcon(DatabaseIcons.Col);
+
+            var attachedObject = (QBTreeNode) bean.getAttachedObject();
+            c.append(" +" + attachedObject.getUserObject().getDescription(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+
+            var size = c.getPreferredSize();
+            c.setSize(size);
+            var image = UIUtil.createImage(c, size.width, size.height, 2);
+            c.setOpaque(false);
+            var g = image.createGraphics();
+            c.paint(g);
+            g.dispose();
+
+            return Pair.create(image, new Point(-20, 5));
+        }
     }
 
     @Override
