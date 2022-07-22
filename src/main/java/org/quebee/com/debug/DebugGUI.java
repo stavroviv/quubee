@@ -24,8 +24,9 @@ public class DebugGUI implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
 //        testActivity1();
-        testActivity2();
+//        testActivity2();
 //        testActivityJoinTable();
+        testOrder();
     }
 
     private void testActivity1() {
@@ -133,6 +134,46 @@ public class DebugGUI implements StartupActivity {
         dbElements.put("test_table_1", List.of("id", "test_2", "test_3", "test_4"));
         dbElements.put("test_table_2", List.of("id", "test_2", "test_3", "test_4"));
         dbElements.put("test_table_3", List.of("id", "test_2", "test_3", "test_4"));
+        dbStructure.setDbElements(dbElements);
+
+        JetSelectMessages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
+        JetSelectMessages.getPublisher(form.getId(), LoadQueryDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte(), 0);
+        JetSelectMessages.getPublisher(form.getId(), LoadQueryCteDataNotifier.class).onAction(fullQuery, fullQuery.getFirstCte());
+
+        form.show();
+    }
+
+    private void testOrder() {
+        FullQuery fullQuery;
+        try {
+            Statement statement = CCJSqlParserUtil.parse(
+                    "with test as (SELECT t4.id as field, t4.a, t4.b\n" +
+                            "              FROM t4,\n" +
+                            "                   t7\n" +
+                            "              UNION\n" +
+                            "              SELECT t7.b, t7.a, t7.id\n" +
+                            "              FROM t7\n" +
+                            "              order by field)\n" +
+                            "select test.field\n" +
+                            "from test"
+            );
+            fullQuery = new FullQuery(statement);
+        } catch (JSQLParserException e) {
+            Messages.showMessageDialog(e.getMessage(), "Warning", Messages.getErrorIcon());
+            return;
+        }
+
+        var form = new MainPanel(fullQuery) {
+            @Override
+            protected void doOKAction() {
+                System.out.println(getFullQuery().getFullSelectText());
+                super.doOKAction();
+            }
+        };
+        var dbStructure = new DBTables();
+        var dbElements = new HashMap<String, List<String>>();
+        dbElements.put("t4", List.of("a", "b", "id"));
+        dbElements.put("t7", List.of("a", "b", "id"));
         dbStructure.setDbElements(dbElements);
 
         JetSelectMessages.getPublisher(form.getId(), ReloadDbTablesNotifier.class).onAction(dbStructure);
