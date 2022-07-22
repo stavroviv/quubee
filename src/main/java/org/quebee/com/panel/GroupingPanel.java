@@ -24,7 +24,7 @@ import java.awt.*;
 import java.util.Objects;
 
 @Getter
-public class GroupingPanel extends AbstractQueryPanel {
+public class GroupingPanel extends QueryPanel {
     private final String header = "Grouping";
     private final JBSplitter component = new JBSplitter();
 

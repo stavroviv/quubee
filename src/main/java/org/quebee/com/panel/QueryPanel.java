@@ -8,11 +8,11 @@ import javax.swing.*;
 
 import static org.quebee.com.util.JetSelectMessages.getTopic;
 
-public abstract class AbstractQueryPanel {
+public abstract class QueryPanel {
 
     protected MainPanel mainPanel;
 
-    public AbstractQueryPanel(MainPanel mainPanel) {
+    public QueryPanel(MainPanel mainPanel) {
         this.mainPanel = mainPanel;
     }
 

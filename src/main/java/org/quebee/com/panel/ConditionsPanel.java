@@ -59,7 +59,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Getter
-public class ConditionsPanel extends AbstractQueryPanel {
+public class ConditionsPanel extends QueryPanel {
     private static final int COMBO_DEFAULT_WIDTH = 170;
     private static final String COLUMN_CUSTOM = "Custom";
 

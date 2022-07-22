@@ -52,7 +52,7 @@ public class MainPanel extends DefaultDialogWrapper {
 
         initListeners();
         loadCte();
-        abstractQueryPanels.forEach(AbstractQueryPanel::initListeners);
+        queryPanels.forEach(QueryPanel::initListeners);
     }
 
     @Override
@@ -259,7 +259,7 @@ public class MainPanel extends DefaultDialogWrapper {
         dataIsLoading = false;
     }
 
-    private List<AbstractQueryPanel> abstractQueryPanels;
+    private List<QueryPanel> queryPanels;
 
     public void saveQueryPart() {
         if (Objects.isNull(tabsCte.getSelectedInfo()) || Objects.isNull(tabsUnion.getSelectedInfo())) {
@@ -272,7 +272,7 @@ public class MainPanel extends DefaultDialogWrapper {
     }
 
     private void addQueryTabs(JBTabsImpl tabs) {
-        abstractQueryPanels = List.of(
+        queryPanels = List.of(
                 new FromTables(this),
                 new JoinsPanel(this),
                 new GroupingPanel(this),
@@ -280,7 +280,7 @@ public class MainPanel extends DefaultDialogWrapper {
                 new UnionAliasesPanel(this),
                 new OrderPanel(this)
         );
-        abstractQueryPanels.forEach(queryTab ->
+        queryPanels.forEach(queryTab ->
                 tabs.addTab(new TabInfo(queryTab.getComponent())
                         .setText(queryTab.getHeader())
                         .setTooltipText(queryTab.getTooltipText()))

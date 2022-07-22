@@ -20,7 +20,7 @@ import javax.swing.*;
 import java.util.Random;
 
 @Getter
-public class OrderPanel extends AbstractQueryPanel {
+public class OrderPanel extends QueryPanel {
     private final String header = "Order";
     private final JBSplitter component = new JBSplitter();
 

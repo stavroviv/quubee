@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.*;
 
 @Getter
-public class UnionAliasesPanel extends AbstractQueryPanel {
+public class UnionAliasesPanel extends QueryPanel {
     private final String header = "Union/Aliases";
     private final JComponent component;
 

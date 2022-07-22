@@ -34,7 +34,7 @@ import java.awt.event.MouseEvent;
 import java.util.Objects;
 
 @Getter
-public class FromTables extends AbstractQueryPanel {
+public class FromTables extends QueryPanel {
     private final String header = "Tables and Fields";
     private final JComponent component;
 

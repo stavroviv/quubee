@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 @Getter
-public class JoinsPanel extends AbstractQueryPanel {
+public class JoinsPanel extends QueryPanel {
 
     private final String header = "Joins";
     private final JComponent component;
