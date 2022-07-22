@@ -24,9 +24,9 @@ public class DebugGUI implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
 //        testActivity1();
-//        testActivity2();
+        testActivity2();
 //        testActivityJoinTable();
-        testOrder();
+//        testOrder();
     }
 
     private void testActivity1() {

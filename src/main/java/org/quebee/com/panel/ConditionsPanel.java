@@ -46,6 +46,8 @@ import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MyRowsDnDSupport;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -109,6 +111,11 @@ public class ConditionsPanel extends QueryPanel {
                     hBox.add(getTreeComboWithValue(variable));
                     hBox.add(new ComboBox<>(new String[]{variable.getConditionComparison()}));
                     hBox.add(new JBTextField(variable.getConditionRight()));
+                    if (conditionTable.getSelectedRow() == row) {
+                        // ????
+                        hBox.setForeground(conditionTable.getSelectionForeground());
+                        hBox.setBackground(conditionTable.getSelectionBackground());
+                    }
                     return hBox;
                 };
             }
@@ -122,7 +129,15 @@ public class ConditionsPanel extends QueryPanel {
         conditionTableModel = new ListTableModel<>(isCustomInfo, conditionInfo);
         conditionTableModel.addTableModelListener(this::conditionTableListener);
 
+
         conditionTable = new TableView<>(conditionTableModel);
+        conditionTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                System.out.println("test");
+//                conditionTable.getSelection().
+            }
+        });
         var decorator = ToolbarDecorator.createDecorator(conditionTable);
         decorator.setAddAction(button -> addCondition(null, -1));
         decorator.addExtraAction(new AnActionButton("Copy", AllIcons.Actions.Copy) {
@@ -146,6 +161,7 @@ public class ConditionsPanel extends QueryPanel {
                 }
             }
         });
+
         return decorator.createPanel();
     }
 
@@ -458,6 +474,10 @@ public class ConditionsPanel extends QueryPanel {
             hBox.add(comparisonCombo);
             conditionRight.setText(variable.getConditionRight());
             hBox.add(conditionRight);
+//            if (conditionTable.getSelectedRow() == row) {
+//                hBox.setForeground(conditionTable.getSelectionForeground());
+//                hBox.setBackground(conditionTable.getSelectionBackground());
+//            }
             return hBox;
         }
 
