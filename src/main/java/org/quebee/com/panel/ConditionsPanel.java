@@ -521,7 +521,7 @@ public class ConditionsPanel extends QueryPanel {
 
     private final Set<QBTreeNode> tables = new HashSet<>();
 
-    private void addSelectedTable(QBTreeNode node, boolean interactive) {
+    private void addSelectedTable(QBTreeNode node) {
         var newUserObject = new TableElement(node.getUserObject());
         var newTableNode = new QBTreeNode(newUserObject);
         node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));

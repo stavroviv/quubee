@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.DefaultDialogWrapper;
 import org.quebee.com.util.JetSelectMessages;
 import org.quebee.com.util.RenameDialogWrapper;
@@ -292,19 +293,23 @@ public class MainPanel extends DefaultDialogWrapper {
         return "Union " + (Objects.isNull(tabInfo) ? "0" : tabInfo.getText());
     }
 
-    public String getCurrentCte() {
+    public String getCurrentCteName() {
         var tabInfo = tabsCte.getSelectedInfo();
         return Objects.isNull(tabInfo) ? "" : tabInfo.getText();
     }
 
+    public OneCte getCurrentCte() {
+        return fullQuery.getCte(getCurrentCteName());
+    }
+
     public void addUnion(int index) {
-        fullQuery.getCte(getCurrentCte()).addUnion(index);
+        fullQuery.getCte(getCurrentCteName()).addUnion(index);
         tabsUnion.addTab(new TabInfo(Box.createVerticalBox()).setText("" + index).setIcon(DatabaseIcons.Table));
         setPanelsVisible();
     }
 
     public void removeUnion(int index) {
-        fullQuery.getCte(getCurrentCte()).removeUnion(index);
+        fullQuery.getCte(getCurrentCteName()).removeUnion(index);
         tabsUnion.getTabs().stream()
                 .filter(x -> x.getText().equals(String.valueOf(index)))
                 .findAny().ifPresent(x -> {

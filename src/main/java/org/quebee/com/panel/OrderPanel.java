@@ -17,6 +17,7 @@ import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
@@ -173,7 +174,9 @@ public class OrderPanel extends QueryPanel {
     }
 
     private void loadQueryData(FullQuery query, String s) {
-
+        // TODO load available fields tree
+        OneCte currentCte = mainPanel.getCurrentCte();
+//        currentCte.getAliasTable().getItems().forEach(x->addSelectedField(x, true));
     }
 
     private void removeSelectedField(TableElement tableElement) {
@@ -205,8 +208,9 @@ public class OrderPanel extends QueryPanel {
         availableOrderModel.nodesWereInserted(availableOrderRoot, new int[]{availableOrderRoot.getChildCount() - 2});
     }
 
-    private void addSelectedTable(QBTreeNode node, boolean interactive) {
-        if (!interactive) {
+    private void addSelectedTable(QBTreeNode node) {
+        var currentCte = mainPanel.getCurrentCte();
+        if (currentCte.getUnionMap().size() > 1) {
             return;
         }
         var newUserObject = new TableElement(node.getUserObject());
