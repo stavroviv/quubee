@@ -4,6 +4,8 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.util.ui.ListTableModel;
 import org.quebee.com.model.QBTreeNode;
 
+import javax.swing.*;
+
 public class ComponentUtils {
 
     public static void clearTable(ListTableModel<?> tableModel) {
@@ -38,5 +40,17 @@ public class ComponentUtils {
                     root.remove(x);
                     treeTableModel.nodesWereRemoved(root, new int[]{index}, new Object[]{x});
                 });
+    }
+
+    public static void setSelectedRow(JComponent component, int row) {
+        if (component instanceof JTable) {
+            ((JTable) component).getSelectionModel().setSelectionInterval(row, row);
+        } else if (component instanceof JList) {
+            ((JList<?>) component).setSelectedIndex(row);
+        } else if (component instanceof JTree) {
+            ((JTree) component).setSelectionRow(row);
+        } else {
+            throw new IllegalArgumentException("Unsupported component: " + component);
+        }
     }
 }

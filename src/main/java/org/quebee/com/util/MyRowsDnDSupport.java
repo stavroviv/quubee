@@ -55,7 +55,7 @@ public final class MyRowsDnDSupport {
                 } else {
                     if (model.canExchangeRows(oldIndex, newIndex)) {
                         model.exchangeRows(oldIndex, newIndex);
-                        setSelectedRow(component, newIndex);
+                        ComponentUtils.setSelectedRow(component, newIndex);
                     }
                 }
             }
@@ -153,18 +153,6 @@ public final class MyRowsDnDSupport {
             return ((JList<?>) component).getCellBounds(row, row);
         } else if (component instanceof JTree) {
             return ((JTree) component).getRowBounds(row);
-        } else {
-            throw new IllegalArgumentException("Unsupported component: " + component);
-        }
-    }
-
-    private static void setSelectedRow(JComponent component, int row) {
-        if (component instanceof JTable) {
-            ((JTable) component).getSelectionModel().setSelectionInterval(row, row);
-        } else if (component instanceof JList) {
-            ((JList<?>) component).setSelectedIndex(row);
-        } else if (component instanceof JTree) {
-            ((JTree) component).setSelectionRow(row);
         } else {
             throw new IllegalArgumentException("Unsupported component: " + component);
         }

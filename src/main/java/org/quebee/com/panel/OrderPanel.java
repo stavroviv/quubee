@@ -15,9 +15,7 @@ import org.quebee.com.columns.EditableStringColumn;
 import org.quebee.com.model.OrderElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
-import org.quebee.com.notifier.SaveQueryDataNotifier;
-import org.quebee.com.notifier.SelectedFieldAddNotifier;
-import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
+import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
 
@@ -45,6 +43,7 @@ public class OrderPanel extends QueryPanel {
     private QBTreeNode availableOrderRoot;
     private QBTreeNode allFieldsRoot;
     private ListTreeTableModel availableOrderModel;
+    private TreeTable availableOrderTree;
 
     private JComponent getFieldsTable() {
         availableOrderRoot = new QBTreeNode(new TableElement("empty"));
@@ -53,25 +52,27 @@ public class OrderPanel extends QueryPanel {
         availableOrderModel = new ListTreeTableModel(availableOrderRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Fields")
         });
-        var table = new TreeTable(availableOrderModel);
-        table.setTreeCellRenderer(new TableElement.Renderer());
-        table.setRootVisible(false);
-        table.addMouseListener(new MouseAdapter() {
+
+        availableOrderTree = new TreeTable(availableOrderModel);
+        availableOrderTree.setTreeCellRenderer(new TableElement.Renderer());
+        availableOrderTree.setRootVisible(false);
+        availableOrderTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
                 var table = (TreeTable) mouseEvent.getSource();
                 if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
                     return;
                 }
-                var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
-                if (allFieldsRoot.equals(value) || allFieldsRoot.equals(value.getParent())) {
+                var item = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
+                if (allFieldsRoot.equals(item) || allFieldsRoot.equals(item.getParent())) {
                     return;
                 }
-                addOrderElement(value, -1);
+                addOrderElement(item, -1);
+                removeFromAvailable(item);
             }
         });
 
-        var decorator = ToolbarDecorator.createDecorator(table);
+        var decorator = ToolbarDecorator.createDecorator(availableOrderTree);
         var panel = decorator.createPanel();
 
         var hBox = Box.createHorizontalBox();
@@ -135,6 +136,20 @@ public class OrderPanel extends QueryPanel {
         orderTable.setSelection(Collections.singleton(item));
     }
 
+    private void removeFromAvailable(QBTreeNode item) {
+        if (!availableOrderRoot.equals(item.getParent())) {
+            return;
+        }
+        availableOrderRoot.nodeToList().stream()
+                .filter(x -> x.equals(item))
+                .forEach(x -> {
+                    var index = availableOrderRoot.getIndex(x);
+                    availableOrderRoot.remove(x);
+                    availableOrderModel.nodesWereRemoved(availableOrderRoot, new int[]{index}, new Object[]{x});
+                    SwingUtilities.invokeLater(() -> ComponentUtils.setSelectedRow(availableOrderTree, index));
+                });
+    }
+
     private String getFieldDescription(QBTreeNode value) {
         var columnObject = value.getUserObject();
         var tableObject = value.getParent().getUserObject();
@@ -149,29 +164,51 @@ public class OrderPanel extends QueryPanel {
 
     @Override
     public void initListeners() {
-        subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(LoadQueryCteDataNotifier.class, this::loadQueryData);
+        subscribe(SaveQueryCteDataNotifier.class, this::saveQueryData);
         subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
-//        subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
+        subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
 //        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
     }
 
-    private void saveQueryData(FullQuery fullQuery, String s, int id) {
+    private void loadQueryData(FullQuery query, String s) {
+
+    }
+
+    private void removeSelectedField(TableElement tableElement) {
+        availableOrderRoot.nodeToList().stream()
+                .filter(x -> x.getUserObject().getDescription().equals(tableElement.getDescription()))
+                .forEach(x -> {
+                    var index = availableOrderRoot.getIndex(x);
+                    availableOrderRoot.remove(x);
+                    availableOrderModel.nodesWereRemoved(availableOrderRoot, new int[]{index}, new Object[]{x});
+                });
+    }
+
+    private void saveQueryData(FullQuery query, String s) {
         for (var i = availableOrderRoot.getChildCount() - 2; i >= 0; i--) {
             availableOrderRoot.remove(i);
         }
         ComponentUtils.clearTree(allFieldsRoot);
         availableOrderModel.reload();
+        ComponentUtils.clearTable(orderTableModel);
     }
 
     private void addSelectedField(TableElement element, boolean interactive) {
+        if (!interactive) {
+            return;
+        }
         var tableElement = new TableElement(element);
         tableElement.setIcon(DatabaseIcons.Col);
         availableOrderRoot.insert(new QBTreeNode(tableElement), availableOrderRoot.getChildCount() - 1);
         availableOrderModel.nodesWereInserted(availableOrderRoot, new int[]{availableOrderRoot.getChildCount() - 2});
     }
 
-    private void addSelectedTable(QBTreeNode node) {
+    private void addSelectedTable(QBTreeNode node, boolean interactive) {
+        if (!interactive) {
+            return;
+        }
         var newUserObject = new TableElement(node.getUserObject());
         var newTableNode = new QBTreeNode(newUserObject);
         node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));

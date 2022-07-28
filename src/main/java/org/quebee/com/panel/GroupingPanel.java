@@ -85,7 +85,7 @@ public class GroupingPanel extends QueryPanel {
         groupingModel.nodesWereInserted(groupingRoot, new int[]{groupingRoot.getChildCount() - 2});
     }
 
-    private void addSelectedTable(QBTreeNode node) {
+    private void addSelectedTable(QBTreeNode node, boolean interactive) {
         var newUserObject = new TableElement(node.getUserObject());
         var newTableNode = new QBTreeNode(newUserObject);
         node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));

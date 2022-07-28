@@ -237,7 +237,7 @@ public class FromTables extends QueryPanel {
         } else {
             selectedTablesModel.nodesWereInserted(selectedTablesRoot, new int[]{selectedTablesRoot.getChildCount() - 1});
         }
-        getPublisher(SelectedTableAfterAddNotifier.class).onAction(newTableNode);
+        getPublisher(SelectedTableAfterAddNotifier.class).onAction(newTableNode, true);
     }
 
     private QBTreeNode selectedTablesRoot;

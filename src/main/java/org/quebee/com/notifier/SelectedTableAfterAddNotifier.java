@@ -1,4 +1,7 @@
 package org.quebee.com.notifier;
 
-public interface SelectedTableAfterAddNotifier extends NodeNotifier {
+import org.quebee.com.model.QBTreeNode;
+
+public interface SelectedTableAfterAddNotifier {
+    void onAction(QBTreeNode node, boolean interactive);
 }

@@ -229,7 +229,7 @@ public class JoinsPanel extends QueryPanel {
         tables.remove(node);
     }
 
-    private void addSelectedTable(QBTreeNode node) {
+    private void addSelectedTable(QBTreeNode node, boolean interactive) {
         if (Objects.isNull(node.getParent())) {
             return;
         }
