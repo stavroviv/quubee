@@ -17,7 +17,6 @@ import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
-import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
@@ -26,11 +25,13 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
+import java.util.Objects;
 
 @Getter
 public class OrderPanel extends QueryPanel {
     private final static String ASC = "Ascending";
     private final static String DESC = "Descending";
+    private final static String ALL_FIELDS = "All fields";
     private final String header = "Order";
     private final JBSplitter component = new JBSplitter();
 
@@ -48,8 +49,6 @@ public class OrderPanel extends QueryPanel {
 
     private JComponent getFieldsTable() {
         availableOrderRoot = new QBTreeNode(new TableElement("empty"));
-        allFieldsRoot = new QBTreeNode(new TableElement("All fields"));
-        availableOrderRoot.add(allFieldsRoot);
         availableOrderModel = new ListTreeTableModel(availableOrderRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Fields")
         });
@@ -173,10 +172,16 @@ public class OrderPanel extends QueryPanel {
 //        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
     }
 
-    private void loadQueryData(FullQuery query, String s) {
-        // TODO load available fields tree
-        OneCte currentCte = mainPanel.getCurrentCte();
-//        currentCte.getAliasTable().getItems().forEach(x->addSelectedField(x, true));
+    private void loadQueryData(FullQuery fullQuery, String cteName) {
+        var cte = fullQuery.getCte(cteName);
+        if (Objects.isNull(cte)) {
+            return;
+        }
+        cte.getAliasTable().getItems().forEach(x -> {
+            var item = new TableElement(x.getAliasName(), DatabaseIcons.Col);
+            addSelectedField(item, true);
+        });
+        ComponentUtils.loadTableToTable(cte.getOrderTable(), orderTableModel);
     }
 
     private void removeSelectedField(TableElement tableElement) {
@@ -189,11 +194,10 @@ public class OrderPanel extends QueryPanel {
                 });
     }
 
-    private void saveQueryData(FullQuery query, String s) {
-        for (var i = availableOrderRoot.getChildCount() - 2; i >= 0; i--) {
-            availableOrderRoot.remove(i);
-        }
-        ComponentUtils.clearTree(allFieldsRoot);
+    private void saveQueryData(FullQuery query, String cteName) {
+        var cte = query.getCte(cteName);
+        ComponentUtils.loadTableToTable(orderTableModel, cte.getOrderTable());
+        ComponentUtils.clearTree(availableOrderRoot);
         availableOrderModel.reload();
         ComponentUtils.clearTable(orderTableModel);
     }
@@ -204,8 +208,13 @@ public class OrderPanel extends QueryPanel {
         }
         var tableElement = new TableElement(element);
         tableElement.setIcon(DatabaseIcons.Col);
-        availableOrderRoot.insert(new QBTreeNode(tableElement), availableOrderRoot.getChildCount() - 1);
-        availableOrderModel.nodesWereInserted(availableOrderRoot, new int[]{availableOrderRoot.getChildCount() - 2});
+        if (hasAllFields()) {
+            availableOrderRoot.insert(new QBTreeNode(tableElement), availableOrderRoot.getChildCount() - 1);
+            availableOrderModel.nodesWereInserted(availableOrderRoot, new int[]{availableOrderRoot.getChildCount() - 2});
+        } else {
+            availableOrderRoot.add(new QBTreeNode(tableElement));
+            availableOrderModel.reload();
+        }
     }
 
     private void addSelectedTable(QBTreeNode node) {
@@ -213,10 +222,27 @@ public class OrderPanel extends QueryPanel {
         if (currentCte.getUnionMap().size() > 1) {
             return;
         }
+        addAllFieldsRoot();
         var newUserObject = new TableElement(node.getUserObject());
         var newTableNode = new QBTreeNode(newUserObject);
         node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
         allFieldsRoot.add(newTableNode);
         availableOrderModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
+    }
+
+    private void addAllFieldsRoot() {
+        if (hasAllFields()) {
+            return;
+        }
+        allFieldsRoot = new QBTreeNode(new TableElement(ALL_FIELDS));
+        availableOrderRoot.add(allFieldsRoot);
+        availableOrderModel.reload();
+    }
+
+    private boolean hasAllFields() {
+        return availableOrderRoot.nodeToList().stream().anyMatch(x -> {
+            var name = x.getUserObject().getName();
+            return Objects.nonNull(name) && name.equals(ALL_FIELDS);
+        });
     }
 }

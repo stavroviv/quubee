@@ -8,6 +8,7 @@ import net.sf.jsqlparser.statement.select.SetOperation;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.UnionOp;
 import org.quebee.com.model.AliasElement;
+import org.quebee.com.model.OrderElement;
 import org.quebee.com.model.TableElement;
 
 import java.util.LinkedHashMap;
@@ -27,7 +28,7 @@ public class OneCte implements Orderable {
     private ListTableModel<TableElement> unionTable = new ListTableModel<>();
     //
 //    private TreeTableView<TableRow> orderFieldsTree = new TreeTableView<>();
-//    private TableView<TableRow> orderTableResults = new TableView<>();
+    private ListTableModel<OrderElement> orderTable = new ListTableModel<>();
     private int curMaxUnion;
 
     public Union getUnion(String unionNumber) {
