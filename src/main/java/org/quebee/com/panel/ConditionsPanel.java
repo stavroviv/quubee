@@ -3,23 +3,25 @@ package org.quebee.com.panel;
 import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.dnd.DnDAction;
-import com.intellij.ide.dnd.DnDDragStartBean;
 import com.intellij.ide.dnd.DnDManager;
-import com.intellij.ide.dnd.DnDSource;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TreeComboBox;
-import com.intellij.openapi.util.Pair;
-import com.intellij.ui.*;
+import com.intellij.ui.AnActionButton;
+import com.intellij.ui.JBSplitter;
+import com.intellij.ui.TableUtil;
+import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.fields.ExpandableTextField;
-import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.intellij.util.ui.*;
+import com.intellij.util.ui.AbstractTableCellEditor;
+import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.EditableModel;
+import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import net.sf.jsqlparser.JSQLParserException;
@@ -42,6 +44,7 @@ import org.quebee.com.notifier.SaveQueryDataNotifier;
 import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
 import org.quebee.com.notifier.SelectedTableRemoveNotifier;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.util.AvailableFieldsTreeDnDSource;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MyRowsDnDSupport;
 
@@ -346,7 +349,7 @@ public class ConditionsPanel extends QueryPanel {
     }
 
     private void enableDragAndDrop() {
-        DnDManager.getInstance().registerSource(new MyDnDSource(), availableFieldsTree, mainPanel.getDisposable());
+        DnDManager.getInstance().registerSource(new MyDnDSource(availableFieldsTree), availableFieldsTree, mainPanel.getDisposable());
         MyRowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel(), (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
                 var p = event.getPoint();
@@ -356,41 +359,24 @@ public class ConditionsPanel extends QueryPanel {
         });
     }
 
-    private class MyDnDSource implements DnDSource {
+    private class MyDnDSource extends AvailableFieldsTreeDnDSource {
 
+        public MyDnDSource(TreeTable treeTable) {
+            super(treeTable);
+        }
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
             var value = (QBTreeNode) availableFieldsTree.getValueAt(availableFieldsTree.getSelectedRow(), 0);
             return !allFieldsRoot.equals(value.getParent());
         }
 
-        public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) availableFieldsTree.getValueAt(availableFieldsTree.getSelectedRow(), 0);
-            return new DnDDragStartBean(value, dragOrigin);
-        }
-
-        public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action, Point dragOrigin, @NotNull DnDDragStartBean bean) {
-            var c = new SimpleColoredComponent();
-            c.setForeground(RenderingUtil.getForeground(availableFieldsTree));
-            c.setBackground(RenderingUtil.getBackground(availableFieldsTree));
-            var attachedObject = (QBTreeNode) bean.getAttachedObject();
-            var userObject = attachedObject.getUserObject();
-            c.setIcon(userObject.getIcon());
-
-            var description = getFieldDescription(attachedObject);
+        @Override
+        public String getFieldDescription(QBTreeNode attachedObject) {
+            // FIXME
+            var description = ConditionsPanel.this.getFieldDescription(attachedObject);
             if (allFieldsRoot.equals(attachedObject.getParent())) {
                 description = attachedObject.getUserObject().getDescription();
             }
-            c.append(" +" + description, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-
-            var size = c.getPreferredSize();
-            c.setSize(size);
-            var image = UIUtil.createImage(c, size.width, size.height, 2);
-            c.setOpaque(false);
-            var g = image.createGraphics();
-            c.paint(g);
-            g.dispose();
-
-            return Pair.create(image, new Point(-20, 5));
+            return description;
         }
     }
 

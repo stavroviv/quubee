@@ -1,16 +1,10 @@
 package org.quebee.com.panel;
 
 import com.intellij.ide.dnd.DnDAction;
-import com.intellij.ide.dnd.DnDDragStartBean;
 import com.intellij.ide.dnd.DnDManager;
-import com.intellij.ide.dnd.DnDSource;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.util.Pair;
 import com.intellij.ui.JBSplitter;
-import com.intellij.ui.SimpleColoredComponent;
-import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.ToolbarDecorator;
-import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -18,7 +12,6 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.EditableModel;
 import com.intellij.util.ui.ListTableModel;
-import com.intellij.util.ui.UIUtil;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +21,7 @@ import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
+import org.quebee.com.util.AvailableFieldsTreeDnDSource;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MyRowsDnDSupport;
 
@@ -62,7 +56,7 @@ public class OrderPanel extends QueryPanel {
     private TreeTable availableOrderTree;
 
     private void enableDragAndDrop() {
-        DnDManager.getInstance().registerSource(new MyDnDSource(), availableOrderTree, mainPanel.getDisposable());
+        DnDManager.getInstance().registerSource(new MyDnDSource(availableOrderTree), availableOrderTree, mainPanel.getDisposable());
         MyRowsDnDSupport.install(orderTable, (EditableModel) orderTable.getModel(), (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
                 var p = event.getPoint();
@@ -72,8 +66,13 @@ public class OrderPanel extends QueryPanel {
         });
     }
 
-    private class MyDnDSource implements DnDSource {
+    private class MyDnDSource extends AvailableFieldsTreeDnDSource {
 
+        public MyDnDSource(TreeTable treeTable) {
+            super(treeTable);
+        }
+
+        @Override
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
             var value = (QBTreeNode) availableOrderTree.getValueAt(availableOrderTree.getSelectedRow(), 0);
             var parent = value.getParent();
@@ -83,31 +82,10 @@ public class OrderPanel extends QueryPanel {
             return availableOrderRoot.equals(parent) || !parent.equals(allFieldsRoot);
         }
 
-        public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) availableOrderTree.getValueAt(availableOrderTree.getSelectedRow(), 0);
-            return new DnDDragStartBean(value, dragOrigin);
-        }
-
-        public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action, Point dragOrigin, @NotNull DnDDragStartBean bean) {
-            var c = new SimpleColoredComponent();
-            c.setForeground(RenderingUtil.getForeground(availableOrderTree));
-            c.setBackground(RenderingUtil.getBackground(availableOrderTree));
-            var attachedObject = (QBTreeNode) bean.getAttachedObject();
-            var userObject = attachedObject.getUserObject();
-            c.setIcon(userObject.getIcon());
-
-            var description = getFieldDescription(attachedObject);
-            c.append(" +" + description, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-
-            var size = c.getPreferredSize();
-            c.setSize(size);
-            var image = UIUtil.createImage(c, size.width, size.height, 2);
-            c.setOpaque(false);
-            var g = image.createGraphics();
-            c.paint(g);
-            g.dispose();
-
-            return Pair.create(image, new Point(-20, 5));
+        @Override
+        public String getFieldDescription(QBTreeNode attachedObject) {
+            // FIXME
+            return OrderPanel.this.getFieldDescription(attachedObject);
         }
     }
 
