@@ -24,9 +24,9 @@ public class DebugGUI implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
 //        testActivity1();
-        testActivity2();
+//        testActivity2();
 //        testActivityJoinTable();
-//        testOrder();
+        testOrder();
     }
 
     private void testActivity1() {
@@ -155,7 +155,8 @@ public class DebugGUI implements StartupActivity {
                             "              FROM t7\n" +
                             "              order by field)\n" +
                             "select test.field\n" +
-                            "from test"
+                            "from test " +
+                            "order by field DESC"
             );
             fullQuery = new FullQuery(statement);
         } catch (JSQLParserException e) {

@@ -247,7 +247,7 @@ public class UnionAliasesPanel extends QueryPanel {
         var description = tableElement.getDescription();
         item.putAlias(mainPanel.getCurrentUnion(), description);
         aliasTableModel.addRow(item);
-
+        getPublisher(AliasAddNotifier.class).onAction(new TableElement(columnName));
         addAliasToComboboxValues(description, mainPanel.getCurrentUnion());
     }
 

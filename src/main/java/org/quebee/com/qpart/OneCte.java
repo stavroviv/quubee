@@ -3,33 +3,28 @@ package org.quebee.com.qpart;
 import com.intellij.util.ui.ListTableModel;
 import lombok.Getter;
 import lombok.Setter;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SetOperation;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.UnionOp;
+import net.sf.jsqlparser.statement.select.*;
 import org.quebee.com.model.AliasElement;
 import org.quebee.com.model.OrderElement;
 import org.quebee.com.model.TableElement;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+
+import static org.quebee.com.panel.OrderPanel.ASC;
+import static org.quebee.com.panel.OrderPanel.DESC;
 
 @Getter
 @Setter
 public class OneCte implements Orderable {
     private String cteName;
     private int order;
+    private int curMaxUnion;
+
     private Map<String, Union> unionMap = new LinkedHashMap<>();
-//    private Map<String, TableColumn<AliasRow, String>> unionColumns = new HashMap<>();
 
     private ListTableModel<AliasElement> aliasTable = new ListTableModel<>();
     private ListTableModel<TableElement> unionTable = new ListTableModel<>();
-    //
-//    private TreeTableView<TableRow> orderFieldsTree = new TreeTableView<>();
     private ListTableModel<OrderElement> orderTable = new ListTableModel<>();
-    private int curMaxUnion;
 
     public Union getUnion(String unionNumber) {
         return unionMap.get(unionNumber);
@@ -52,6 +47,7 @@ public class OneCte implements Orderable {
             unionMap.put("0", new Union(selectBody, 0));
         }
         loadAliasTable();
+        loadOrderTable(selectBody);
     }
 
     private void loadUnionTable(List<SetOperation> operations) {
@@ -81,6 +77,27 @@ public class OneCte implements Orderable {
             }
             aliasTable.addRow(aliasElement);
         }
+    }
+
+    private void loadOrderTable(SelectBody selectBody) {
+        if (selectBody instanceof SetOperationList) {
+            addOrderElements(((SetOperationList) selectBody).getOrderByElements());
+        } else if (selectBody instanceof PlainSelect) {
+            addOrderElements(((PlainSelect) selectBody).getOrderByElements());
+        }
+    }
+
+    private void addOrderElements(List<OrderByElement> orderByElements) {
+        Optional.ofNullable(orderByElements)
+                .orElseGet(ArrayList::new)
+                .forEach(this::addOrderElement);
+    }
+
+    private void addOrderElement(OrderByElement orderByElement) {
+        var item = new OrderElement();
+        item.setField(orderByElement.getExpression().toString());
+        item.setSorting(orderByElement.isAsc() ? ASC : DESC);
+        orderTable.addRow(item);
     }
 
     @Override

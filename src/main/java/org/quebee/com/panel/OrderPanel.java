@@ -22,6 +22,7 @@ import org.quebee.com.util.ComponentUtils;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
@@ -29,8 +30,8 @@ import java.util.Objects;
 
 @Getter
 public class OrderPanel extends QueryPanel {
-    private final static String ASC = "Ascending";
-    private final static String DESC = "Descending";
+    public final static String ASC = "Ascending";
+    public final static String DESC = "Descending";
     private final static String ALL_FIELDS = "All fields";
     private final String header = "Order";
     private final JBSplitter component = new JBSplitter();
@@ -63,12 +64,7 @@ public class OrderPanel extends QueryPanel {
                 if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
                     return;
                 }
-                var item = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
-                if (allFieldsRoot.equals(item) || allFieldsRoot.equals(item.getParent())) {
-                    return;
-                }
-                addOrderElement(item, -1);
-                removeFromAvailable(item);
+                moveFieldToSelected(selectedAvailableField());
             }
         });
 
@@ -81,18 +77,37 @@ public class OrderPanel extends QueryPanel {
         hBox.add(Box.createHorizontalStrut(5));
 
         var comp = Box.createVerticalBox();
-//        comp.set
-//        comp.setBorder(new LineBorder(JBColor.RED, 1));
         comp.setPreferredSize(new Dimension(30, 400));
-//        comp.add(Box.createVerticalStrut(10));
-        comp.add(smallButton(">"));
-        comp.add(smallButton(">>"));
-        comp.add(smallButton("<"));
-        comp.add(smallButton("<<"));
+
+        comp.add(smallButton(">", e -> moveFieldToSelected(selectedAvailableField())));
+        comp.add(smallButton(">>", e -> availableOrderRoot.nodeToList().forEach(this::moveFieldToSelected)));
+        comp.add(smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true)));
+        comp.add(smallButton("<<", e -> {
+            orderTable.getItems().forEach(x -> moveFieldToAvailable(x, false));
+            ComponentUtils.clearTable(orderTableModel);
+        }));
 
         hBox.add(comp);
-
         return hBox;
+    }
+
+    private void moveFieldToSelected(QBTreeNode item) {
+        if (Objects.isNull(item)) {
+            return;
+        }
+        if (Objects.nonNull(allFieldsRoot) && (allFieldsRoot.equals(item) || allFieldsRoot.equals(item.getParent()))) {
+            return;
+        }
+        addOrderElement(item, -1);
+        removeFromAvailable(item);
+    }
+
+    private QBTreeNode selectedAvailableField() {
+        int selectedRow = availableOrderTree.getSelectedRow();
+        if (selectedRow == -1) {
+            return null;
+        }
+        return (QBTreeNode) availableOrderTree.getValueAt(selectedRow, 0);
     }
 
     private ListTableModel<OrderElement> orderTableModel;
@@ -116,10 +131,37 @@ public class OrderPanel extends QueryPanel {
                 sortingInfo
         );
         orderTable = new TableView<>(orderTableModel);
+        orderTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+                if (mouseEvent.getClickCount() != 2) {
+                    return;
+                }
+                var table = (TableView<?>) mouseEvent.getSource();
+                var columnName = orderTable.getColumnName(table.getSelectedColumn());
+                if (columnName.equals("Field")) {
+                    moveFieldToAvailable(orderTable.getSelectedObject(), true);
+                }
+            }
+        });
         var decorator = ToolbarDecorator.createDecorator(orderTable);
         decorator.disableAddAction();
         decorator.disableRemoveAction();
         return decorator.createPanel();
+    }
+
+    private void moveFieldToAvailable(OrderElement selectedObject, boolean removeFromOrder) {
+        var index = orderTableModel.indexOf(selectedObject);
+        var item = new TableElement(selectedObject.getField());
+        if (!selectedObject.getField().contains(".")) {
+            addSelectedField(item);
+        }
+        if (removeFromOrder) {
+            orderTableModel.removeRow(index);
+            if (orderTableModel.getRowCount() > 0) {
+                ComponentUtils.setSelectedRow(orderTable, index == orderTableModel.getRowCount() ? index - 1 : index);
+            }
+        }
     }
 
     private void addOrderElement(QBTreeNode value, int newIndex) {
@@ -151,14 +193,18 @@ public class OrderPanel extends QueryPanel {
     }
 
     private String getFieldDescription(QBTreeNode value) {
+        if (availableOrderRoot.equals(value.getParent())) {
+            return value.getUserObject().getName();
+        }
         var columnObject = value.getUserObject();
         var tableObject = value.getParent().getUserObject();
         return tableObject.getName() + "." + columnObject.getName();
     }
 
-    private JButton smallButton(String text) {
+    private JButton smallButton(String text, ActionListener l) {
         var button = new JButton(text);
         button.setMaximumSize(new Dimension(50, 30));
+        button.addActionListener(l);
         return button;
     }
 
@@ -166,7 +212,7 @@ public class OrderPanel extends QueryPanel {
     public void initListeners() {
         subscribe(LoadQueryCteDataNotifier.class, this::loadQueryData);
         subscribe(SaveQueryCteDataNotifier.class, this::saveQueryData);
-        subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
+        subscribe(AliasAddNotifier.class, this::addSelectedField);
         subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
 //        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
@@ -178,10 +224,25 @@ public class OrderPanel extends QueryPanel {
             return;
         }
         cte.getAliasTable().getItems().forEach(x -> {
-            var item = new TableElement(x.getAliasName(), DatabaseIcons.Col);
-            addSelectedField(item, true);
+            var item = new TableElement(x.getAliasName());
+            addSelectedField(item);
         });
         ComponentUtils.loadTableToTable(cte.getOrderTable(), orderTableModel);
+        removeSelectedFieldsFromAvailable();
+    }
+
+    private void removeSelectedFieldsFromAvailable() {
+        orderTableModel.getItems().forEach(element -> availableOrderRoot.nodeToList().stream()
+                .filter(x -> {
+                    var name = x.getUserObject().getName();
+                    return Objects.nonNull(name) && name.equals(element.getField());
+                })
+                .forEach(x -> {
+                    var index = availableOrderRoot.getIndex(x);
+                    availableOrderRoot.remove(x);
+                    availableOrderModel.nodesWereRemoved(availableOrderRoot, new int[]{index}, new Object[]{x});
+                })
+        );
     }
 
     private void removeSelectedField(TableElement tableElement) {
@@ -202,10 +263,7 @@ public class OrderPanel extends QueryPanel {
         ComponentUtils.clearTable(orderTableModel);
     }
 
-    private void addSelectedField(TableElement element, boolean interactive) {
-        if (!interactive) {
-            return;
-        }
+    private void addSelectedField(TableElement element) {
         var tableElement = new TableElement(element);
         tableElement.setIcon(DatabaseIcons.Col);
         if (hasAllFields()) {
