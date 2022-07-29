@@ -67,7 +67,8 @@ public class OrderPanel extends QueryPanel {
                 moveFieldToSelected(selectedAvailableField());
             }
         });
-
+//        availableOrderTree.getSelectionModel()
+//                .addListSelectionListener(e -> buttonAdd.setEnabled(availableOrderTree.getSelectedRow() != -1));
         var decorator = ToolbarDecorator.createDecorator(availableOrderTree);
         var panel = decorator.createPanel();
 
@@ -79,17 +80,22 @@ public class OrderPanel extends QueryPanel {
         var comp = Box.createVerticalBox();
         comp.setPreferredSize(new Dimension(30, 400));
 
-        comp.add(smallButton(">", e -> moveFieldToSelected(selectedAvailableField())));
-        comp.add(smallButton(">>", e -> availableOrderRoot.nodeToList().forEach(this::moveFieldToSelected)));
-        comp.add(smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true)));
+        buttonAdd = smallButton(">", e -> moveFieldToSelected(selectedAvailableField()), true);
+        comp.add(buttonAdd);
+        comp.add(smallButton(">>", e -> availableOrderRoot.nodeToList().forEach(this::moveFieldToSelected), true));
+        buttonRemove = smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true), true);
+        comp.add(buttonRemove);
         comp.add(smallButton("<<", e -> {
             orderTable.getItems().forEach(x -> moveFieldToAvailable(x, false));
             ComponentUtils.clearTable(orderTableModel);
-        }));
+        }, true));
 
         hBox.add(comp);
         return hBox;
     }
+
+    JButton buttonAdd;
+    JButton buttonRemove;
 
     private void moveFieldToSelected(QBTreeNode item) {
         if (Objects.isNull(item)) {
@@ -144,6 +150,8 @@ public class OrderPanel extends QueryPanel {
                 }
             }
         });
+//        orderTable.getSelectionModel()
+//                .addListSelectionListener(e -> buttonRemove.setEnabled(orderTable.getSelectedRow() != -1));
         var decorator = ToolbarDecorator.createDecorator(orderTable);
         decorator.disableAddAction();
         decorator.disableRemoveAction();
@@ -201,10 +209,12 @@ public class OrderPanel extends QueryPanel {
         return tableObject.getName() + "." + columnObject.getName();
     }
 
-    private JButton smallButton(String text, ActionListener l) {
+    private JButton smallButton(String text, ActionListener l, boolean b) {
         var button = new JButton(text);
         button.setMaximumSize(new Dimension(50, 30));
         button.addActionListener(l);
+        button.updateUI();
+        button.setEnabled(b);
         return button;
     }
 
