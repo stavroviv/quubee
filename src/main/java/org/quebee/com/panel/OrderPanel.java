@@ -1,7 +1,9 @@
 package org.quebee.com.panel;
 
 import com.intellij.ide.dnd.DnDAction;
+import com.intellij.ide.dnd.DnDEvent;
 import com.intellij.ide.dnd.DnDManager;
+import com.intellij.ide.dnd.DnDNativeTarget;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
@@ -57,6 +59,7 @@ public class OrderPanel extends QueryPanel {
 
     private void enableDragAndDrop() {
         DnDManager.getInstance().registerSource(new MyDnDSource(availableOrderTree), availableOrderTree, mainPanel.getDisposable());
+        DnDManager.getInstance().registerTarget(new MyDnDTarget(), availableOrderTree, mainPanel.getDisposable());
 //        DnDManager.getInstance().registerSource(new MyDnDSource2(), orderTable, mainPanel.getDisposable());
         MyRowsDnDSupport.install(orderTable, (EditableModel) orderTable.getModel(), availableOrderTree, (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
@@ -67,6 +70,22 @@ public class OrderPanel extends QueryPanel {
                 removeFromAvailable(item);
             }
         });
+    }
+
+    // TODO back DnD
+    private class MyDnDTarget implements DnDNativeTarget {
+
+        public boolean update(DnDEvent aEvent) {
+            aEvent.setDropPossible(true);
+            return true;
+        }
+
+        public void drop(DnDEvent aEvent) {
+//            aEvent.setHighlighting();
+            if (aEvent.getAttachedObject() instanceof QBTreeNode) {
+//                addCondition((QBTreeNode) aEvent.getAttachedObject());
+            }
+        }
     }
 //    private class MyDnDSource2  implements DnDSource {
 //
