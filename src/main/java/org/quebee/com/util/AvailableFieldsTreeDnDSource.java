@@ -16,10 +16,10 @@ import java.awt.*;
 
 public abstract class AvailableFieldsTreeDnDSource implements DnDSource {
 
-    private final TreeTable availableOrderTree;
+    private final TreeTable treeTable;
 
-    public AvailableFieldsTreeDnDSource(TreeTable availableOrderTree) {
-        this.availableOrderTree = availableOrderTree;
+    public AvailableFieldsTreeDnDSource(TreeTable treeTable) {
+        this.treeTable = treeTable;
     }
 
     public abstract boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin);
@@ -27,7 +27,7 @@ public abstract class AvailableFieldsTreeDnDSource implements DnDSource {
     public abstract String getFieldDescription(QBTreeNode attachedObject);
 
     public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
-        var value = (QBTreeNode) availableOrderTree.getValueAt(availableOrderTree.getSelectedRow(), 0);
+        var value = (QBTreeNode) treeTable.getValueAt(treeTable.getSelectedRow(), 0);
         return new DnDDragStartBean(value, dragOrigin);
     }
 
@@ -35,8 +35,8 @@ public abstract class AvailableFieldsTreeDnDSource implements DnDSource {
                                                           Point dragOrigin,
                                                           @NotNull DnDDragStartBean bean) {
         var c = new SimpleColoredComponent();
-        c.setForeground(RenderingUtil.getForeground(availableOrderTree));
-        c.setBackground(RenderingUtil.getBackground(availableOrderTree));
+        c.setForeground(RenderingUtil.getForeground(treeTable));
+        c.setBackground(RenderingUtil.getBackground(treeTable));
         var attachedObject = (QBTreeNode) bean.getAttachedObject();
         var userObject = attachedObject.getUserObject();
         c.setIcon(userObject.getIcon());

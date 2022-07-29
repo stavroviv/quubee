@@ -61,7 +61,9 @@ public class OrderPanel extends QueryPanel {
             if (event.getAttachedObject() instanceof QBTreeNode) {
                 var p = event.getPoint();
                 var i = orderTable.rowAtPoint(p);
-                addOrderElement((QBTreeNode) event.getAttachedObject(), i);
+                var item = (QBTreeNode) event.getAttachedObject();
+                addOrderElement(item, i);
+                removeFromAvailable(item);
             }
         });
     }
