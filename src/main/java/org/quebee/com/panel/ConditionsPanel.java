@@ -296,18 +296,18 @@ public class ConditionsPanel extends QueryPanel {
 
     private QBTreeNode allFieldsRoot;
     private ListTreeTableModel allFieldsModel;
-    private TreeTable table;
+    private TreeTable availableFieldsTree;
 
     private JComponent getFieldsTree() {
         allFieldsRoot = new QBTreeNode(new TableElement("empty"));
         allFieldsModel = new ListTreeTableModel(allFieldsRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Fields")
         });
-        table = new TreeTable(allFieldsModel);
-        table.setTreeCellRenderer(new TableElement.Renderer());
-        table.setRootVisible(false);
+        availableFieldsTree = new TreeTable(allFieldsModel);
+        availableFieldsTree.setTreeCellRenderer(new TableElement.Renderer());
+        availableFieldsTree.setRootVisible(false);
 
-        table.addMouseListener(new MouseAdapter() {
+        availableFieldsTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
                 var table = (TreeTable) mouseEvent.getSource();
@@ -321,7 +321,7 @@ public class ConditionsPanel extends QueryPanel {
                 addCondition(value, -1);
             }
         });
-        var decorator = ToolbarDecorator.createDecorator(table);
+        var decorator = ToolbarDecorator.createDecorator(availableFieldsTree);
         return decorator.createPanel();
     }
 
@@ -346,7 +346,7 @@ public class ConditionsPanel extends QueryPanel {
     }
 
     private void enableDragAndDrop() {
-        DnDManager.getInstance().registerSource(new MyDnDSource(), table, mainPanel.getDisposable());
+        DnDManager.getInstance().registerSource(new MyDnDSource(), availableFieldsTree, mainPanel.getDisposable());
         MyRowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel(), (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
                 var p = event.getPoint();
@@ -359,19 +359,19 @@ public class ConditionsPanel extends QueryPanel {
     private class MyDnDSource implements DnDSource {
 
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
+            var value = (QBTreeNode) availableFieldsTree.getValueAt(availableFieldsTree.getSelectedRow(), 0);
             return !allFieldsRoot.equals(value.getParent());
         }
 
         public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
+            var value = (QBTreeNode) availableFieldsTree.getValueAt(availableFieldsTree.getSelectedRow(), 0);
             return new DnDDragStartBean(value, dragOrigin);
         }
 
         public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action, Point dragOrigin, @NotNull DnDDragStartBean bean) {
             var c = new SimpleColoredComponent();
-            c.setForeground(RenderingUtil.getForeground(table));
-            c.setBackground(RenderingUtil.getBackground(table));
+            c.setForeground(RenderingUtil.getForeground(availableFieldsTree));
+            c.setBackground(RenderingUtil.getBackground(availableFieldsTree));
             var attachedObject = (QBTreeNode) bean.getAttachedObject();
             var userObject = attachedObject.getUserObject();
             c.setIcon(userObject.getIcon());
