@@ -53,7 +53,16 @@ public class UnionAliasesPanel extends QueryPanel {
     private ListTableModel<AliasElement> aliasTableModel;
 
     private JComponent getAliasTablePanel() {
-        var nameInfo = new EditableStringColumn<>("Field Name", AliasElement::getAliasName, AliasElement::setAliasName);
+        var nameInfo = new EditableStringColumn<>("Field Name", AliasElement::getAliasName, AliasElement::setAliasName) {
+            @Override
+            public void setValue(AliasElement variable, String value) {
+                if (value.isBlank()) {
+                    super.setValue(variable, "test");
+                    return;
+                }
+                super.setValue(variable, value);
+            }
+        };
         aliasTableModel = new ListTableModel<>(nameInfo);
         var aliasTable = new TableView<>(aliasTableModel);
         aliasTable.getTableHeader().setReorderingAllowed(false);
