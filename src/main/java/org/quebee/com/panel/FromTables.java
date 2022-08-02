@@ -144,6 +144,7 @@ public class FromTables extends QueryPanel {
         }
 
         var union = cte.getUnion("" + i1);
+        // FIXME  add getting all model from CTE model
         union.getSelectedTablesRoot().nodeToList().forEach(x ->
                 {
                     tablesRoot.nodeToList().forEach(node -> {
