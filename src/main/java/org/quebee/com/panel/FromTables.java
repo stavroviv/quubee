@@ -128,6 +128,11 @@ public class FromTables extends QueryPanel {
         subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
         subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
         subscribe(LoadQueryDataNotifier.class, this::loadQueryData);
+        subscribe(NotifyRefreshAvailableTables.class, this::refreshAvailableTables);
+    }
+
+    private void refreshAvailableTables() {
+        getPublisher(RefreshAvailableTables.class).onAction(selectedTablesRoot.nodeToList());
     }
 
     private void saveQueryData(FullQuery fullQuery, String cteName, int id) {

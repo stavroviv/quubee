@@ -34,6 +34,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -286,7 +287,13 @@ public class OrderPanel extends QueryPanel {
         subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
         subscribe(UnionAddRemoveNotifier.class, this::addRemoveUnion);
+        subscribe(RefreshAvailableTables.class, this::refreshAvailableTables);
 //        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+    }
+
+    private void refreshAvailableTables(List<QBTreeNode> tables) {
+        addAllFieldsRoot();
+        tables.forEach(this::addSelectedTable);
     }
 
     private void addRemoveUnion(int i, boolean interactive) {
@@ -296,9 +303,7 @@ public class OrderPanel extends QueryPanel {
         if (i > 1) {
             removeAllFieldsRoot();
         } else {
-            mainPanel.getCurrentCte().getFirstUnion().getSelectedTablesRoot()
-                    .nodeToList()
-                    .forEach(this::addSelectedTable);
+            getPublisher(NotifyRefreshAvailableTables.class).onAction();
         }
     }
 
