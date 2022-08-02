@@ -31,6 +31,7 @@ import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -144,23 +145,14 @@ public class FromTables extends QueryPanel {
         }
 
         var union = cte.getUnion("" + i1);
-        // FIXME  add getting all model from CTE model
         union.getSelectedTablesRoot().nodeToList().forEach(x ->
-                {
-                    tablesRoot.nodeToList().forEach(node -> {
-                        var userObject = x.getUserObject();
-                        if (node.getUserObject().getName().equals(userObject.getName())) {
-                            getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
-                        }
-                    });
-                    // FIXME
-                    cteRoot.nodeToList().forEach(node -> {
-                        var userObject = x.getUserObject();
-                        if (node.getUserObject().getName().equals(userObject.getName())) {
-                            getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
-                        }
-                    });
-                }
+                List.of(tablesRoot, cteRoot).forEach(y -> y.nodeToList().forEach(node -> {
+                    var xName = x.getUserObject().getName();
+                    var nodeName = node.getUserObject().getName();
+                    if (nodeName.equals(xName)) {
+                        getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
+                    }
+                }))
         );
         union.getSelectedFieldsModel().getItems().forEach(x ->
                 getPublisher(SelectedFieldAddNotifier.class).onAction(x, false)

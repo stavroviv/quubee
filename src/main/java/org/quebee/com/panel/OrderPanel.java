@@ -289,7 +289,10 @@ public class OrderPanel extends QueryPanel {
 //        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
     }
 
-    private void addRemoveUnion(int i) {
+    private void addRemoveUnion(int i, boolean interactive) {
+        if (!interactive) {
+            return;
+        }
         if (i > 1) {
             removeAllFieldsRoot();
         } else {
