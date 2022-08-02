@@ -11,6 +11,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.quebee.com.model.LinkElement;
+import org.quebee.com.panel.OrderPanel;
 
 import java.util.*;
 
@@ -359,17 +360,17 @@ public class FullQuery {
     }
 
     public void saveOrderBy(PlainSelect select, OneCte cte) {
-//        List<OrderByElement> orderElements = new ArrayList<>();
-//
-//        cte.getOrderTableResults().getItems().forEach(x -> {
-//            OrderByElement orderByElement = new OrderByElement();
-//            Column column = new Column(x.getName());
-//            orderByElement.setExpression(column);
-//            orderByElement.setAsc(x.getComboBoxValue().equals("Ascending"));
-//            orderElements.add(orderByElement);
-//        });
-//
-//        select.setOrderByElements(orderElements);
+        var orderElements = new ArrayList<OrderByElement>();
+
+        cte.getOrderTable().getItems().forEach(x -> {
+            var orderByElement = new OrderByElement();
+            var column = new Column(x.getField());
+            orderByElement.setExpression(column);
+            orderByElement.setAsc(x.getSorting().equals(OrderPanel.ASC));
+            orderElements.add(orderByElement);
+        });
+
+        select.setOrderByElements(orderElements);
     }
 
 }
