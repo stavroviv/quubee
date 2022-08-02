@@ -138,13 +138,13 @@ public class FromTables extends QueryPanel {
         ComponentUtils.clearTable(selectedFieldsModel);
     }
 
-    private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
+    private void loadQueryData(FullQuery fullQuery, String cteName, int unionNumber) {
         var cte = fullQuery.getCte(cteName);
         if (Objects.isNull(cte)) {
             return;
         }
 
-        var union = cte.getUnion("" + i1);
+        var union = cte.getUnion("" + unionNumber);
         union.getSelectedTablesRoot().nodeToList().forEach(x ->
                 List.of(tablesRoot, cteRoot).forEach(y -> y.nodeToList().forEach(node -> {
                     var xName = x.getUserObject().getName();
@@ -221,15 +221,7 @@ public class FromTables extends QueryPanel {
         } else {
             newUserObject.setAlias(alias);
         }
-        var newTableNode = new QBTreeNode(newUserObject);
-        node.children().asIterator()
-                .forEachRemaining(x -> newTableNode.add(new QBTreeNode((TableElement) x.getUserObject())));
-        selectedTablesRoot.add(newTableNode);
-        if (selectedTablesRoot.getChildCount() == 1) {
-            selectedTablesModel.reload();
-        } else {
-            selectedTablesModel.nodesWereInserted(selectedTablesRoot, new int[]{selectedTablesRoot.getChildCount() - 1});
-        }
+        var newTableNode = ComponentUtils.addNodeWithChildren(node, newUserObject, selectedTablesRoot, selectedTablesModel);
         getPublisher(SelectedTableAfterAddNotifier.class).onAction(newTableNode);
     }
 

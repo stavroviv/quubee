@@ -3,6 +3,7 @@ package org.quebee.com.util;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.util.ui.ListTableModel;
 import org.quebee.com.model.QBTreeNode;
+import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
 
@@ -52,5 +53,18 @@ public class ComponentUtils {
         } else {
             throw new IllegalArgumentException("Unsupported component: " + component);
         }
+    }
+
+    public static QBTreeNode addNodeWithChildren(QBTreeNode node, TableElement newUserObject,
+                                                 QBTreeNode root, ListTreeTableModel model) {
+        var newTableNode = new QBTreeNode(newUserObject);
+        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
+        root.add(newTableNode);
+        if (root.getChildCount() == 1) {
+            model.reload();
+        } else {
+            model.nodesWereInserted(root, new int[]{root.getChildCount() - 1});
+        }
+        return newTableNode;
     }
 }

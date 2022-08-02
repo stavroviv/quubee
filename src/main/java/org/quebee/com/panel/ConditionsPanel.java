@@ -509,14 +509,7 @@ public class ConditionsPanel extends QueryPanel {
 
     private void addSelectedTable(QBTreeNode node) {
         var newUserObject = new TableElement(node.getUserObject());
-        var newTableNode = new QBTreeNode(newUserObject);
-        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
-        allFieldsRoot.add(newTableNode);
-        if (allFieldsRoot.getChildCount() == 1) {
-            allFieldsModel.reload();
-        } else {
-            allFieldsModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
-        }
+        ComponentUtils.addNodeWithChildren(node, newUserObject, allFieldsRoot, allFieldsModel);
         if (Objects.isNull(node.getParent().getParent())) {
             tables.add(node);
         } else {
