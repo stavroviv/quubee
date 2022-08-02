@@ -26,10 +26,6 @@ public class OneCte implements Orderable {
     private ListTableModel<TableElement> unionTable = new ListTableModel<>();
     private ListTableModel<OrderElement> orderTable = new ListTableModel<>();
 
-    public Union getUnion(String unionNumber) {
-        return unionMap.get(unionNumber);
-    }
-
     public OneCte(String cteName, SelectBody selectBody, Integer order) {
         this.cteName = cteName;
         this.order = order;
@@ -61,7 +57,7 @@ public class OneCte implements Orderable {
     }
 
     private void loadAliasTable() {
-        var firstUnion = getUnion("0");
+        var firstUnion = getFirstUnion();
         for (var i = 0; i < firstUnion.getSelectedFieldsModel().getRowCount(); i++) {
             var aliasElement = new AliasElement();
             var j = 0;
@@ -116,5 +112,15 @@ public class OneCte implements Orderable {
 
     public void removeUnion(int index) {
         unionMap.remove("" + index);
+    }
+
+    public Union getUnion(String unionNumber) {
+        return unionMap.get(unionNumber);
+    }
+
+    public Union getFirstUnion() {
+        var entry = unionMap.entrySet().iterator().next();
+        var key = entry.getKey();
+        return unionMap.get(key);
     }
 }

@@ -110,6 +110,7 @@ public class UnionAliasesPanel extends QueryPanel {
 
         mainPanel.removeUnion(Integer.parseInt(unionRow.getName().replace("Union ", "")));
         TableUtil.removeSelectedItems(unionTable);
+        getPublisher(UnionAddRemoveNotifier.class).onAction(unionTableModel.getItems().size());
     }
 
     private int curMaxUnion;
@@ -126,7 +127,7 @@ public class UnionAliasesPanel extends QueryPanel {
         var aliasNameInfo = new ColumnInfo<AliasElement, String>(newUnion) {
             @Override
             public String valueOf(AliasElement o) {
-                String value = o.getAlias().get(getName());
+                var value = o.getAlias().get(getName());
                 return Objects.isNull(value) ? "" : value;
             }
 
@@ -155,6 +156,7 @@ public class UnionAliasesPanel extends QueryPanel {
         newColumnInfo[columnInfos.length] = aliasNameInfo;
         aliasTableModel.setColumnInfos(newColumnInfo);
         curMaxUnion++;
+        getPublisher(UnionAddRemoveNotifier.class).onAction(unionTableModel.getItems().size());
     }
 
     private class AvailableFieldsEditor extends AbstractTableCellEditor {

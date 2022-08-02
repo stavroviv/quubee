@@ -154,8 +154,8 @@ public class OrderPanel extends QueryPanel {
         return hBox;
     }
 
-    JButton buttonAdd;
-    JButton buttonRemove;
+    private JButton buttonAdd;
+    private JButton buttonRemove;
 
     private void moveFieldToSelected(QBTreeNode item) {
         if (Objects.isNull(item)) {
@@ -285,7 +285,18 @@ public class OrderPanel extends QueryPanel {
         subscribe(AliasAddNotifier.class, this::addSelectedField);
         subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
+        subscribe(UnionAddRemoveNotifier.class, this::addRemoveUnion);
 //        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+    }
+
+    private void addRemoveUnion(int i) {
+        if (i > 1) {
+            removeAllFieldsRoot();
+        } else {
+            mainPanel.getCurrentCte().getFirstUnion().getSelectedTablesRoot()
+                    .nodeToList()
+                    .forEach(this::addSelectedTable);
+        }
     }
 
     private void loadQueryData(FullQuery fullQuery, String cteName) {
@@ -364,6 +375,14 @@ public class OrderPanel extends QueryPanel {
         }
         allFieldsRoot = new QBTreeNode(new TableElement(ALL_FIELDS));
         availableOrderRoot.add(allFieldsRoot);
+        availableOrderModel.reload();
+    }
+
+    private void removeAllFieldsRoot() {
+        if (!hasAllFields()) {
+            return;
+        }
+       availableOrderRoot.remove(allFieldsRoot);
         availableOrderModel.reload();
     }
 
