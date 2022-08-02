@@ -60,7 +60,6 @@ public class OrderPanel extends QueryPanel {
     private void enableDragAndDrop() {
         DnDManager.getInstance().registerSource(new MyDnDSource(availableOrderTree), availableOrderTree, mainPanel.getDisposable());
         DnDManager.getInstance().registerTarget(new MyDnDTarget(), availableOrderTree, mainPanel.getDisposable());
-//        DnDManager.getInstance().registerSource(new MyDnDSource2(), orderTable, mainPanel.getDisposable());
         MyRowsDnDSupport.install(orderTable, (EditableModel) orderTable.getModel(), availableOrderTree, (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
                 var p = event.getPoint();
@@ -72,7 +71,6 @@ public class OrderPanel extends QueryPanel {
         });
     }
 
-    // TODO back DnD
     private class MyDnDTarget implements DnDTarget {
 
         public boolean update(DnDEvent aEvent) {
@@ -81,8 +79,8 @@ public class OrderPanel extends QueryPanel {
         }
 
         public void drop(DnDEvent aEvent) {
-            if (aEvent.getAttachedObject() instanceof QBTreeNode) {
-//                addCondition((QBTreeNode) aEvent.getAttachedObject());
+            if (aEvent.getAttachedObject() instanceof MyRowsDnDSupport.RowDragInfo) {
+                moveFieldToAvailable(orderTable.getSelectedObject(), true);
             }
         }
     }

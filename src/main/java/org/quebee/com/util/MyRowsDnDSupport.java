@@ -163,7 +163,7 @@ public final class MyRowsDnDSupport {
         }
     }
 
-    private static class RowDragInfo {
+    public static class RowDragInfo {
         public final JComponent component;
         public final int row;
 
