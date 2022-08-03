@@ -2,7 +2,6 @@ package org.quebee.com.panel;
 
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
-import com.intellij.ui.table.JBTable;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -11,7 +10,6 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
@@ -21,6 +19,9 @@ import org.quebee.com.util.ComponentUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Collections;
 import java.util.Objects;
 
 @Getter
@@ -131,8 +132,8 @@ public class GroupingPanel extends QueryPanel {
     }
 
     private ListTableModel<TableElement> groupingTableModel;
+    private TableView<TableElement> groupingTable;
 
-    @NotNull
     private JComponent getGroupingTable() {
         var columnInfo = new ColumnInfo<TableElement, String>("Grouping Field") {
 
@@ -145,7 +146,7 @@ public class GroupingPanel extends QueryPanel {
         groupingTableModel = new ListTableModel<>(
                 columnInfo
         );
-        var groupingTable = new JBTable(groupingTableModel);
+        groupingTable = new TableView<>(groupingTableModel);
         var decorator = ToolbarDecorator.createDecorator(groupingTable);
         var panel = decorator.createPanel();
         decorator.getActionsPanel().setVisible(false);
@@ -155,6 +156,7 @@ public class GroupingPanel extends QueryPanel {
     private QBTreeNode groupingRoot;
     private QBTreeNode allFieldsRoot;
     private ListTreeTableModel groupingModel;
+    private TreeTable availableGroupTree;
 
     private JComponent getAvailableGroupingFieldsTree() {
         groupingRoot = new QBTreeNode(new TableElement("empty"));
@@ -163,11 +165,21 @@ public class GroupingPanel extends QueryPanel {
         groupingModel = new ListTreeTableModel(groupingRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Fields")
         });
-        var table = new TreeTable(groupingModel);
-        table.setTreeCellRenderer(new TableElement.Renderer());
-        table.setRootVisible(false);
+        availableGroupTree = new TreeTable(groupingModel);
+        availableGroupTree.setTreeCellRenderer(new TableElement.Renderer());
+        availableGroupTree.setRootVisible(false);
+        availableGroupTree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+                var table = (TreeTable) mouseEvent.getSource();
+                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
+                    return;
+                }
+                moveFieldToSelected(ComponentUtils.selectedAvailableField(table));
+            }
+        });
 
-        var decorator = ToolbarDecorator.createDecorator(table);
+        var decorator = ToolbarDecorator.createDecorator(availableGroupTree);
         var panel = decorator.createPanel();
 
         var hBox = Box.createHorizontalBox();
@@ -193,6 +205,27 @@ public class GroupingPanel extends QueryPanel {
         hBox.add(comp);
 
         return hBox;
+    }
+
+    private void moveFieldToSelected(QBTreeNode item) {
+        if (Objects.isNull(item)) {
+            return;
+        }
+        if (Objects.nonNull(allFieldsRoot) && (allFieldsRoot.equals(item) || allFieldsRoot.equals(item.getParent()))) {
+            return;
+        }
+        addGroupElement(item, -1);
+        ComponentUtils.removeFromAvailable(item, groupingRoot, groupingModel, availableGroupTree);
+    }
+
+    private void addGroupElement(QBTreeNode value, int newIndex) {
+        var item = new TableElement(value.getUserObject());
+        if (newIndex == -1) {
+            groupingTableModel.addRow(item);
+        } else {
+            groupingTableModel.insertRow(newIndex, item);
+        }
+        groupingTable.setSelection(Collections.singleton(item));
     }
 
     private JButton smallButton(String text) {

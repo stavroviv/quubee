@@ -1,6 +1,7 @@
 package org.quebee.com.util;
 
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
+import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ListTableModel;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
@@ -63,6 +64,28 @@ public class ComponentUtils {
         } else {
             throw new IllegalArgumentException("Unsupported component: " + component);
         }
+    }
+
+    public static QBTreeNode selectedAvailableField(TreeTable treeTable) {
+        int selectedRow = treeTable.getSelectedRow();
+        if (selectedRow == -1) {
+            return null;
+        }
+        return (QBTreeNode) treeTable.getValueAt(selectedRow, 0);
+    }
+
+    public static void removeFromAvailable(QBTreeNode item, QBTreeNode node, ListTreeTableModel model, TreeTable tree) {
+        if (!node.equals(item.getParent())) {
+            return;
+        }
+        node.nodeToList().stream()
+                .filter(x -> x.equals(item))
+                .forEach(x -> {
+                    var index = node.getIndex(x);
+                    node.remove(x);
+                    model.nodesWereRemoved(node, new int[]{index}, new Object[]{x});
+                    SwingUtilities.invokeLater(() -> ComponentUtils.setSelectedRow(tree, index));
+                });
     }
 
     public static QBTreeNode addNodeWithChildren(QBTreeNode node, TableElement newUserObject,

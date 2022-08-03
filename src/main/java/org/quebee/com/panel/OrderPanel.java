@@ -68,7 +68,7 @@ public class OrderPanel extends QueryPanel {
                 var i = orderTable.rowAtPoint(p);
                 var item = (QBTreeNode) event.getAttachedObject();
                 addOrderElement(item, i);
-                removeFromAvailable(item);
+                ComponentUtils.removeFromAvailable(item, availableOrderRoot, availableOrderModel, availableOrderTree);
             }
         });
     }
@@ -126,7 +126,7 @@ public class OrderPanel extends QueryPanel {
                 if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
                     return;
                 }
-                moveFieldToSelected(selectedAvailableField());
+                moveFieldToSelected(ComponentUtils.selectedAvailableField(availableOrderTree));
             }
         });
 //        availableOrderTree.getSelectionModel()
@@ -142,7 +142,7 @@ public class OrderPanel extends QueryPanel {
         var comp = Box.createVerticalBox();
         comp.setPreferredSize(new Dimension(30, 400));
 
-        buttonAdd = smallButton(">", e -> moveFieldToSelected(selectedAvailableField()), true);
+        buttonAdd = smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableOrderTree)), true);
         comp.add(buttonAdd);
         comp.add(smallButton(">>", e -> availableOrderRoot.nodeToList().forEach(this::moveFieldToSelected), true));
         buttonRemove = smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true), true);
@@ -167,15 +167,7 @@ public class OrderPanel extends QueryPanel {
             return;
         }
         addOrderElement(item, -1);
-        removeFromAvailable(item);
-    }
-
-    private QBTreeNode selectedAvailableField() {
-        int selectedRow = availableOrderTree.getSelectedRow();
-        if (selectedRow == -1) {
-            return null;
-        }
-        return (QBTreeNode) availableOrderTree.getValueAt(selectedRow, 0);
+        ComponentUtils.removeFromAvailable(item, availableOrderRoot, availableOrderModel, availableOrderTree);
     }
 
     private ListTableModel<OrderElement> orderTableModel;
@@ -246,20 +238,6 @@ public class OrderPanel extends QueryPanel {
             orderTableModel.insertRow(newIndex, item);
         }
         orderTable.setSelection(Collections.singleton(item));
-    }
-
-    private void removeFromAvailable(QBTreeNode item) {
-        if (!availableOrderRoot.equals(item.getParent())) {
-            return;
-        }
-        availableOrderRoot.nodeToList().stream()
-                .filter(x -> x.equals(item))
-                .forEach(x -> {
-                    var index = availableOrderRoot.getIndex(x);
-                    availableOrderRoot.remove(x);
-                    availableOrderModel.nodesWereRemoved(availableOrderRoot, new int[]{index}, new Object[]{x});
-                    SwingUtilities.invokeLater(() -> ComponentUtils.setSelectedRow(availableOrderTree, index));
-                });
     }
 
     private String getFieldDescription(QBTreeNode value) {
