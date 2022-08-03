@@ -55,12 +55,13 @@ public class UnionAliasesPanel extends QueryPanel {
     private JComponent getAliasTablePanel() {
         var nameInfo = new EditableStringColumn<>("Field Name", AliasElement::getAliasName, AliasElement::setAliasName) {
             @Override
-            public void setValue(AliasElement variable, String value) {
-                if (value.isBlank()) {
-                    super.setValue(variable, "test");
-                    return;
+            public void setValue(AliasElement variable, String valueAfter) {
+                if (valueAfter.isBlank()) {
+                    valueAfter = "test";
                 }
-                super.setValue(variable, value);
+                var valueBefore = variable.getAliasName();
+                getPublisher(AliasRenameNotifier.class).onAction(valueBefore, valueAfter);
+                super.setValue(variable, valueAfter);
             }
         };
         aliasTableModel = new ListTableModel<>(nameInfo);
@@ -194,7 +195,7 @@ public class UnionAliasesPanel extends QueryPanel {
             stringComboBox.setEditable(true);
             var clearExtension = ExtendableTextComponent.Extension.create(
                     AllIcons.Actions.Close, AllIcons.Actions.CloseHovered,
-                    "Clear", () -> clearAliasValue()
+                    "Clear", UnionAliasesPanel.this::clearAliasValue
             );
             stringComboBox.setEditor(new BasicComboBoxEditor() {
                 @Override
@@ -226,9 +227,11 @@ public class UnionAliasesPanel extends QueryPanel {
         var userObject = node.getUserObject();
         var removeTableName = userObject.getDescription();
         for (var i = aliasTableModel.getItems().size() - 1; i >= 0; i--) {
-            var name = aliasTableModel.getItem(i).getTableName();
+            var item = aliasTableModel.getItem(i);
+            var name = item.getTableName();
             if (name.equals(removeTableName)) {
                 aliasTableModel.removeRow(i);
+                getPublisher(AliasRemoveNotifier.class).onAction(item.getAliasName());
             }
         }
     }
@@ -237,9 +240,11 @@ public class UnionAliasesPanel extends QueryPanel {
         var currentUnion = mainPanel.getCurrentUnion();
         var removeElement = tableElement.getDescription();
         for (var i = aliasTableModel.getItems().size() - 1; i >= 0; i--) {
-            var name = aliasTableModel.getItem(i).getAlias().get(currentUnion);
+            var item = aliasTableModel.getItem(i);
+            var name = item.getAlias().get(currentUnion);
             if (name.equals(removeElement)) {
                 aliasTableModel.removeRow(i);
+                getPublisher(AliasRemoveNotifier.class).onAction(item.getAliasName());
                 break;
             }
         }

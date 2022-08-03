@@ -284,11 +284,12 @@ public class OrderPanel extends QueryPanel {
         subscribe(LoadQueryCteDataNotifier.class, this::loadQueryData);
         subscribe(SaveQueryCteDataNotifier.class, this::saveQueryData);
         subscribe(AliasAddNotifier.class, this::addSelectedField);
-        subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
+        subscribe(AliasRemoveNotifier.class, this::removeSelectedField);
+        subscribe(AliasRenameNotifier.class, this::renameFields);
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
         subscribe(UnionAddRemoveNotifier.class, this::addRemoveUnion);
         subscribe(RefreshAvailableTables.class, this::refreshAvailableTables);
-//        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
+        subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
     }
 
     private void refreshAvailableTables(List<QBTreeNode> tables) {
@@ -320,6 +321,18 @@ public class OrderPanel extends QueryPanel {
         removeSelectedFieldsFromAvailable();
     }
 
+    private void renameFields(String oldName, String newName) {
+        if (oldName.equals(newName)) {
+            return;
+        }
+        orderTableModel.getItems().stream()
+                .filter(x -> oldName.equals(x.getField()))
+                .forEach(x -> x.setField(newName));
+        availableOrderRoot.nodeToList().stream()
+                .filter(x -> x.getUserObject().getDescription().equals(oldName))
+                .forEach(x -> x.getUserObject().setName(newName));
+    }
+
     private void removeSelectedFieldsFromAvailable() {
         orderTableModel.getItems().forEach(element -> availableOrderRoot.nodeToList().stream()
                 .filter(x -> {
@@ -334,14 +347,21 @@ public class OrderPanel extends QueryPanel {
         );
     }
 
-    private void removeSelectedField(TableElement tableElement) {
+    private void removeSelectedField(String name) {
         availableOrderRoot.nodeToList().stream()
-                .filter(x -> x.getUserObject().getDescription().equals(tableElement.getDescription()))
+                .filter(x -> x.getUserObject().getDescription().equals(name))
                 .forEach(x -> {
                     var index = availableOrderRoot.getIndex(x);
                     availableOrderRoot.remove(x);
                     availableOrderModel.nodesWereRemoved(availableOrderRoot, new int[]{index}, new Object[]{x});
                 });
+        ComponentUtils.removeRowsByPredicate(x -> x.getField().equals(name), orderTableModel);
+    }
+
+    private void removeSelectedTable(QBTreeNode node) {
+        ComponentUtils.removeNodeByTable(node, allFieldsRoot, availableOrderModel);
+        var removeTableName = node.getUserObject().getDescription();
+        ComponentUtils.removeRowsByPredicate(x -> x.getField().contains(removeTableName + "."), orderTableModel);
     }
 
     private void saveQueryData(FullQuery query, String cteName) {
@@ -390,7 +410,7 @@ public class OrderPanel extends QueryPanel {
         if (!hasAllFields()) {
             return;
         }
-       availableOrderRoot.remove(allFieldsRoot);
+        availableOrderRoot.remove(allFieldsRoot);
         availableOrderModel.reload();
     }
 

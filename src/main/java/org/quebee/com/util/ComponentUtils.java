@@ -6,6 +6,7 @@ import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 
 import javax.swing.*;
+import java.util.function.Predicate;
 
 public class ComponentUtils {
 
@@ -41,6 +42,15 @@ public class ComponentUtils {
                     root.remove(x);
                     treeTableModel.nodesWereRemoved(root, new int[]{index}, new Object[]{x});
                 });
+    }
+
+    public static <T> void removeRowsByPredicate(Predicate<T> predicate, ListTableModel<T> model) {
+        for (var i = model.getItems().size() - 1; i >= 0; i--) {
+            var item = model.getItem(i);
+            if (predicate.test(item)) {
+                model.removeRow(i);
+            }
+        }
     }
 
     public static void setSelectedRow(JComponent component, int row) {
