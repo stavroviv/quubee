@@ -39,10 +39,11 @@ import java.util.Objects;
 
 @Getter
 public class OrderPanel extends QueryPanel {
+    public final static String ORDER_PANEL_HEADER = "Order";
     public final static String ASC = "Ascending";
     public final static String DESC = "Descending";
     private final static String ALL_FIELDS = "All fields";
-    private final String header = "Order";
+    private final String header = ORDER_PANEL_HEADER;
     private final JBSplitter component = new JBSplitter();
 
     public OrderPanel(MainPanel mainPanel) {

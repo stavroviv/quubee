@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.quebee.com.panel.OrderPanel.ORDER_PANEL_HEADER;
+
 public class MainPanel extends DefaultDialogWrapper {
 
     private JBTabsImpl queryTabs;
@@ -83,6 +85,12 @@ public class MainPanel extends DefaultDialogWrapper {
 
         queryTabs = new JBTabsImpl(null, null, ApplicationManager.getApplication());
         addQueryTabs(queryTabs);
+        queryTabs.addListener(new TabsListener() {
+            @Override
+            public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
+                setPanelsVisible();
+            }
+        });
 
         var horizontalBox = Box.createHorizontalBox();
         horizontalBox.add(unionPanel);
@@ -245,6 +253,11 @@ public class MainPanel extends DefaultDialogWrapper {
     private void setPanelsVisible() {
 //        ctePanel.setVisible(tabsCte.getTabCount() > 1);
         unionPanel.setVisible(tabsUnion.getTabCount() > 1);
+        var selectedInfo = queryTabs.getSelectedInfo();
+        if (Objects.nonNull(selectedInfo) && selectedInfo.getText().equals(ORDER_PANEL_HEADER)
+                && getCurrentCte().getUnionMap().size() > 1) {
+            unionPanel.setVisible(false);
+        }
     }
 
     private boolean dataIsLoading;
