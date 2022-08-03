@@ -46,6 +46,7 @@ import org.quebee.com.notifier.SelectedTableRemoveNotifier;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.AvailableFieldsTreeDnDSource;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.MouseAdapterDoubleClick;
 import org.quebee.com.util.MyRowsDnDSupport;
 
 import javax.swing.*;
@@ -56,7 +57,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.HashSet;
@@ -310,13 +310,9 @@ public class ConditionsPanel extends QueryPanel {
         availableFieldsTree.setTreeCellRenderer(new TableElement.Renderer());
         availableFieldsTree.setRootVisible(false);
 
-        availableFieldsTree.addMouseListener(new MouseAdapter() {
+        availableFieldsTree.addMouseListener(new MouseAdapterDoubleClick() {
             @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-                var table = (TreeTable) mouseEvent.getSource();
-                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
-                    return;
-                }
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
                 var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;

@@ -25,13 +25,13 @@ import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.AvailableFieldsTreeDnDSource;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.MouseAdapterDoubleClick;
 import org.quebee.com.util.MyRowsDnDSupport;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.List;
@@ -119,13 +119,9 @@ public class OrderPanel extends QueryPanel {
         availableOrderTree = new TreeTable(availableOrderModel);
         availableOrderTree.setTreeCellRenderer(new TableElement.Renderer());
         availableOrderTree.setRootVisible(false);
-        availableOrderTree.addMouseListener(new MouseAdapter() {
+        availableOrderTree.addMouseListener(new MouseAdapterDoubleClick() {
             @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-                var table = (TreeTable) mouseEvent.getSource();
-                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
-                    return;
-                }
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
                 moveFieldToSelected(ComponentUtils.selectedAvailableField(availableOrderTree));
             }
         });
@@ -191,13 +187,9 @@ public class OrderPanel extends QueryPanel {
                 sortingInfo
         );
         orderTable = new TableView<>(orderTableModel);
-        orderTable.addMouseListener(new MouseAdapter() {
+        orderTable.addMouseListener(new MouseAdapterDoubleClick() {
             @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-                if (mouseEvent.getClickCount() != 2) {
-                    return;
-                }
-                var table = (TableView<?>) mouseEvent.getSource();
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
                 var columnName = orderTable.getColumnName(table.getSelectedColumn());
                 if (columnName.equals("Field")) {
                     moveFieldToAvailable(orderTable.getSelectedObject(), true);

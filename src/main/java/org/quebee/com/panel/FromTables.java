@@ -23,6 +23,7 @@ import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.MouseAdapterDoubleClick;
 import org.quebee.com.util.MyRowsDnDSupport;
 import org.quebee.com.util.RenameDialogWrapper;
 
@@ -292,13 +293,9 @@ public class FromTables extends QueryPanel {
         );
         decorator.setRemoveActionUpdater(activeTableUpdater());
 
-        selectedTablesTree.addMouseListener(new MouseAdapter() {
+        selectedTablesTree.addMouseListener(new MouseAdapterDoubleClick(true) {
             @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-                var table = (TreeTable) mouseEvent.getSource();
-                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1 || mouseEvent.getX() < 40) {
-                    return;
-                }
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
                 var value = (QBTreeNode) selectedTablesTree.getValueAt(table.getSelectedRow(), 0);
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
@@ -389,13 +386,9 @@ public class FromTables extends QueryPanel {
 
     @NotNull
     private MouseAdapter fieldsMouseListener(TreeTable treeTable) {
-        return new MouseAdapter() {
+        return new MouseAdapterDoubleClick(true) {
             @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-                var table = (TreeTable) mouseEvent.getSource();
-                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1 || mouseEvent.getX() < 40) {
-                    return;
-                }
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
                 getPublisher(SelectedTableAddNotifier.class)
                         .onAction((QBTreeNode) treeTable.getValueAt(table.getSelectedRow(), 0), null);
             }

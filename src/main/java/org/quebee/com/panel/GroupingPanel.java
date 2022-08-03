@@ -16,10 +16,10 @@ import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.MouseAdapterDoubleClick;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.Objects;
@@ -168,14 +168,10 @@ public class GroupingPanel extends QueryPanel {
         availableGroupTree = new TreeTable(groupingModel);
         availableGroupTree.setTreeCellRenderer(new TableElement.Renderer());
         availableGroupTree.setRootVisible(false);
-        availableGroupTree.addMouseListener(new MouseAdapter() {
+        availableGroupTree.addMouseListener(new MouseAdapterDoubleClick() {
             @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-                var table = (TreeTable) mouseEvent.getSource();
-                if (mouseEvent.getClickCount() != 2 || table.getSelectedRow() == -1) {
-                    return;
-                }
-                moveFieldToSelected(ComponentUtils.selectedAvailableField(table));
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
+                moveFieldToSelected(ComponentUtils.selectedAvailableField(availableGroupTree));
             }
         });
 
