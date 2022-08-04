@@ -23,17 +23,13 @@ import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
-import org.quebee.com.util.AvailableFieldsTreeDnDSource;
-import org.quebee.com.util.ComponentUtils;
-import org.quebee.com.util.MouseAdapterDoubleClick;
-import org.quebee.com.util.MyRowsDnDSupport;
+import org.quebee.com.util.*;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -155,15 +151,15 @@ public class OrderPanel extends QueryPanel {
     private JButton buttonAdd;
     private JButton buttonRemove;
 
-    private void moveFieldToSelected(QBTreeNode item) {
-        if (Objects.isNull(item)) {
-            return;
+    private void moveFieldToSelected(QBTreeNode value) {
+        var newItem = new OrderElement();
+        if (value != null) {
+            newItem.setField(getFieldDescription(value));
         }
-        if (Objects.nonNull(allFieldsRoot) && (allFieldsRoot.equals(item) || allFieldsRoot.equals(item.getParent()))) {
-            return;
-        }
-        addOrderElement(item, -1);
-        ComponentUtils.removeFromAvailable(item, availableOrderRoot, availableOrderModel, availableOrderTree);
+        newItem.setSorting(ASC);
+        TreeToTableUtils.moveFieldToTable(value, newItem, orderTableModel, orderTable, allFieldsRoot,
+                availableOrderRoot, availableOrderModel, availableOrderTree
+        );
     }
 
     private ListTableModel<OrderElement> orderTableModel;
@@ -224,12 +220,7 @@ public class OrderPanel extends QueryPanel {
             item.setField(getFieldDescription(value));
         }
         item.setSorting(ASC);
-        if (newIndex == -1) {
-            orderTableModel.addRow(item);
-        } else {
-            orderTableModel.insertRow(newIndex, item);
-        }
-        orderTable.setSelection(Collections.singleton(item));
+        TreeToTableUtils.addElementToTable(item,newIndex, orderTableModel,orderTable);
     }
 
     private String getFieldDescription(QBTreeNode value) {

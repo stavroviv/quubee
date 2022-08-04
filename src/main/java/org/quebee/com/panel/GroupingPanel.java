@@ -20,13 +20,13 @@ import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MouseAdapterDoubleClick;
+import org.quebee.com.util.TreeToTableUtils;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 import java.util.Objects;
 
 @Getter
@@ -255,34 +255,18 @@ public class GroupingPanel extends QueryPanel {
 
     private void moveFieldToSelected(QBTreeNode item) {
         var newItem = new TableElement(getFieldDescription(item));
-        moveFieldToTable(item, newItem, groupingTableModel, groupingTable);
+        TreeToTableUtils.moveFieldToTable(item, newItem, groupingTableModel, groupingTable, allFieldsRoot,
+                availableGroupingRoot, availableGroupingModel, availableGroupingTree
+        );
     }
 
     private void moveFieldToAggregate(QBTreeNode item) {
         var newItem = new AggregateElement();
         newItem.setField(getFieldDescription(item));
         newItem.setFunction(SUM);
-        moveFieldToTable(item, newItem, aggregateTableModel, aggregateTable);
-    }
-
-    private <T> void moveFieldToTable(QBTreeNode item, T newItem, ListTableModel<T> model, TableView<T> table) {
-        if (Objects.isNull(item)) {
-            return;
-        }
-        if (Objects.nonNull(allFieldsRoot) && (allFieldsRoot.equals(item) || allFieldsRoot.equals(item.getParent()))) {
-            return;
-        }
-        addElementToTable(newItem, -1, model, table);
-        ComponentUtils.removeFromAvailable(item, availableGroupingRoot, availableGroupingModel, availableGroupingTree);
-    }
-
-    private <T> void addElementToTable(T item, int newIndex, ListTableModel<T> model, TableView<T> table) {
-        if (newIndex == -1) {
-            model.addRow(item);
-        } else {
-            model.insertRow(newIndex, item);
-        }
-        table.setSelection(Collections.singleton(item));
+        TreeToTableUtils.moveFieldToTable(item, newItem, aggregateTableModel, aggregateTable, allFieldsRoot,
+                availableGroupingRoot,  availableGroupingModel, availableGroupingTree
+        );
     }
 
     private String getFieldDescription(QBTreeNode value) {
