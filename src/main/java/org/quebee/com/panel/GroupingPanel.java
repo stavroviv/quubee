@@ -44,7 +44,7 @@ public class GroupingPanel extends AvailableFieldsTree {
         subscribe(LoadQueryDataNotifier.class, this::loadQueryData);
         subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
         subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
-        subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
+        subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTableToAvailable);
         subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
     }
 
@@ -98,14 +98,6 @@ public class GroupingPanel extends AvailableFieldsTree {
         tableElement.setIcon(DatabaseIcons.Col);
         availableTreeRoot.insert(new QBTreeNode(tableElement), availableTreeRoot.getChildCount() - 1);
         availableModel.nodesWereInserted(availableTreeRoot, new int[]{availableTreeRoot.getChildCount() - 2});
-    }
-
-    private void addSelectedTable(QBTreeNode node) {
-        var newUserObject = new TableElement(node.getUserObject());
-        var newTableNode = new QBTreeNode(newUserObject);
-        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
-        allFieldsRoot.add(newTableNode);
-        availableModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
     }
 
     private JComponent getGroupingAggregatesPanel() {
@@ -184,12 +176,7 @@ public class GroupingPanel extends AvailableFieldsTree {
             item = new TableElement(((AggregateElement) selected).getField());
         }
         addSelectedField(item, true);
-        if (removeSource) {
-            model.removeRow(index);
-            if (model.getRowCount() > 0) {
-                ComponentUtils.setSelectedRow(table, index == model.getRowCount() ? index - 1 : index);
-            }
-        }
+        removeFromTable(index, removeSource, model, table);
     }
 
     private JComponent getAvailableGroupingFieldsTree() {

@@ -177,18 +177,13 @@ public class OrderPanel extends AvailableFieldsTree {
         return decorator.createPanel();
     }
 
-    private void moveFieldToAvailable(OrderElement selectedObject, boolean removeFromOrder) {
+    private void moveFieldToAvailable(OrderElement selectedObject, boolean removeSource) {
         var index = orderTableModel.indexOf(selectedObject);
         var item = new TableElement(selectedObject.getField());
         if (!selectedObject.getField().contains(".")) {
             addSelectedField(item);
         }
-        if (removeFromOrder) {
-            orderTableModel.removeRow(index);
-            if (orderTableModel.getRowCount() > 0) {
-                ComponentUtils.setSelectedRow(orderTable, index == orderTableModel.getRowCount() ? index - 1 : index);
-            }
-        }
+        removeFromTable(index, removeSource, orderTableModel, orderTable);
     }
 
     private String getFieldDescription(QBTreeNode value) {
@@ -311,11 +306,7 @@ public class OrderPanel extends AvailableFieldsTree {
             return;
         }
         addAllFieldsRoot();
-        var newUserObject = new TableElement(node.getUserObject());
-        var newTableNode = new QBTreeNode(newUserObject);
-        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
-        allFieldsRoot.add(newTableNode);
-        availableModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
+        addSelectedTableToAvailable(node);
     }
 
     private void addAllFieldsRoot() {

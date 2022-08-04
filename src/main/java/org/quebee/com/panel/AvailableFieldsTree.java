@@ -77,4 +77,22 @@ abstract class AvailableFieldsTree extends QueryPanel {
         button.addActionListener(l);
         return button;
     }
+
+    protected <T> void removeFromTable(int index, boolean removeFromOrder, ListTableModel<T> model, TableView<T> table) {
+        if (!removeFromOrder) {
+            return;
+        }
+        model.removeRow(index);
+        if (model.getRowCount() > 0) {
+            ComponentUtils.setSelectedRow(table, index == model.getRowCount() ? index - 1 : index);
+        }
+    }
+
+    protected void addSelectedTableToAvailable(QBTreeNode node) {
+        var newUserObject = new TableElement(node.getUserObject());
+        var newTableNode = new QBTreeNode(newUserObject);
+        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
+        allFieldsRoot.add(newTableNode);
+        availableModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
+    }
 }
