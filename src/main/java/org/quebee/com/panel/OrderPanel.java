@@ -8,8 +8,6 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
-import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
-import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.EditableModel;
@@ -34,7 +32,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Getter
-public class OrderPanel extends QueryPanel {
+public class OrderPanel extends AvailableFieldsTree {
     public final static String ORDER_PANEL_HEADER = "Order";
     public final static String ASC = "Ascending";
     public final static String DESC = "Descending";
@@ -50,21 +48,16 @@ public class OrderPanel extends QueryPanel {
         enableDragAndDrop();
     }
 
-    private QBTreeNode availableOrderRoot;
-    private QBTreeNode allFieldsRoot;
-    private ListTreeTableModel availableOrderModel;
-    private TreeTable availableOrderTree;
-
     private void enableDragAndDrop() {
-        DnDManager.getInstance().registerSource(new MyDnDSource(availableOrderTree), availableOrderTree, mainPanel.getDisposable());
-        DnDManager.getInstance().registerTarget(new MyDnDTarget(), availableOrderTree, mainPanel.getDisposable());
-        MyRowsDnDSupport.install(orderTable, (EditableModel) orderTable.getModel(), availableOrderTree, (event) -> {
+        DnDManager.getInstance().registerSource(new MyDnDSource(availableTree), availableTree, mainPanel.getDisposable());
+        DnDManager.getInstance().registerTarget(new MyDnDTarget(), availableTree, mainPanel.getDisposable());
+        MyRowsDnDSupport.install(orderTable, (EditableModel) orderTable.getModel(), availableTree, (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
                 var p = event.getPoint();
                 var i = orderTable.rowAtPoint(p);
                 var item = (QBTreeNode) event.getAttachedObject();
                 addOrderElement(item, i);
-                ComponentUtils.removeFromAvailable(item, availableOrderRoot, availableOrderModel, availableOrderTree);
+                ComponentUtils.removeFromAvailable(item, availableTreeRoot, availableModel, availableTree);
             }
         });
     }
@@ -91,12 +84,12 @@ public class OrderPanel extends QueryPanel {
 
         @Override
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) availableOrderTree.getValueAt(availableOrderTree.getSelectedRow(), 0);
+            var value = (QBTreeNode) availableTree.getValueAt(availableTree.getSelectedRow(), 0);
             var parent = value.getParent();
             if (value.equals(allFieldsRoot)) {
                 return false;
             }
-            return availableOrderRoot.equals(parent) || !parent.equals(allFieldsRoot);
+            return availableTreeRoot.equals(parent) || !parent.equals(allFieldsRoot);
         }
 
         @Override
@@ -107,23 +100,23 @@ public class OrderPanel extends QueryPanel {
     }
 
     private JComponent getFieldsTable() {
-        availableOrderRoot = new QBTreeNode(new TableElement("empty"));
-        availableOrderModel = new ListTreeTableModel(availableOrderRoot, new ColumnInfo[]{
-                new TreeColumnInfo("Fields")
-        });
-
-        availableOrderTree = new TreeTable(availableOrderModel);
-        availableOrderTree.setTreeCellRenderer(new TableElement.Renderer());
-        availableOrderTree.setRootVisible(false);
-        availableOrderTree.addMouseListener(new MouseAdapterDoubleClick() {
-            @Override
-            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
-                moveFieldToSelected(ComponentUtils.selectedAvailableField(availableOrderTree));
-            }
-        });
+//        availableOrderRoot = new QBTreeNode(new TableElement("empty"));
+//        availableOrderModel = new ListTreeTableModel(availableOrderRoot, new ColumnInfo[]{
+//                new TreeColumnInfo("Fields")
+//        });
+//
+//        availableOrderTree = new TreeTable(availableOrderModel);
+//        availableOrderTree.setTreeCellRenderer(new TableElement.Renderer());
+//        availableOrderTree.setRootVisible(false);
+//        availableOrderTree.addMouseListener(new MouseAdapterDoubleClick() {
+//            @Override
+//            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
+//                moveFieldToSelected(ComponentUtils.selectedAvailableField(availableOrderTree));
+//            }
+//        });
 //        availableOrderTree.getSelectionModel()
 //                .addListSelectionListener(e -> buttonAdd.setEnabled(availableOrderTree.getSelectedRow() != -1));
-        var decorator = ToolbarDecorator.createDecorator(availableOrderTree);
+        var decorator = ToolbarDecorator.createDecorator(getAvailableTree(false));
         var panel = decorator.createPanel();
 
         var hBox = Box.createHorizontalBox();
@@ -134,9 +127,9 @@ public class OrderPanel extends QueryPanel {
         var comp = Box.createVerticalBox();
         comp.setPreferredSize(new Dimension(30, 400));
 
-        buttonAdd = smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableOrderTree)), true);
+        buttonAdd = smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableTree)), true);
         comp.add(buttonAdd);
-        comp.add(smallButton(">>", e -> availableOrderRoot.nodeToList().forEach(this::moveFieldToSelected), true));
+        comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(this::moveFieldToSelected), true));
         buttonRemove = smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true), true);
         comp.add(buttonRemove);
         comp.add(smallButton("<<", e -> {
@@ -151,14 +144,15 @@ public class OrderPanel extends QueryPanel {
     private JButton buttonAdd;
     private JButton buttonRemove;
 
-    private void moveFieldToSelected(QBTreeNode value) {
+    @Override
+    protected void moveFieldToSelected(QBTreeNode value) {
         var newItem = new OrderElement();
         if (value != null) {
             newItem.setField(getFieldDescription(value));
         }
         newItem.setSorting(ASC);
         TreeToTableUtils.moveFieldToTable(value, newItem, orderTableModel, orderTable, allFieldsRoot,
-                availableOrderRoot, availableOrderModel, availableOrderTree
+                availableTreeRoot, availableModel, availableTree
         );
     }
 
@@ -224,7 +218,7 @@ public class OrderPanel extends QueryPanel {
     }
 
     private String getFieldDescription(QBTreeNode value) {
-        if (availableOrderRoot.equals(value.getParent())) {
+        if (availableTreeRoot.equals(value.getParent())) {
             return value.getUserObject().getName();
         }
         var columnObject = value.getUserObject();
@@ -290,38 +284,38 @@ public class OrderPanel extends QueryPanel {
         orderTableModel.getItems().stream()
                 .filter(x -> oldName.equals(x.getField()))
                 .forEach(x -> x.setField(newName));
-        availableOrderRoot.nodeToList().stream()
+        availableTreeRoot.nodeToList().stream()
                 .filter(x -> x.getUserObject().getDescription().equals(oldName))
                 .forEach(x -> x.getUserObject().setName(newName));
     }
 
     private void removeSelectedFieldsFromAvailable() {
-        orderTableModel.getItems().forEach(element -> availableOrderRoot.nodeToList().stream()
+        orderTableModel.getItems().forEach(element -> availableTreeRoot.nodeToList().stream()
                 .filter(x -> {
                     var name = x.getUserObject().getName();
                     return Objects.nonNull(name) && name.equals(element.getField());
                 })
                 .forEach(x -> {
-                    var index = availableOrderRoot.getIndex(x);
-                    availableOrderRoot.remove(x);
-                    availableOrderModel.nodesWereRemoved(availableOrderRoot, new int[]{index}, new Object[]{x});
+                    var index = availableTreeRoot.getIndex(x);
+                    availableTreeRoot.remove(x);
+                    availableModel.nodesWereRemoved(availableTreeRoot, new int[]{index}, new Object[]{x});
                 })
         );
     }
 
     private void removeSelectedField(String name) {
-        availableOrderRoot.nodeToList().stream()
+        availableTreeRoot.nodeToList().stream()
                 .filter(x -> x.getUserObject().getDescription().equals(name))
                 .forEach(x -> {
-                    var index = availableOrderRoot.getIndex(x);
-                    availableOrderRoot.remove(x);
-                    availableOrderModel.nodesWereRemoved(availableOrderRoot, new int[]{index}, new Object[]{x});
+                    var index = availableTreeRoot.getIndex(x);
+                    availableTreeRoot.remove(x);
+                    availableModel.nodesWereRemoved(availableTreeRoot, new int[]{index}, new Object[]{x});
                 });
         ComponentUtils.removeRowsByPredicate(x -> x.getField().equals(name), orderTableModel);
     }
 
     private void removeSelectedTable(QBTreeNode node) {
-        ComponentUtils.removeNodeByTable(node, allFieldsRoot, availableOrderModel);
+        ComponentUtils.removeNodeByTable(node, allFieldsRoot, availableModel);
         var removeTableName = node.getUserObject().getDescription();
         ComponentUtils.removeRowsByPredicate(x -> x.getField().contains(removeTableName + "."), orderTableModel);
     }
@@ -329,8 +323,8 @@ public class OrderPanel extends QueryPanel {
     private void saveQueryData(FullQuery query, String cteName) {
         var cte = query.getCte(cteName);
         ComponentUtils.loadTableToTable(orderTableModel, cte.getOrderTable());
-        ComponentUtils.clearTree(availableOrderRoot);
-        availableOrderModel.reload();
+        ComponentUtils.clearTree(availableTreeRoot);
+        availableModel.reload();
         ComponentUtils.clearTable(orderTableModel);
     }
 
@@ -338,11 +332,11 @@ public class OrderPanel extends QueryPanel {
         var tableElement = new TableElement(element);
         tableElement.setIcon(DatabaseIcons.Col);
         if (hasAllFields()) {
-            availableOrderRoot.insert(new QBTreeNode(tableElement), availableOrderRoot.getChildCount() - 1);
-            availableOrderModel.nodesWereInserted(availableOrderRoot, new int[]{availableOrderRoot.getChildCount() - 2});
+            availableTreeRoot.insert(new QBTreeNode(tableElement), availableTreeRoot.getChildCount() - 1);
+            availableModel.nodesWereInserted(availableTreeRoot, new int[]{availableTreeRoot.getChildCount() - 2});
         } else {
-            availableOrderRoot.add(new QBTreeNode(tableElement));
-            availableOrderModel.reload();
+            availableTreeRoot.add(new QBTreeNode(tableElement));
+            availableModel.reload();
         }
     }
 
@@ -356,7 +350,7 @@ public class OrderPanel extends QueryPanel {
         var newTableNode = new QBTreeNode(newUserObject);
         node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
         allFieldsRoot.add(newTableNode);
-        availableOrderModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
+        availableModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
     }
 
     private void addAllFieldsRoot() {
@@ -364,20 +358,20 @@ public class OrderPanel extends QueryPanel {
             return;
         }
         allFieldsRoot = new QBTreeNode(new TableElement(ALL_FIELDS));
-        availableOrderRoot.add(allFieldsRoot);
-        availableOrderModel.reload();
+        availableTreeRoot.add(allFieldsRoot);
+        availableModel.reload();
     }
 
     private void removeAllFieldsRoot() {
         if (!hasAllFields()) {
             return;
         }
-        availableOrderRoot.remove(allFieldsRoot);
-        availableOrderModel.reload();
+        availableTreeRoot.remove(allFieldsRoot);
+        availableModel.reload();
     }
 
     private boolean hasAllFields() {
-        return availableOrderRoot.nodeToList().stream().anyMatch(x -> {
+        return availableTreeRoot.nodeToList().stream().anyMatch(x -> {
             var name = x.getUserObject().getName();
             return Objects.nonNull(name) && name.equals(ALL_FIELDS);
         });
