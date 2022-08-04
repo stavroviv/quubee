@@ -21,12 +21,14 @@ import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
-import org.quebee.com.util.*;
+import org.quebee.com.util.AvailableFieldsTreeDnDSource;
+import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.MouseAdapterDoubleClick;
+import org.quebee.com.util.MyRowsDnDSupport;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Objects;
@@ -56,8 +58,7 @@ public class OrderPanel extends AvailableFieldsTree {
                 var p = event.getPoint();
                 var i = orderTable.rowAtPoint(p);
                 var item = (QBTreeNode) event.getAttachedObject();
-                addOrderElement(item, i);
-                ComponentUtils.removeFromAvailable(item, availableTreeRoot, availableModel, availableTree);
+                moveFieldToSelected(item, i);
             }
         });
     }
@@ -100,22 +101,6 @@ public class OrderPanel extends AvailableFieldsTree {
     }
 
     private JComponent getFieldsTable() {
-//        availableOrderRoot = new QBTreeNode(new TableElement("empty"));
-//        availableOrderModel = new ListTreeTableModel(availableOrderRoot, new ColumnInfo[]{
-//                new TreeColumnInfo("Fields")
-//        });
-//
-//        availableOrderTree = new TreeTable(availableOrderModel);
-//        availableOrderTree.setTreeCellRenderer(new TableElement.Renderer());
-//        availableOrderTree.setRootVisible(false);
-//        availableOrderTree.addMouseListener(new MouseAdapterDoubleClick() {
-//            @Override
-//            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
-//                moveFieldToSelected(ComponentUtils.selectedAvailableField(availableOrderTree));
-//            }
-//        });
-//        availableOrderTree.getSelectionModel()
-//                .addListSelectionListener(e -> buttonAdd.setEnabled(availableOrderTree.getSelectedRow() != -1));
         var decorator = ToolbarDecorator.createDecorator(getAvailableTree(false));
         var panel = decorator.createPanel();
 
@@ -127,15 +112,15 @@ public class OrderPanel extends AvailableFieldsTree {
         var comp = Box.createVerticalBox();
         comp.setPreferredSize(new Dimension(30, 400));
 
-        buttonAdd = smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableTree)), true);
+        buttonAdd = smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableTree), -1));
         comp.add(buttonAdd);
-        comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(this::moveFieldToSelected), true));
-        buttonRemove = smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true), true);
+        comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(x -> moveFieldToSelected(x, -1))));
+        buttonRemove = smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true));
         comp.add(buttonRemove);
         comp.add(smallButton("<<", e -> {
             orderTable.getItems().forEach(x -> moveFieldToAvailable(x, false));
             ComponentUtils.clearTable(orderTableModel);
-        }, true));
+        }));
 
         hBox.add(comp);
         return hBox;
@@ -145,15 +130,13 @@ public class OrderPanel extends AvailableFieldsTree {
     private JButton buttonRemove;
 
     @Override
-    protected void moveFieldToSelected(QBTreeNode value) {
+    protected void moveFieldToSelected(QBTreeNode value, int index) {
         var newItem = new OrderElement();
         if (value != null) {
             newItem.setField(getFieldDescription(value));
         }
         newItem.setSorting(ASC);
-        TreeToTableUtils.moveFieldToTable(value, newItem, orderTableModel, orderTable, allFieldsRoot,
-                availableTreeRoot, availableModel, availableTree
-        );
+        moveFieldToTable(index, value, newItem, orderTableModel, orderTable);
     }
 
     private ListTableModel<OrderElement> orderTableModel;
@@ -208,15 +191,6 @@ public class OrderPanel extends AvailableFieldsTree {
         }
     }
 
-    private void addOrderElement(QBTreeNode value, int newIndex) {
-        var item = new OrderElement();
-        if (value != null) {
-            item.setField(getFieldDescription(value));
-        }
-        item.setSorting(ASC);
-        TreeToTableUtils.addElementToTable(item,newIndex, orderTableModel,orderTable);
-    }
-
     private String getFieldDescription(QBTreeNode value) {
         if (availableTreeRoot.equals(value.getParent())) {
             return value.getUserObject().getName();
@@ -224,15 +198,6 @@ public class OrderPanel extends AvailableFieldsTree {
         var columnObject = value.getUserObject();
         var tableObject = value.getParent().getUserObject();
         return tableObject.getName() + "." + columnObject.getName();
-    }
-
-    private JButton smallButton(String text, ActionListener l, boolean b) {
-        var button = new JButton(text);
-        button.setMaximumSize(new Dimension(50, 30));
-        button.addActionListener(l);
-        button.updateUI();
-        button.setEnabled(b);
-        return button;
     }
 
     @Override

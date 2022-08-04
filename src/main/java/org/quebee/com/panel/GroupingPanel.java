@@ -17,12 +17,10 @@ import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MouseAdapterDoubleClick;
-import org.quebee.com.util.TreeToTableUtils;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
 
@@ -207,16 +205,16 @@ public class GroupingPanel extends AvailableFieldsTree {
         //  comp.setBorder(new LineBorder(JBColor.RED, 1));
         comp.setPreferredSize(new Dimension(30, 300));
         comp.add(Box.createVerticalStrut(10));
-        comp.add(smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableTree))));
-        comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(this::moveFieldToSelected)));
+        comp.add(smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableTree), -1)));
+        comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(x -> moveFieldToSelected(x, -1))));
         comp.add(smallButton("<", e -> moveFieldToAvailable(groupingTable.getSelectedObject(), true, groupingTableModel, groupingTable)));
         comp.add(smallButton("<<", e -> {
             groupingTable.getItems().forEach(x -> moveFieldToAvailable(x, false, groupingTableModel, groupingTable));
             ComponentUtils.clearTable(groupingTableModel);
         }));
         comp.add(Box.createVerticalStrut(30));
-        comp.add(smallButton(">", e -> moveFieldToAggregate(ComponentUtils.selectedAvailableField(availableTree))));
-        comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(this::moveFieldToAggregate)));
+        comp.add(smallButton(">", e -> moveFieldToAggregate(ComponentUtils.selectedAvailableField(availableTree), -1)));
+        comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(x -> moveFieldToAggregate(x, -1))));
         comp.add(smallButton("<", e -> moveFieldToAvailable(aggregateTable.getSelectedObject(), true, aggregateTableModel, aggregateTable)));
         comp.add(smallButton("<<", e -> {
             aggregateTable.getItems().forEach(x -> moveFieldToAvailable(x, false, aggregateTableModel, aggregateTable));
@@ -230,20 +228,16 @@ public class GroupingPanel extends AvailableFieldsTree {
     }
 
     @Override
-    protected  void moveFieldToSelected(QBTreeNode item) {
+    protected void moveFieldToSelected(QBTreeNode item, int index) {
         var newItem = new TableElement(getFieldDescription(item));
-        TreeToTableUtils.moveFieldToTable(item, newItem, groupingTableModel, groupingTable, allFieldsRoot,
-                availableTreeRoot, availableModel, availableTree
-        );
+        moveFieldToTable(index, item, newItem, groupingTableModel, groupingTable);
     }
 
-    private void moveFieldToAggregate(QBTreeNode item) {
+    private void moveFieldToAggregate(QBTreeNode item, int index) {
         var newItem = new AggregateElement();
         newItem.setField(getFieldDescription(item));
         newItem.setFunction(SUM);
-        TreeToTableUtils.moveFieldToTable(item, newItem, aggregateTableModel, aggregateTable, allFieldsRoot,
-                availableTreeRoot, availableModel, availableTree
-        );
+        moveFieldToTable(index, item, newItem, aggregateTableModel, aggregateTable);
     }
 
     private String getFieldDescription(QBTreeNode value) {
@@ -253,12 +247,5 @@ public class GroupingPanel extends AvailableFieldsTree {
         var columnObject = value.getUserObject();
         var tableObject = value.getParent().getUserObject();
         return tableObject.getName() + "." + columnObject.getName();
-    }
-
-    private JButton smallButton(String text, ActionListener l) {
-        var button = new JButton(text);
-        button.setMaximumSize(new Dimension(50, 30));
-        button.addActionListener(l);
-        return button;
     }
 }
