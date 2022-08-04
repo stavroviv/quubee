@@ -86,17 +86,17 @@ abstract class AvailableFieldsTree extends QueryPanel {
         }
 
         @Override
-        public String getFieldDescription(QBTreeNode attachedObject) {
-            return getDescription(attachedObject);
+        public String getFieldDescription(QBTreeNode node) {
+            return getDescription(node);
         }
     }
 
-    protected String getDescription(QBTreeNode value) {
-        if (availableTreeRoot.equals(value.getParent())) {
-            return value.getUserObject().getName();
+    protected String getDescription(QBTreeNode node) {
+        if (availableTreeRoot.equals(node.getParent())) {
+            return node.getUserObject().getName();
         }
-        var columnObject = value.getUserObject();
-        var tableObject = value.getParent().getUserObject();
+        var columnObject = node.getUserObject();
+        var tableObject = node.getParent().getUserObject();
         return tableObject.getName() + "." + columnObject.getName();
     }
 

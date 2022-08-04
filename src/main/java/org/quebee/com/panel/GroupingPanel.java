@@ -45,8 +45,6 @@ public class GroupingPanel extends AvailableFieldsTree {
     @Override
     protected void enableDragAndDrop() {
         super.enableDragAndDrop();
-//        DnDManager.getInstance().registerSource(new OrderPanel.MyDnDSource(availableTree), availableTree, mainPanel.getDisposable());
-//        DnDManager.getInstance().registerTarget(new OrderPanel.MyDnDTarget(), availableTree, mainPanel.getDisposable());
         installDnDSupportToTable(groupingTable);
         installDnDSupportToTable(aggregateTable);
     }
