@@ -1,5 +1,6 @@
 package org.quebee.com.panel;
 
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
@@ -11,6 +12,8 @@ import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
+import org.quebee.com.columns.EditableStringColumn;
+import org.quebee.com.model.AggregateElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
@@ -19,6 +22,7 @@ import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MouseAdapterDoubleClick;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -27,6 +31,8 @@ import java.util.Objects;
 
 @Getter
 public class GroupingPanel extends QueryPanel {
+    private final static String SUM = "sum";
+    private final static String[] FUNCTIONS = {SUM, "count", "max", "min"};
     private final String header = "Grouping";
     private final JBSplitter component = new JBSplitter();
 
@@ -115,22 +121,23 @@ public class GroupingPanel extends QueryPanel {
         return splitter;
     }
 
-    private ListTableModel<TableElement> aggregateTableModel;
-    private TableView<TableElement> aggregateTable;
+    private ListTableModel<AggregateElement> aggregateTableModel;
+    private TableView<AggregateElement> aggregateTable;
 
     private JComponent getAggregateTable() {
-        var columnInfoAggregate = new ColumnInfo<TableElement, String>("Aggregate Field") {
+        var columnInfoAggregate = new ColumnInfo<AggregateElement, String>("Aggregate Field") {
 
             @Override
-            public @Nullable String valueOf(TableElement o) {
-                return Objects.isNull(o) ? "" : o.getName();
+            public @Nullable String valueOf(AggregateElement o) {
+                return Objects.isNull(o) ? "" : o.getField();
             }
         };
-        var columnInfoFunction = new ColumnInfo<TableElement, String>("Function") {
+        var columnInfoFunction = new EditableStringColumn<>("Function",
+                AggregateElement::getFunction, AggregateElement::setFunction) {
 
             @Override
-            public @Nullable String valueOf(TableElement o) {
-                return Objects.isNull(o) ? "" : o.getName();
+            public TableCellEditor getEditor(AggregateElement item) {
+                return new DefaultCellEditor(new ComboBox<>(FUNCTIONS));
             }
         };
         aggregateTableModel = new ListTableModel<>(
@@ -164,7 +171,7 @@ public class GroupingPanel extends QueryPanel {
         groupingTable.addMouseListener(new MouseAdapterDoubleClick() {
             @Override
             protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
-                moveFieldToAvailable(groupingTable.getSelectedObject(), true);
+                moveFieldToAvailable(groupingTable.getSelectedObject(), true, GroupingPanel.this.groupingTableModel, GroupingPanel.this.groupingTable);
             }
         });
         var decorator = ToolbarDecorator.createDecorator(groupingTable);
@@ -173,14 +180,19 @@ public class GroupingPanel extends QueryPanel {
         return panel;
     }
 
-    private void moveFieldToAvailable(TableElement selectedObject, boolean removeFromOrder) {
-        var index = groupingTableModel.indexOf(selectedObject);
-        var item = new TableElement(selectedObject);
+    private <T> void moveFieldToAvailable(T selected, boolean removeSource, ListTableModel<T> model, TableView<T> table) {
+        var index = model.indexOf(selected);
+        TableElement item = null;
+        if (selected instanceof TableElement) {
+            item = new TableElement((TableElement) selected);
+        } else if (selected instanceof AggregateElement) {
+            item = new TableElement(((AggregateElement) selected).getField());
+        }
         addSelectedField(item, true);
-        if (removeFromOrder) {
-            groupingTableModel.removeRow(index);
-            if (groupingTableModel.getRowCount() > 0) {
-                ComponentUtils.setSelectedRow(groupingTable, index == groupingTableModel.getRowCount() ? index - 1 : index);
+        if (removeSource) {
+            model.removeRow(index);
+            if (model.getRowCount() > 0) {
+                ComponentUtils.setSelectedRow(table, index == model.getRowCount() ? index - 1 : index);
             }
         }
     }
@@ -221,16 +233,19 @@ public class GroupingPanel extends QueryPanel {
         comp.add(Box.createVerticalStrut(10));
         comp.add(smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableGroupingTree))));
         comp.add(smallButton(">>", e -> availableGroupingRoot.nodeToList().forEach(this::moveFieldToSelected)));
-        comp.add(smallButton("<", e -> moveFieldToAvailable(groupingTable.getSelectedObject(), true)));
+        comp.add(smallButton("<", e -> moveFieldToAvailable(groupingTable.getSelectedObject(), true, groupingTableModel, groupingTable)));
         comp.add(smallButton("<<", e -> {
-            groupingTable.getItems().forEach(x -> moveFieldToAvailable(x, false));
+            groupingTable.getItems().forEach(x -> moveFieldToAvailable(x, false, groupingTableModel, groupingTable));
             ComponentUtils.clearTable(groupingTableModel);
         }));
         comp.add(Box.createVerticalStrut(30));
         comp.add(smallButton(">", e -> moveFieldToAggregate(ComponentUtils.selectedAvailableField(availableGroupingTree))));
-        comp.add(smallButton(">>", null));
-        comp.add(smallButton("<", null));
-        comp.add(smallButton("<<", null));
+        comp.add(smallButton(">>", e -> availableGroupingRoot.nodeToList().forEach(this::moveFieldToAggregate)));
+        comp.add(smallButton("<", e -> moveFieldToAvailable(aggregateTable.getSelectedObject(), true, aggregateTableModel, aggregateTable)));
+        comp.add(smallButton("<<", e -> {
+            aggregateTable.getItems().forEach(x -> moveFieldToAvailable(x, false, aggregateTableModel, aggregateTable));
+            ComponentUtils.clearTable(aggregateTableModel);
+        }));
         comp.add(Box.createVerticalStrut(10));
 
         hBox.add(comp);
@@ -239,27 +254,29 @@ public class GroupingPanel extends QueryPanel {
     }
 
     private void moveFieldToSelected(QBTreeNode item) {
-        moveFieldToTable(item, groupingTableModel, groupingTable);
-    }
-    private void moveFieldToAggregate(QBTreeNode item){
-        moveFieldToTable(item, aggregateTableModel, aggregateTable);
+        var newItem = new TableElement(getFieldDescription(item));
+        moveFieldToTable(item, newItem, groupingTableModel, groupingTable);
     }
 
-    private void moveFieldToTable(QBTreeNode item, ListTableModel<TableElement> model, TableView<TableElement> table) {
+    private void moveFieldToAggregate(QBTreeNode item) {
+        var newItem = new AggregateElement();
+        newItem.setField(getFieldDescription(item));
+        newItem.setFunction(SUM);
+        moveFieldToTable(item, newItem, aggregateTableModel, aggregateTable);
+    }
+
+    private <T> void moveFieldToTable(QBTreeNode item, T newItem, ListTableModel<T> model, TableView<T> table) {
         if (Objects.isNull(item)) {
             return;
         }
         if (Objects.nonNull(allFieldsRoot) && (allFieldsRoot.equals(item) || allFieldsRoot.equals(item.getParent()))) {
             return;
         }
-        addGroupElement(item, -1, model, table);
+        addElementToTable(newItem, -1, model, table);
         ComponentUtils.removeFromAvailable(item, availableGroupingRoot, availableGroupingModel, availableGroupingTree);
     }
 
-    private void addGroupElement(QBTreeNode value, int newIndex,
-                                 ListTableModel<TableElement> model,
-                                 TableView<TableElement> table) {
-        var item = new TableElement(getFieldDescription(value));
+    private <T> void addElementToTable(T item, int newIndex, ListTableModel<T> model, TableView<T> table) {
         if (newIndex == -1) {
             model.addRow(item);
         } else {

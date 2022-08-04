@@ -11,10 +11,7 @@ import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.*;
-import org.quebee.com.model.ConditionElement;
-import org.quebee.com.model.LinkElement;
-import org.quebee.com.model.QBTreeNode;
-import org.quebee.com.model.TableElement;
+import org.quebee.com.model.*;
 
 import java.util.Objects;
 
@@ -33,7 +30,7 @@ public class Union implements Orderable {
     // grouping
     private QBTreeNode groupingRoot;
     private ListTableModel<TableElement> groupingTableModel = new ListTableModel<>();
-    private ListTableModel<TableElement> aggregateTableModel = new ListTableModel<>();
+    private ListTableModel<AggregateElement> aggregateTableModel = new ListTableModel<>();
 
     // conditions
     private ListTableModel<ConditionElement> conditionTableModel = new ListTableModel<>();
