@@ -112,11 +112,9 @@ public class OrderPanel extends AvailableFieldsTree {
         var comp = Box.createVerticalBox();
         comp.setPreferredSize(new Dimension(30, 400));
 
-        buttonAdd = smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableTree), -1));
-        comp.add(buttonAdd);
+        comp.add(smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableTree), -1)));
         comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(x -> moveFieldToSelected(x, -1))));
-        buttonRemove = smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true));
-        comp.add(buttonRemove);
+        comp.add(smallButton("<", e -> moveFieldToAvailable(orderTable.getSelectedObject(), true)));
         comp.add(smallButton("<<", e -> {
             orderTable.getItems().forEach(x -> moveFieldToAvailable(x, false));
             ComponentUtils.clearTable(orderTableModel);
@@ -125,9 +123,6 @@ public class OrderPanel extends AvailableFieldsTree {
         hBox.add(comp);
         return hBox;
     }
-
-    private JButton buttonAdd;
-    private JButton buttonRemove;
 
     @Override
     protected void moveFieldToSelected(QBTreeNode value, int index) {
@@ -169,8 +164,7 @@ public class OrderPanel extends AvailableFieldsTree {
                 }
             }
         });
-//        orderTable.getSelectionModel()
-//                .addListSelectionListener(e -> buttonRemove.setEnabled(orderTable.getSelectedRow() != -1));
+
         var decorator = ToolbarDecorator.createDecorator(orderTable);
         decorator.disableAddAction();
         decorator.disableRemoveAction();

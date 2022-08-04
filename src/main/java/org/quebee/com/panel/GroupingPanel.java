@@ -158,7 +158,7 @@ public class GroupingPanel extends AvailableFieldsTree {
         groupingTable.addMouseListener(new MouseAdapterDoubleClick() {
             @Override
             protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
-                moveFieldToAvailable(groupingTable.getSelectedObject(), true, GroupingPanel.this.groupingTableModel, GroupingPanel.this.groupingTable);
+                moveFieldToAvailable(groupingTable.getSelectedObject(), true, groupingTableModel, groupingTable);
             }
         });
         var decorator = ToolbarDecorator.createDecorator(groupingTable);
@@ -199,7 +199,9 @@ public class GroupingPanel extends AvailableFieldsTree {
             groupingTable.getItems().forEach(x -> moveFieldToAvailable(x, false, groupingTableModel, groupingTable));
             ComponentUtils.clearTable(groupingTableModel);
         }));
+
         comp.add(Box.createVerticalStrut(30));
+
         comp.add(smallButton(">", e -> moveFieldToAggregate(ComponentUtils.selectedAvailableField(availableTree), -1)));
         comp.add(smallButton(">>", e -> availableTreeRoot.nodeToList().forEach(x -> moveFieldToAggregate(x, -1))));
         comp.add(smallButton("<", e -> moveFieldToAvailable(aggregateTable.getSelectedObject(), true, aggregateTableModel, aggregateTable)));
