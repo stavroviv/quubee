@@ -20,6 +20,7 @@ import org.quebee.com.util.MouseAdapterDoubleClick;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.Objects;
@@ -39,6 +40,7 @@ public class GroupingPanel extends QueryPanel {
     @Override
     public void initListeners() {
         subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
+        subscribe(LoadQueryDataNotifier.class, this::loadQueryData);
         subscribe(SelectedFieldAddNotifier.class, this::addSelectedField);
         subscribe(SelectedFieldRemoveNotifier.class, this::removeSelectedField);
         subscribe(SelectedTableAfterAddNotifier.class, this::addSelectedTable);
@@ -71,12 +73,23 @@ public class GroupingPanel extends QueryPanel {
                 });
     }
 
-    private void saveQueryData(FullQuery fullQuery, String s, int id) {
+    private void saveQueryData(FullQuery fullQuery, String cteName, int id) {
+        var union = fullQuery.getCte(cteName).getUnion("" + id);
+        ComponentUtils.loadTableToTable(groupingTableModel, union.getGroupingTableModel());
+        ComponentUtils.loadTableToTable(aggregateTableModel, union.getAggregateTableModel());
         for (var i = groupingRoot.getChildCount() - 2; i >= 0; i--) {
             groupingRoot.remove(i);
         }
         ComponentUtils.clearTree(allFieldsRoot);
         groupingModel.reload();
+        ComponentUtils.clearTable(groupingTableModel);
+        ComponentUtils.clearTable(aggregateTableModel);
+    }
+
+    private void loadQueryData(FullQuery fullQuery, String cteName, int i) {
+        var union = fullQuery.getCte(cteName).getUnion("" + i);
+        ComponentUtils.loadTableToTable(union.getGroupingTableModel(), groupingTableModel);
+        ComponentUtils.loadTableToTable(union.getAggregateTableModel(), aggregateTableModel);
     }
 
     private void addSelectedField(TableElement element, boolean interactive) {
@@ -103,6 +116,7 @@ public class GroupingPanel extends QueryPanel {
     }
 
     private ListTableModel<TableElement> aggregateTableModel;
+    private TableView<TableElement> aggregateTable;
 
     private JComponent getAggregateTable() {
         var columnInfoAggregate = new ColumnInfo<TableElement, String>("Aggregate Field") {
@@ -124,7 +138,7 @@ public class GroupingPanel extends QueryPanel {
                 columnInfoFunction
         );
 
-        var aggregateTable = new TableView<>(aggregateTableModel);
+        aggregateTable = new TableView<>(aggregateTableModel);
         var decorator = ToolbarDecorator.createDecorator(aggregateTable);
         var panel = decorator.createPanel();
         decorator.getActionsPanel().setVisible(false);
@@ -147,10 +161,28 @@ public class GroupingPanel extends QueryPanel {
                 columnInfo
         );
         groupingTable = new TableView<>(groupingTableModel);
+        groupingTable.addMouseListener(new MouseAdapterDoubleClick() {
+            @Override
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
+                moveFieldToAvailable(groupingTable.getSelectedObject(), true);
+            }
+        });
         var decorator = ToolbarDecorator.createDecorator(groupingTable);
         var panel = decorator.createPanel();
         decorator.getActionsPanel().setVisible(false);
         return panel;
+    }
+
+    private void moveFieldToAvailable(TableElement selectedObject, boolean removeFromOrder) {
+        var index = groupingTableModel.indexOf(selectedObject);
+        var item = new TableElement(selectedObject);
+        addSelectedField(item, true);
+        if (removeFromOrder) {
+            groupingTableModel.removeRow(index);
+            if (groupingTableModel.getRowCount() > 0) {
+                ComponentUtils.setSelectedRow(groupingTable, index == groupingTableModel.getRowCount() ? index - 1 : index);
+            }
+        }
     }
 
     private QBTreeNode groupingRoot;
@@ -187,15 +219,18 @@ public class GroupingPanel extends QueryPanel {
         //  comp.setBorder(new LineBorder(JBColor.RED, 1));
         comp.setPreferredSize(new Dimension(30, 300));
         comp.add(Box.createVerticalStrut(10));
-        comp.add(smallButton(">"));
-        comp.add(smallButton(">>"));
-        comp.add(smallButton("<"));
-        comp.add(smallButton("<<"));
+        comp.add(smallButton(">", e -> moveFieldToSelected(ComponentUtils.selectedAvailableField(availableGroupTree))));
+        comp.add(smallButton(">>", e -> groupingRoot.nodeToList().forEach(this::moveFieldToSelected)));
+        comp.add(smallButton("<", e -> moveFieldToAvailable(groupingTable.getSelectedObject(), true)));
+        comp.add(smallButton("<<", e -> {
+            groupingTable.getItems().forEach(x -> moveFieldToAvailable(x, false));
+            ComponentUtils.clearTable(groupingTableModel);
+        }));
         comp.add(Box.createVerticalStrut(30));
-        comp.add(smallButton(">"));
-        comp.add(smallButton(">>"));
-        comp.add(smallButton("<"));
-        comp.add(smallButton("<<"));
+        comp.add(smallButton(">", e -> moveFieldToAggregate(ComponentUtils.selectedAvailableField(availableGroupTree))));
+        comp.add(smallButton(">>", null));
+        comp.add(smallButton("<", null));
+        comp.add(smallButton("<<", null));
         comp.add(Box.createVerticalStrut(10));
 
         hBox.add(comp);
@@ -204,29 +239,48 @@ public class GroupingPanel extends QueryPanel {
     }
 
     private void moveFieldToSelected(QBTreeNode item) {
+        moveFieldToTable(item, groupingTableModel, groupingTable);
+    }
+    private void moveFieldToAggregate(QBTreeNode item){
+        moveFieldToTable(item, aggregateTableModel, aggregateTable);
+    }
+
+    private void moveFieldToTable(QBTreeNode item, ListTableModel<TableElement> model, TableView<TableElement> table) {
         if (Objects.isNull(item)) {
             return;
         }
         if (Objects.nonNull(allFieldsRoot) && (allFieldsRoot.equals(item) || allFieldsRoot.equals(item.getParent()))) {
             return;
         }
-        addGroupElement(item, -1);
+        addGroupElement(item, -1, model, table);
         ComponentUtils.removeFromAvailable(item, groupingRoot, groupingModel, availableGroupTree);
     }
 
-    private void addGroupElement(QBTreeNode value, int newIndex) {
-        var item = new TableElement(value.getUserObject());
+    private void addGroupElement(QBTreeNode value, int newIndex,
+                                 ListTableModel<TableElement> model,
+                                 TableView<TableElement> table) {
+        var item = new TableElement(getFieldDescription(value));
         if (newIndex == -1) {
-            groupingTableModel.addRow(item);
+            model.addRow(item);
         } else {
-            groupingTableModel.insertRow(newIndex, item);
+            model.insertRow(newIndex, item);
         }
-        groupingTable.setSelection(Collections.singleton(item));
+        table.setSelection(Collections.singleton(item));
     }
 
-    private JButton smallButton(String text) {
+    private String getFieldDescription(QBTreeNode value) {
+        if (groupingRoot.equals(value.getParent())) {
+            return value.getUserObject().getDescription();
+        }
+        var columnObject = value.getUserObject();
+        var tableObject = value.getParent().getUserObject();
+        return tableObject.getName() + "." + columnObject.getName();
+    }
+
+    private JButton smallButton(String text, ActionListener l) {
         var button = new JButton(text);
         button.setMaximumSize(new Dimension(50, 30));
+        button.addActionListener(l);
         return button;
     }
 }
