@@ -1,7 +1,9 @@
 package org.quebee.com.panel;
 
 import com.intellij.ide.dnd.DnDAction;
+import com.intellij.ide.dnd.DnDEvent;
 import com.intellij.ide.dnd.DnDManager;
+import com.intellij.ide.dnd.DnDTarget;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -36,17 +38,32 @@ abstract class AvailableFieldsTree extends QueryPanel {
 
     protected void enableDragAndDrop() {
         DnDManager.getInstance().registerSource(new MyDnDSource(availableTree), availableTree, mainPanel.getDisposable());
+        DnDManager.getInstance().registerTarget(new MyDnDTarget(), availableTree, mainPanel.getDisposable());
     }
 
-    protected <T> void installDnDSupportToTable(TableView<T> groupingTable) {
-        MyRowsDnDSupport.install(groupingTable, (EditableModel) groupingTable.getModel(), availableTree, (event) -> {
+    protected <T> void installDnDSupportToTable(TableView<T> table) {
+        MyRowsDnDSupport.install(table, (EditableModel) table.getModel(), availableTree, (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
                 var p = event.getPoint();
-                var i = groupingTable.rowAtPoint(p);
+                var i = table.rowAtPoint(p);
                 var item = (QBTreeNode) event.getAttachedObject();
-                moveFieldToSelected(item, i);
+                moveFieldToSelected(item, i, event.getCurrentOverComponent().getName());
             }
         });
+    }
+
+    private class MyDnDTarget implements DnDTarget {
+
+        public boolean update(DnDEvent aEvent) {
+            aEvent.setDropPossible(true);
+            return true;
+        }
+
+        public void drop(DnDEvent aEvent) {
+            if (aEvent.getAttachedObject() instanceof MyRowsDnDSupport.RowDragInfo) {
+//                moveFieldToAvailable(orderTable.getSelectedObject(), true);
+            }
+        }
     }
 
     private class MyDnDSource extends AvailableFieldsTreeDnDSource {
@@ -80,8 +97,6 @@ abstract class AvailableFieldsTree extends QueryPanel {
         return tableObject.getName() + "." + columnObject.getName();
     }
 
-//    protected abstract String getFieldDescriptionff(QBTreeNode attachedObject);
-
     protected TreeTable getAvailableTree(boolean addAllFields) {
         availableTreeRoot = new QBTreeNode(new TableElement("empty"));
         if (addAllFields) {
@@ -104,6 +119,8 @@ abstract class AvailableFieldsTree extends QueryPanel {
     }
 
     protected abstract void moveFieldToSelected(QBTreeNode node, int index);
+
+    protected abstract void moveFieldToSelected(QBTreeNode node, int index, String componentName);
 
     protected <T> void moveFieldToTable(int index, QBTreeNode item, T newItem, ListTableModel<T> model, TableView<T> table) {
         if (Objects.isNull(item)) {

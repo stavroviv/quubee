@@ -26,8 +26,11 @@ import java.util.Objects;
 
 @Getter
 public class GroupingPanel extends AvailableFieldsTree {
-    private final static String SUM = "sum";
-    private final static String[] FUNCTIONS = {SUM, "count", "max", "min"};
+    private static final  String SUM = "sum";
+    private static final  String[] FUNCTIONS = {SUM, "count", "max", "min"};
+    private static final String AGGREGATE_TABLE = "aggregateTable";
+    private static final String GROUPING_TABLE = "groupingTable";
+
     private final String header = "Grouping";
     private final JBSplitter component = new JBSplitter();
 
@@ -143,6 +146,7 @@ public class GroupingPanel extends AvailableFieldsTree {
         );
 
         aggregateTable = new TableView<>(aggregateTableModel);
+        aggregateTable.setName(AGGREGATE_TABLE);
         var decorator = ToolbarDecorator.createDecorator(aggregateTable);
         var panel = decorator.createPanel();
         decorator.getActionsPanel().setVisible(false);
@@ -171,6 +175,7 @@ public class GroupingPanel extends AvailableFieldsTree {
                 moveFieldToAvailable(groupingTable.getSelectedObject(), true, groupingTableModel, groupingTable);
             }
         });
+        groupingTable.setName(GROUPING_TABLE);
         var decorator = ToolbarDecorator.createDecorator(groupingTable);
         var panel = decorator.createPanel();
         decorator.getActionsPanel().setVisible(false);
@@ -228,8 +233,17 @@ public class GroupingPanel extends AvailableFieldsTree {
 
     @Override
     protected void moveFieldToSelected(QBTreeNode item, int index) {
-        var newItem = new TableElement(getFieldDescription(item));
-        moveFieldToTable(index, item, newItem, groupingTableModel, groupingTable);
+        moveFieldToSelected(item, index, GROUPING_TABLE);
+    }
+
+    @Override
+    protected void moveFieldToSelected(QBTreeNode item, int index, String componentName) {
+        if (componentName.equals(GROUPING_TABLE)) {
+            var newItem = new TableElement(getFieldDescription(item));
+            moveFieldToTable(index, item, newItem, groupingTableModel, groupingTable);
+        } else if (componentName.equals(AGGREGATE_TABLE)) {
+            moveFieldToAggregate(item, index);
+        }
     }
 
     private void moveFieldToAggregate(QBTreeNode item, int index) {

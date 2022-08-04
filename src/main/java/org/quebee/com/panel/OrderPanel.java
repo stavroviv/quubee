@@ -1,8 +1,5 @@
 package org.quebee.com.panel;
 
-import com.intellij.ide.dnd.DnDEvent;
-import com.intellij.ide.dnd.DnDManager;
-import com.intellij.ide.dnd.DnDTarget;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
@@ -19,7 +16,6 @@ import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MouseAdapterDoubleClick;
-import org.quebee.com.util.MyRowsDnDSupport;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -30,10 +26,13 @@ import java.util.Objects;
 
 @Getter
 public class OrderPanel extends AvailableFieldsTree {
-    public final static String ORDER_PANEL_HEADER = "Order";
-    public final static String ASC = "Ascending";
-    public final static String DESC = "Descending";
-    private final static String ALL_FIELDS = "All fields";
+    public static final String ORDER_PANEL_HEADER = "Order";
+    public static final String ASC = "Ascending";
+    public static final String DESC = "Descending";
+
+    private static final String ALL_FIELDS = "All fields";
+    private static final String ORDER_TABLE = "orderTable";
+
     private final String header = ORDER_PANEL_HEADER;
     private final JBSplitter component = new JBSplitter();
 
@@ -48,22 +47,7 @@ public class OrderPanel extends AvailableFieldsTree {
     @Override
     protected void enableDragAndDrop() {
         super.enableDragAndDrop();
-        DnDManager.getInstance().registerTarget(new MyDnDTarget(), availableTree, mainPanel.getDisposable());
         installDnDSupportToTable(orderTable);
-    }
-
-    private class MyDnDTarget implements DnDTarget {
-
-        public boolean update(DnDEvent aEvent) {
-            aEvent.setDropPossible(true);
-            return true;
-        }
-
-        public void drop(DnDEvent aEvent) {
-            if (aEvent.getAttachedObject() instanceof MyRowsDnDSupport.RowDragInfo) {
-                moveFieldToAvailable(orderTable.getSelectedObject(), true);
-            }
-        }
     }
 
     private JComponent getFieldsTable() {
@@ -92,6 +76,11 @@ public class OrderPanel extends AvailableFieldsTree {
 
     @Override
     protected void moveFieldToSelected(QBTreeNode value, int index) {
+        moveFieldToSelected(value, index, ORDER_TABLE);
+    }
+
+    @Override
+    protected void moveFieldToSelected(QBTreeNode value, int index, String componentName) {
         var newItem = new OrderElement();
         if (value != null) {
             newItem.setField(getDescription(value));
@@ -130,7 +119,7 @@ public class OrderPanel extends AvailableFieldsTree {
                 }
             }
         });
-
+        orderTable.setName(ORDER_TABLE);
         var decorator = ToolbarDecorator.createDecorator(orderTable);
         decorator.disableAddAction();
         decorator.disableRemoveAction();
