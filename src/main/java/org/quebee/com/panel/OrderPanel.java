@@ -1,6 +1,5 @@
 package org.quebee.com.panel;
 
-import com.intellij.ide.dnd.DnDAction;
 import com.intellij.ide.dnd.DnDEvent;
 import com.intellij.ide.dnd.DnDManager;
 import com.intellij.ide.dnd.DnDTarget;
@@ -8,20 +7,16 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.TableView;
-import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ColumnInfo;
-import com.intellij.util.ui.EditableModel;
 import com.intellij.util.ui.ListTableModel;
 import icons.DatabaseIcons;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import org.quebee.com.columns.EditableStringColumn;
 import org.quebee.com.model.OrderElement;
 import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
-import org.quebee.com.util.AvailableFieldsTreeDnDSource;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MouseAdapterDoubleClick;
 import org.quebee.com.util.MyRowsDnDSupport;
@@ -50,17 +45,11 @@ public class OrderPanel extends AvailableFieldsTree {
         enableDragAndDrop();
     }
 
-    private void enableDragAndDrop() {
-        DnDManager.getInstance().registerSource(new MyDnDSource(availableTree), availableTree, mainPanel.getDisposable());
+    @Override
+    protected void enableDragAndDrop() {
+        super.enableDragAndDrop();
         DnDManager.getInstance().registerTarget(new MyDnDTarget(), availableTree, mainPanel.getDisposable());
-        MyRowsDnDSupport.install(orderTable, (EditableModel) orderTable.getModel(), availableTree, (event) -> {
-            if (event.getAttachedObject() instanceof QBTreeNode) {
-                var p = event.getPoint();
-                var i = orderTable.rowAtPoint(p);
-                var item = (QBTreeNode) event.getAttachedObject();
-                moveFieldToSelected(item, i);
-            }
-        });
+        installDnDSupportToTable(orderTable);
     }
 
     private class MyDnDTarget implements DnDTarget {
@@ -74,29 +63,6 @@ public class OrderPanel extends AvailableFieldsTree {
             if (aEvent.getAttachedObject() instanceof MyRowsDnDSupport.RowDragInfo) {
                 moveFieldToAvailable(orderTable.getSelectedObject(), true);
             }
-        }
-    }
-
-    private class MyDnDSource extends AvailableFieldsTreeDnDSource {
-
-        public MyDnDSource(TreeTable treeTable) {
-            super(treeTable);
-        }
-
-        @Override
-        public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) availableTree.getValueAt(availableTree.getSelectedRow(), 0);
-            var parent = value.getParent();
-            if (value.equals(allFieldsRoot)) {
-                return false;
-            }
-            return availableTreeRoot.equals(parent) || !parent.equals(allFieldsRoot);
-        }
-
-        @Override
-        public String getFieldDescription(QBTreeNode attachedObject) {
-            // FIXME
-            return OrderPanel.this.getFieldDescription(attachedObject);
         }
     }
 
@@ -128,7 +94,7 @@ public class OrderPanel extends AvailableFieldsTree {
     protected void moveFieldToSelected(QBTreeNode value, int index) {
         var newItem = new OrderElement();
         if (value != null) {
-            newItem.setField(getFieldDescription(value));
+            newItem.setField(getDescription(value));
         }
         newItem.setSorting(ASC);
         moveFieldToTable(index, value, newItem, orderTableModel, orderTable);
@@ -180,14 +146,14 @@ public class OrderPanel extends AvailableFieldsTree {
         removeFromTable(index, removeSource, orderTableModel, orderTable);
     }
 
-    private String getFieldDescription(QBTreeNode value) {
-        if (availableTreeRoot.equals(value.getParent())) {
-            return value.getUserObject().getName();
-        }
-        var columnObject = value.getUserObject();
-        var tableObject = value.getParent().getUserObject();
-        return tableObject.getName() + "." + columnObject.getName();
-    }
+//    private String getFieldDescription(QBTreeNode value) {
+//        if (availableTreeRoot.equals(value.getParent())) {
+//            return value.getUserObject().getName();
+//        }
+//        var columnObject = value.getUserObject();
+//        var tableObject = value.getParent().getUserObject();
+//        return tableObject.getName() + "." + columnObject.getName();
+//    }
 
     @Override
     public void initListeners() {

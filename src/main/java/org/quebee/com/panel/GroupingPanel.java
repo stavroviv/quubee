@@ -36,6 +36,16 @@ public class GroupingPanel extends AvailableFieldsTree {
         component.setProportion(0.3f);
         component.setFirstComponent(getAvailableGroupingFieldsTree());
         component.setSecondComponent(getGroupingAggregatesPanel());
+        enableDragAndDrop();
+    }
+
+    @Override
+    protected void enableDragAndDrop() {
+        super.enableDragAndDrop();
+//        DnDManager.getInstance().registerSource(new OrderPanel.MyDnDSource(availableTree), availableTree, mainPanel.getDisposable());
+//        DnDManager.getInstance().registerTarget(new OrderPanel.MyDnDTarget(), availableTree, mainPanel.getDisposable());
+        installDnDSupportToTable(groupingTable);
+        installDnDSupportToTable(aggregateTable);
     }
 
     @Override
