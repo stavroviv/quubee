@@ -74,20 +74,6 @@ public class ComponentUtils {
         return (QBTreeNode) treeTable.getValueAt(selectedRow, 0);
     }
 
-    public static void removeFromAvailable(QBTreeNode item, QBTreeNode node, ListTreeTableModel model, TreeTable tree) {
-        if (!node.equals(item.getParent())) {
-            return;
-        }
-        node.nodeToList().stream()
-                .filter(x -> x.equals(item))
-                .forEach(x -> {
-                    var index = node.getIndex(x);
-                    node.remove(x);
-                    model.nodesWereRemoved(node, new int[]{index}, new Object[]{x});
-                    SwingUtilities.invokeLater(() -> ComponentUtils.setSelectedRow(tree, index));
-                });
-    }
-
     public static QBTreeNode addNodeWithChildren(QBTreeNode node, TableElement newUserObject,
                                                  QBTreeNode root, ListTreeTableModel model) {
         var newTableNode = new QBTreeNode(newUserObject);

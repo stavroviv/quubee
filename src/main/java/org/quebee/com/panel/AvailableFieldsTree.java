@@ -43,13 +43,20 @@ abstract class AvailableFieldsTree extends QueryPanel {
 
     protected <T> void installDnDSupportToTable(TableView<T> table) {
         MyRowsDnDSupport.install(table, (EditableModel) table.getModel(), availableTree, (event) -> {
-            if (event.getAttachedObject() instanceof QBTreeNode) {
+            var aObject = event.getAttachedObject();
+            if (aObject instanceof QBTreeNode) {
                 var p = event.getPoint();
                 var i = table.rowAtPoint(p);
-                var item = (QBTreeNode) event.getAttachedObject();
+                var item = (QBTreeNode) aObject;
                 moveFieldToSelected(item, i, event.getCurrentOverComponent().getName());
+            } else if (aObject instanceof MyRowsDnDSupport.RowDragInfo) {
+                var item = (MyRowsDnDSupport.RowDragInfo) aObject;
+                transferFromTableToTable(item.getComponent().getName());
             }
         });
+    }
+
+    protected void transferFromTableToTable(String name) {
     }
 
     private class MyDnDTarget implements DnDTarget {
@@ -59,12 +66,26 @@ abstract class AvailableFieldsTree extends QueryPanel {
             return true;
         }
 
-        public void drop(DnDEvent aEvent) {
-            if (aEvent.getAttachedObject() instanceof MyRowsDnDSupport.RowDragInfo) {
-                var attachedObject = (MyRowsDnDSupport.RowDragInfo)aEvent.getAttachedObject();
+        public void drop(DnDEvent event) {
+            if (event.getAttachedObject() instanceof MyRowsDnDSupport.RowDragInfo) {
+                var attachedObject = (MyRowsDnDSupport.RowDragInfo) event.getAttachedObject();
                 dndMoveFieldToAvailable(attachedObject.getComponent().getName());
             }
         }
+    }
+
+    private void removeFromAvailable(QBTreeNode item) {
+        if (!availableTreeRoot.equals(item.getParent())) {
+            return;
+        }
+        availableTreeRoot.nodeToList().stream()
+                .filter(x -> x.equals(item))
+                .forEach(x -> {
+                    var index = availableTreeRoot.getIndex(x);
+                    availableTreeRoot.remove(x);
+                    availableModel.nodesWereRemoved(availableTreeRoot, new int[]{index}, new Object[]{x});
+                    SwingUtilities.invokeLater(() -> ComponentUtils.setSelectedRow(availableTree, index));
+                });
     }
 
     protected abstract void dndMoveFieldToAvailable(String sourceName);
@@ -133,7 +154,7 @@ abstract class AvailableFieldsTree extends QueryPanel {
             return;
         }
         addElementToTable(newItem, index, model, table);
-        ComponentUtils.removeFromAvailable(item, availableTreeRoot, availableModel, availableTree);
+        removeFromAvailable(item);
     }
 
     protected <T> void addElementToTable(T item, int newIndex, ListTableModel<T> model, TableView<T> table) {

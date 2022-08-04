@@ -189,6 +189,15 @@ public class GroupingPanel extends AvailableFieldsTree {
         }
     }
 
+    protected void transferFromTableToTable(String sourceName) {
+        if (GROUPING_TABLE.equals(sourceName)) {
+//            addElementToTable(newItem, index, model, table);
+//            ComponentUtils.removeFromAvailable(item, availableTreeRoot, availableModel, availableTree);
+        } else if (AGGREGATE_TABLE.equals(sourceName)) {
+//            moveFieldToAvailable(aggregateTable.getSelectedObject(), true, aggregateTableModel, aggregateTable);
+        }
+    }
+
     private <T> void moveFieldToAvailable(T selected, boolean removeSource, ListTableModel<T> model, TableView<T> table) {
         var index = model.indexOf(selected);
         TableElement item = null;
