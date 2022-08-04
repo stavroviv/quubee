@@ -6,6 +6,7 @@ import com.intellij.ide.dnd.DnDSupport;
 import com.intellij.ui.awt.RelativeRectangle;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.EditableModel;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.model.QBTreeNode;
 
@@ -164,6 +165,7 @@ public final class MyRowsDnDSupport {
     }
 
     public static class RowDragInfo {
+        @Getter
         public final JComponent component;
         public final int row;
 

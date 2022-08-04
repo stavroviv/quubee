@@ -61,10 +61,13 @@ abstract class AvailableFieldsTree extends QueryPanel {
 
         public void drop(DnDEvent aEvent) {
             if (aEvent.getAttachedObject() instanceof MyRowsDnDSupport.RowDragInfo) {
-//                moveFieldToAvailable(orderTable.getSelectedObject(), true);
+                var attachedObject = (MyRowsDnDSupport.RowDragInfo)aEvent.getAttachedObject();
+                dndMoveFieldToAvailable(attachedObject.getComponent().getName());
             }
         }
     }
+
+    protected abstract void dndMoveFieldToAvailable(String sourceName);
 
     private class MyDnDSource extends AvailableFieldsTreeDnDSource {
 

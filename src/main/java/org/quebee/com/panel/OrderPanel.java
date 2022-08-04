@@ -126,6 +126,11 @@ public class OrderPanel extends AvailableFieldsTree {
         return decorator.createPanel();
     }
 
+    @Override
+    protected void dndMoveFieldToAvailable(String sourceName) {
+        moveFieldToAvailable(orderTable.getSelectedObject(), true);
+    }
+
     private void moveFieldToAvailable(OrderElement selectedObject, boolean removeSource) {
         var index = orderTableModel.indexOf(selectedObject);
         var item = new TableElement(selectedObject.getField());
@@ -134,15 +139,6 @@ public class OrderPanel extends AvailableFieldsTree {
         }
         removeFromTable(index, removeSource, orderTableModel, orderTable);
     }
-
-//    private String getFieldDescription(QBTreeNode value) {
-//        if (availableTreeRoot.equals(value.getParent())) {
-//            return value.getUserObject().getName();
-//        }
-//        var columnObject = value.getUserObject();
-//        var tableObject = value.getParent().getUserObject();
-//        return tableObject.getName() + "." + columnObject.getName();
-//    }
 
     @Override
     public void initListeners() {

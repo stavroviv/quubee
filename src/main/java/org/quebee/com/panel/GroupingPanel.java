@@ -182,6 +182,15 @@ public class GroupingPanel extends AvailableFieldsTree {
         return panel;
     }
 
+    @Override
+    protected void dndMoveFieldToAvailable(String sourceName) {
+        if (GROUPING_TABLE.equals(sourceName)) {
+            moveFieldToAvailable(groupingTable.getSelectedObject(), true, groupingTableModel, groupingTable);
+        } else if (AGGREGATE_TABLE.equals(sourceName)) {
+            moveFieldToAvailable(aggregateTable.getSelectedObject(), true, aggregateTableModel, aggregateTable);
+        }
+    }
+
     private <T> void moveFieldToAvailable(T selected, boolean removeSource, ListTableModel<T> model, TableView<T> table) {
         var index = model.indexOf(selected);
         TableElement item = null;
