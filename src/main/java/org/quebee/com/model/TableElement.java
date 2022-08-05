@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class TableElement {
+public class TableElement extends IconableElement {
     private UUID id;
     private String name;
     private String alias;
@@ -26,7 +26,7 @@ public class TableElement {
     private boolean notSelectable;
     private boolean nested;
 
-    private Icon icon;
+//    private Icon icon;
 
     private boolean distinct;
 
@@ -39,7 +39,7 @@ public class TableElement {
 
     public TableElement(String name, Icon icon) {
         this(name);
-        this.icon = icon;
+        super.icon = icon;
     }
 
     private String tableName;
@@ -101,9 +101,9 @@ public class TableElement {
 
     public static class TableRenderer extends DefaultTableCellRenderer {
 
-        private final TableElement element;
+        private final IconableElement element;
 
-        public TableRenderer(TableElement element) {
+        public TableRenderer(IconableElement element) {
             this.element = element;
         }
 
@@ -111,7 +111,11 @@ public class TableElement {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                                                        boolean hasFocus, int row, int column) {
             var label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            label.setText(element.getDescription());
+            if (element instanceof TableElement) {
+                label.setText(((TableElement) element).getDescription());
+            } else if (element instanceof OrderElement) {
+                label.setText(((OrderElement) element).getField());
+            }
             if (Objects.nonNull(element.getIcon())) {
                 setIcon(element.getIcon());
             } else {

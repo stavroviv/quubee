@@ -19,6 +19,7 @@ import org.quebee.com.util.MouseAdapterDoubleClick;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -84,6 +85,7 @@ public class OrderPanel extends AvailableFieldsTree {
         var newItem = new OrderElement();
         if (value != null) {
             newItem.setField(getDescription(value));
+            newItem.setIcon(value.getUserObject().getIcon());
         }
         newItem.setSorting(ASC);
         moveFieldToTable(index, value, newItem, orderTableModel, orderTable);
@@ -97,6 +99,10 @@ public class OrderPanel extends AvailableFieldsTree {
             @Override
             public String valueOf(OrderElement o) {
                 return o.getField();
+            }
+            @Override
+            public TableCellRenderer getRenderer(OrderElement tableElement) {
+                return new TableElement.TableRenderer(tableElement);
             }
         };
         var sortingInfo = new EditableStringColumn<>("Sorting", OrderElement::getSorting, OrderElement::setSorting) {
