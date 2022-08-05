@@ -44,19 +44,20 @@ abstract class AvailableFieldsTree extends QueryPanel {
     protected <T> void installDnDSupportToTable(TableView<T> table) {
         MyRowsDnDSupport.install(table, (EditableModel) table.getModel(), availableTree, (event) -> {
             var aObject = event.getAttachedObject();
+            var p = event.getPoint();
+            var index = table.rowAtPoint(p);
             if (aObject instanceof QBTreeNode) {
-                var p = event.getPoint();
-                var i = table.rowAtPoint(p);
                 var item = (QBTreeNode) aObject;
-                moveFieldToSelected(item, i, event.getCurrentOverComponent().getName());
-            } else if (aObject instanceof MyRowsDnDSupport.RowDragInfo) {
+                moveFieldToSelected(item, index, event.getCurrentOverComponent().getName());
+            } else if (aObject instanceof MyRowsDnDSupport.RowDragInfo
+                    && ((MyRowsDnDSupport.RowDragInfo) aObject).component != table) {
                 var item = (MyRowsDnDSupport.RowDragInfo) aObject;
-                transferFromTableToTable(item.getComponent().getName());
+                transferFromTableToTable(item.getComponent().getName(), index);
             }
         });
     }
 
-    protected void transferFromTableToTable(String name) {
+    protected void transferFromTableToTable(String name, int index) {
     }
 
     private class MyDnDTarget implements DnDTarget {

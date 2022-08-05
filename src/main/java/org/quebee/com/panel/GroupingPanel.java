@@ -189,12 +189,25 @@ public class GroupingPanel extends AvailableFieldsTree {
         }
     }
 
-    protected void transferFromTableToTable(String sourceName) {
+    protected void transferFromTableToTable(String sourceName, int index) {
         if (GROUPING_TABLE.equals(sourceName)) {
-//            addElementToTable(newItem, index, model, table);
-//            ComponentUtils.removeFromAvailable(item, availableTreeRoot, availableModel, availableTree);
+            var selectedObject = groupingTable.getSelectedObject();
+            if (Objects.isNull(selectedObject)) {
+                return;
+            }
+            var newItem = new AggregateElement();
+            newItem.setField(selectedObject.getName());
+            newItem.setFunction(SUM);
+            addElementToTable(newItem, index, aggregateTableModel, aggregateTable);
+            groupingTableModel.removeRow(groupingTableModel.indexOf(selectedObject));
         } else if (AGGREGATE_TABLE.equals(sourceName)) {
-//            moveFieldToAvailable(aggregateTable.getSelectedObject(), true, aggregateTableModel, aggregateTable);
+            var selectedObject = aggregateTable.getSelectedObject();
+            if (Objects.isNull(selectedObject)) {
+                return;
+            }
+            var newItem = new TableElement(selectedObject.getField());
+            addElementToTable(newItem, index, groupingTableModel, groupingTable);
+            aggregateTableModel.removeRow(aggregateTableModel.indexOf(selectedObject));
         }
     }
 
