@@ -87,7 +87,7 @@ public class JoinsPanel extends QueryPanel {
                     return (table, value, isSelected, hasFocus, row, column) -> new JBTextField(variable.getCondition());
                 }
                 return (table, value, isSelected, hasFocus, row, column) -> {
-                    Box hBox = Box.createHorizontalBox();
+                    var hBox = Box.createHorizontalBox();
                     hBox.add(new ComboBox<>(new String[]{variable.getField1()}));
                     hBox.add(new ComboBox<>(new String[]{variable.getComparison()}));
                     hBox.add(new ComboBox<>(new String[]{variable.getField2()}));

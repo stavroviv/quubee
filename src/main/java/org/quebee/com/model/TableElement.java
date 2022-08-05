@@ -10,6 +10,8 @@ import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -94,6 +96,29 @@ public class TableElement {
                 setIcon(DatabaseIcons.ObjectGroup);
             }
             append(element.getDescription());
+        }
+    }
+
+    public static class TableRenderer extends DefaultTableCellRenderer {
+
+        private final TableElement element;
+
+        public TableRenderer(TableElement element) {
+            this.element = element;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
+//            var element = (TableElement) value;
+            var label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            label.setText(element.getDescription());
+            if (Objects.nonNull(element.getIcon())) {
+                setIcon(element.getIcon());
+            } else {
+                setIcon(DatabaseIcons.Col);
+            }
+            return label;
         }
     }
 }

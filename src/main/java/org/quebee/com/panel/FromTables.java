@@ -28,6 +28,7 @@ import org.quebee.com.util.MyRowsDnDSupport;
 import org.quebee.com.util.RenameDialogWrapper;
 
 import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -334,13 +335,18 @@ public class FromTables extends QueryPanel {
             public Class<TableElement> getColumnClass() {
                 return TableElement.class;
             }
+
+            @Override
+            public TableCellRenderer getRenderer(TableElement tableElement) {
+                return new TableElement.TableRenderer(tableElement);
+            }
         };
 
         selectedFieldsModel = new ListTableModel<>(new ColumnInfo[]{
                 fieldInfo
         });
         selectedFieldsTable = new TableView<>(selectedFieldsModel);
-
+//        selectedFieldsTable.getColumn().setDefaultRenderer(TableElement.class, new TableElement.TableRenderer());
         var decorator = ToolbarDecorator.createDecorator(selectedFieldsTable);
         decorator.setAddAction(button -> {
 //            model.addRow(new TableElement());

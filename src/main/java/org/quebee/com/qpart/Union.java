@@ -1,10 +1,12 @@
 package org.quebee.com.qpart;
 
 import com.intellij.util.ui.ListTableModel;
+import icons.DatabaseIcons;
 import lombok.Getter;
 import lombok.Setter;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
@@ -41,13 +43,34 @@ public class Union implements Orderable {
             return;
         }
         var select = (PlainSelect) selectBody;
-        fillFromTablesModels(select);
-        fillSelectedFieldsModels(select);
-        fillJoinTableModel(select);
-        fillConditionTableModel(select);
+        fillFromTables(select);
+        fillSelectedFieldsAndAggregates(select);
+        fillJoinTables(select);
+        fillGroupBy(select);
+        fillConditions(select);
     }
 
-    private void fillConditionTableModel(PlainSelect pSelect) {
+    private void fillGroupBy(PlainSelect pSelect) {
+        var groupBy = pSelect.getGroupBy();
+        if (groupBy == null) {
+            return;
+        }
+        groupBy.getGroupByExpressionList().getExpressions().forEach(x -> {
+            if (x instanceof Column) {
+                setTableName(pSelect, (Column) x);
+            }
+            var row = new TableElement(x.toString());
+            groupingTableModel.addRow(row);
+        });
+    }
+
+    private void setTableName(PlainSelect pSelect, Column expression) {
+        if (expression.getTable() == null && pSelect.getJoins() == null) {
+            expression.setTable((Table) pSelect.getFromItem());
+        }
+    }
+
+    private void fillConditions(PlainSelect pSelect) {
         var where = pSelect.getWhere();
         if (where == null) {
             return;
@@ -87,7 +110,7 @@ public class Union implements Orderable {
         conditionTableModel.insertRow(0, condition);
     }
 
-    private void fillJoinTableModel(PlainSelect select) {
+    private void fillJoinTables(PlainSelect select) {
         var joins = select.getJoins();
         if (Objects.isNull(joins) || joins.stream().allMatch(Join::isSimple)) {
             return;
@@ -195,7 +218,7 @@ public class Union implements Orderable {
         return !(expression instanceof ComparisonOperator);
     }
 
-    private void fillSelectedFieldsModels(PlainSelect select) {
+    private void fillSelectedFieldsAndAggregates(PlainSelect select) {
         for (var selectItem : select.getSelectItems()) {
             if (!(selectItem instanceof SelectExpressionItem)) {
                 continue;
@@ -209,11 +232,28 @@ public class Union implements Orderable {
                     item.setAlias(selectExpressionItem.getAlias().getName());
                 }
                 selectedFieldsModel.addRow(item);
+            } else if (expression instanceof Function) {
+                var function = (Function) expression;
+                var expressions = function.getParameters().getExpressions();
+                if (expressions.size() == 1 && expressions.get(0) instanceof Column) {
+                    var column = (Column) expressions.get(0);
+                    var item = new TableElement(column.getTable().getName(), column.getColumnName());
+                    if (Objects.nonNull(selectExpressionItem.getAlias())) {
+                        item.setAlias(selectExpressionItem.getAlias().getName());
+                    }
+                    selectedFieldsModel.addRow(item);
+                }
+            } else {
+                var item = new TableElement(expression.toString(), DatabaseIcons.Function);
+                if (Objects.nonNull(selectExpressionItem.getAlias())) {
+                    item.setAlias(selectExpressionItem.getAlias().getName());
+                }
+                selectedFieldsModel.addRow(item);
             }
         }
     }
 
-    private void fillFromTablesModels(PlainSelect select) {
+    private void fillFromTables(PlainSelect select) {
         var fromItem = select.getFromItem(Table.class);
         selectedTablesRoot.add(new TreeNode(new TableElement(fromItem)));
         var joins = select.getJoins();
