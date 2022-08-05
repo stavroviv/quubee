@@ -346,7 +346,7 @@ public class ConditionsPanel extends QueryPanel {
 
     private void enableDragAndDrop() {
         DnDManager.getInstance().registerSource(new MyDnDSource(availableFieldsTree), availableFieldsTree, mainPanel.getDisposable());
-        MyRowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel(), null, (event) -> {
+        MyRowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel(), (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
                 var p = event.getPoint();
                 var i = conditionTable.rowAtPoint(p);

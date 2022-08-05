@@ -42,7 +42,7 @@ abstract class AvailableFieldsTree extends QueryPanel {
     }
 
     protected <T> void installDnDSupportToTable(TableView<T> table) {
-        MyRowsDnDSupport.install(table, (EditableModel) table.getModel(), availableTree, (event) -> {
+        MyRowsDnDSupport.install(table, (EditableModel) table.getModel(), (event) -> {
             var aObject = event.getAttachedObject();
             var p = event.getPoint();
             var index = table.rowAtPoint(p);

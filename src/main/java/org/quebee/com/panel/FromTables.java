@@ -65,7 +65,7 @@ public class FromTables extends QueryPanel {
         DnDManager.getInstance().registerSource(new MyDnDSource(), tablesTreeTable, mainPanel.getDisposable());
         DnDManager.getInstance().registerTarget(new MyDnDTargetST(), selectedTablesTree, mainPanel.getDisposable());
 //        DnDManager.getInstance().registerTarget(new MyDnDTargetSF(), selectedFieldsTable, mainPanel.getDisposable());
-        MyRowsDnDSupport.install(selectedFieldsTable, selectedFieldsModel, null, (event) -> {
+        MyRowsDnDSupport.install(selectedFieldsTable, selectedFieldsModel, (event) -> {
             if (event.getAttachedObject() instanceof QBTreeNode) {
 //                var p = event.getPoint();
 //                var i = conditionTable.rowAtPoint(p);

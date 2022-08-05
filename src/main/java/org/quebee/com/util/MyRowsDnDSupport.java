@@ -4,7 +4,6 @@ import com.intellij.ide.dnd.DnDDragStartBean;
 import com.intellij.ide.dnd.DnDEvent;
 import com.intellij.ide.dnd.DnDSupport;
 import com.intellij.ui.awt.RelativeRectangle;
-import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.EditableModel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -12,12 +11,11 @@ import org.quebee.com.model.QBTreeNode;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class MyRowsDnDSupport {
 
-    public static void install(JTable table, EditableModel model, TreeTable sourceTree, Consumer<DnDEvent> handler) {
+    public static void install(JTable table, EditableModel model, Consumer<DnDEvent> handler) {
         table.setDragEnabled(true);
         table.setTransferHandler(new TransferHandler(null));
         DnDSupport.createBuilder(table)
@@ -25,7 +23,7 @@ public final class MyRowsDnDSupport {
                     final Point p = info.getPoint();
                     return new DnDDragStartBean(new RowDragInfo(table, getRow(table, p)));
                 })
-                .setTargetChecker(event -> targetChecker(table, sourceTree, model, event))
+                .setTargetChecker(event -> targetChecker(table, model, event))
                 .setDropHandler(event -> dropHandler(table, model, handler, event))
                 .install();
     }
@@ -62,25 +60,22 @@ public final class MyRowsDnDSupport {
         event.hideHighlighter();
     }
 
-    private static boolean targetChecker(JComponent component, TreeTable sourceTree, EditableModel model, DnDEvent event) {
+    private static boolean targetChecker(JComponent component, EditableModel model, DnDEvent event) {
         var o = event.getAttachedObject();
         if (o instanceof QBTreeNode) {
-            return dndQBTreeNode(component, event);
+            return dndAnotherSourceInfo(component, event);
         } else if (o instanceof RowDragInfo) {
-            System.out.println(((RowDragInfo) o).component);
             if (((RowDragInfo) o).component == component) {
                 return dndRowDragInfo(component, model, event);
-            } else if (Objects.nonNull(sourceTree)) {
-                // TODO not works((
-                event.setDropPossible(true, "");
-                return true;
+            } else {
+                return dndAnotherSourceInfo(component, event);
             }
         }
         event.setDropPossible(false, "");
         return false;
     }
 
-    private static boolean dndQBTreeNode(JComponent component, DnDEvent event) {
+    private static boolean dndAnotherSourceInfo(JComponent component, DnDEvent event) {
         var newIndex = getRow(component, event.getPoint());
         var cellBounds = getCellBounds(component, newIndex);
         if (newIndex == -1) {
