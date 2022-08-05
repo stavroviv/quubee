@@ -75,7 +75,7 @@ public final class MyRowsDnDSupport {
         return false;
     }
 
-    private static boolean dndAnotherSourceInfo(JComponent component, DnDEvent event) {
+    public static boolean dndAnotherSourceInfo(JComponent component, DnDEvent event) {
         var newIndex = getRow(component, event.getPoint());
         var cellBounds = getCellBounds(component, newIndex);
         if (newIndex == -1) {

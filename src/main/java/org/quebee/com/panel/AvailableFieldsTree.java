@@ -62,9 +62,8 @@ abstract class AvailableFieldsTree extends QueryPanel {
 
     private class MyDnDTarget implements DnDTarget {
 
-        public boolean update(DnDEvent aEvent) {
-            aEvent.setDropPossible(true);
-            return true;
+        public boolean update(DnDEvent event) {
+            return MyRowsDnDSupport.dndAnotherSourceInfo(availableTree, event);
         }
 
         public void drop(DnDEvent event) {
