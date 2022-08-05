@@ -3,8 +3,8 @@ package org.quebee.com.util;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.ListTableModel;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.model.TreeNode;
 
 import javax.swing.*;
 import java.util.function.Predicate;
@@ -17,7 +17,7 @@ public class ComponentUtils {
         }
     }
 
-    public static void clearTree(QBTreeNode treeRoot) {
+    public static void clearTree(TreeNode treeRoot) {
         for (int i = treeRoot.getChildCount() - 1; i >= 0; i--) {
             treeRoot.remove(i);
         }
@@ -28,12 +28,12 @@ public class ComponentUtils {
         destination.addRows(source.getItems());
     }
 
-    public static void loadTreeToTree(QBTreeNode source, QBTreeNode destination) {
+    public static void loadTreeToTree(TreeNode source, TreeNode destination) {
         clearTree(destination);
         source.nodeToList().forEach(destination::add);
     }
 
-    public static void removeNodeByTable(QBTreeNode node, QBTreeNode root, ListTreeTableModel treeTableModel) {
+    public static void removeNodeByTable(TreeNode node, TreeNode root, ListTreeTableModel treeTableModel) {
         var userObject = node.getUserObject();
         var removeTableName = userObject.getDescription();
         root.nodeToList().stream()
@@ -66,18 +66,18 @@ public class ComponentUtils {
         }
     }
 
-    public static QBTreeNode selectedAvailableField(TreeTable treeTable) {
+    public static TreeNode selectedAvailableField(TreeTable treeTable) {
         int selectedRow = treeTable.getSelectedRow();
         if (selectedRow == -1) {
             return null;
         }
-        return (QBTreeNode) treeTable.getValueAt(selectedRow, 0);
+        return (TreeNode) treeTable.getValueAt(selectedRow, 0);
     }
 
-    public static QBTreeNode addNodeWithChildren(QBTreeNode node, TableElement newUserObject,
-                                                 QBTreeNode root, ListTreeTableModel model) {
-        var newTableNode = new QBTreeNode(newUserObject);
-        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
+    public static TreeNode addNodeWithChildren(TreeNode node, TableElement newUserObject,
+                                               TreeNode root, ListTreeTableModel model) {
+        var newTableNode = new TreeNode(newUserObject);
+        node.nodeToList().forEach(x -> newTableNode.add(new TreeNode(x.getUserObject())));
         root.add(newTableNode);
         if (root.getChildCount() == 1) {
             model.reload();

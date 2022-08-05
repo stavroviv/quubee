@@ -12,8 +12,8 @@ import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.EditableModel;
 import com.intellij.util.ui.ListTableModel;
 import org.jetbrains.annotations.NotNull;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.model.TreeNode;
 import org.quebee.com.util.AvailableFieldsTreeDnDSource;
 import org.quebee.com.util.ComponentUtils;
 import org.quebee.com.util.MouseAdapterDoubleClick;
@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.Objects;
 
 abstract class AvailableFieldsTree extends QueryPanel {
-    protected QBTreeNode availableTreeRoot;
-    protected QBTreeNode allFieldsRoot;
+    protected TreeNode availableTreeRoot;
+    protected TreeNode allFieldsRoot;
     protected ListTreeTableModel availableModel;
     protected TreeTable availableTree;
 
@@ -46,8 +46,8 @@ abstract class AvailableFieldsTree extends QueryPanel {
             var aObject = event.getAttachedObject();
             var p = event.getPoint();
             var index = table.rowAtPoint(p);
-            if (aObject instanceof QBTreeNode) {
-                var item = (QBTreeNode) aObject;
+            if (aObject instanceof TreeNode) {
+                var item = (TreeNode) aObject;
                 moveFieldToSelected(item, index, event.getCurrentOverComponent().getName());
             } else if (aObject instanceof MyRowsDnDSupport.RowDragInfo
                     && ((MyRowsDnDSupport.RowDragInfo) aObject).component != table) {
@@ -74,7 +74,7 @@ abstract class AvailableFieldsTree extends QueryPanel {
         }
     }
 
-    private void removeFromAvailable(QBTreeNode item) {
+    private void removeFromAvailable(TreeNode item) {
         if (!availableTreeRoot.equals(item.getParent())) {
             return;
         }
@@ -98,7 +98,7 @@ abstract class AvailableFieldsTree extends QueryPanel {
 
         @Override
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) availableTree.getValueAt(availableTree.getSelectedRow(), 0);
+            var value = (TreeNode) availableTree.getValueAt(availableTree.getSelectedRow(), 0);
             var parent = value.getParent();
             if (value.equals(allFieldsRoot)) {
                 return false;
@@ -107,12 +107,12 @@ abstract class AvailableFieldsTree extends QueryPanel {
         }
 
         @Override
-        public String getFieldDescription(QBTreeNode node) {
+        public String getFieldDescription(TreeNode node) {
             return getDescription(node);
         }
     }
 
-    protected String getDescription(QBTreeNode node) {
+    protected String getDescription(TreeNode node) {
         if (availableTreeRoot.equals(node.getParent())) {
             return node.getUserObject().getName();
         }
@@ -122,9 +122,9 @@ abstract class AvailableFieldsTree extends QueryPanel {
     }
 
     protected TreeTable getAvailableTree(boolean addAllFields) {
-        availableTreeRoot = new QBTreeNode(new TableElement("empty"));
+        availableTreeRoot = new TreeNode(new TableElement("empty"));
         if (addAllFields) {
-            allFieldsRoot = new QBTreeNode(new TableElement("All fields"));
+            allFieldsRoot = new TreeNode(new TableElement("All fields"));
             availableTreeRoot.add(allFieldsRoot);
         }
         availableModel = new ListTreeTableModel(availableTreeRoot, new ColumnInfo[]{
@@ -142,11 +142,11 @@ abstract class AvailableFieldsTree extends QueryPanel {
         return availableTree;
     }
 
-    protected abstract void moveFieldToSelected(QBTreeNode node, int index);
+    protected abstract void moveFieldToSelected(TreeNode node, int index);
 
-    protected abstract void moveFieldToSelected(QBTreeNode node, int index, String componentName);
+    protected abstract void moveFieldToSelected(TreeNode node, int index, String componentName);
 
-    protected <T> void moveFieldToTable(int index, QBTreeNode item, T newItem, ListTableModel<T> model, TableView<T> table) {
+    protected <T> void moveFieldToTable(int index, TreeNode item, T newItem, ListTableModel<T> model, TableView<T> table) {
         if (Objects.isNull(item)) {
             return;
         }
@@ -183,10 +183,10 @@ abstract class AvailableFieldsTree extends QueryPanel {
         }
     }
 
-    protected void addSelectedTableToAvailable(QBTreeNode node) {
+    protected void addSelectedTableToAvailable(TreeNode node) {
         var newUserObject = new TableElement(node.getUserObject());
-        var newTableNode = new QBTreeNode(newUserObject);
-        node.nodeToList().forEach(x -> newTableNode.add(new QBTreeNode(x.getUserObject())));
+        var newTableNode = new TreeNode(newUserObject);
+        node.nodeToList().forEach(x -> newTableNode.add(new TreeNode(x.getUserObject())));
         allFieldsRoot.add(newTableNode);
         availableModel.nodesWereInserted(allFieldsRoot, new int[]{allFieldsRoot.getChildCount() - 1});
     }

@@ -7,7 +7,7 @@ import com.intellij.ui.awt.RelativeRectangle;
 import com.intellij.util.ui.EditableModel;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.quebee.com.model.QBTreeNode;
+import org.quebee.com.model.TreeNode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,7 +62,7 @@ public final class MyRowsDnDSupport {
 
     private static boolean targetChecker(JComponent component, EditableModel model, DnDEvent event) {
         var o = event.getAttachedObject();
-        if (o instanceof QBTreeNode) {
+        if (o instanceof TreeNode) {
             return dndAnotherSourceInfo(component, event);
         } else if (o instanceof RowDragInfo) {
             if (((RowDragInfo) o).component == component) {

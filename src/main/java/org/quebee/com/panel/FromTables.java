@@ -18,8 +18,8 @@ import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.model.TreeNode;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
@@ -28,7 +28,6 @@ import org.quebee.com.util.MyRowsDnDSupport;
 import org.quebee.com.util.RenameDialogWrapper;
 
 import javax.swing.*;
-import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -40,9 +39,9 @@ public class FromTables extends QueryPanel {
     private final String header = "Tables and Fields";
     private final JComponent component;
 
-    private final QBTreeNode sourceRoot = new QBTreeNode(new TableElement("database_root"));
-    private final QBTreeNode tablesRoot = new QBTreeNode(new TableElement("tables"));
-    private final QBTreeNode cteRoot = new QBTreeNode(new TableElement("common table expressions"));
+    private final TreeNode sourceRoot = new TreeNode(new TableElement("database_root"));
+    private final TreeNode tablesRoot = new TreeNode(new TableElement("tables"));
+    private final TreeNode cteRoot = new TreeNode(new TableElement("common table expressions"));
 
     private ListTreeTableModel databaseModel;
 
@@ -66,7 +65,7 @@ public class FromTables extends QueryPanel {
         DnDManager.getInstance().registerTarget(new MyDnDTargetST(), selectedTablesTree, mainPanel.getDisposable());
 //        DnDManager.getInstance().registerTarget(new MyDnDTargetSF(), selectedFieldsTable, mainPanel.getDisposable());
         MyRowsDnDSupport.install(selectedFieldsTable, selectedFieldsModel, (event) -> {
-            if (event.getAttachedObject() instanceof QBTreeNode) {
+            if (event.getAttachedObject() instanceof TreeNode) {
 //                var p = event.getPoint();
 //                var i = conditionTable.rowAtPoint(p);
 //                addCondition((QBTreeNode) event.getAttachedObject(), i);
@@ -95,7 +94,7 @@ public class FromTables extends QueryPanel {
         }
 
         public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) tablesTreeTable.getValueAt(tablesTreeTable.getSelectedRow(), 0);
+            var value = (TreeNode) tablesTreeTable.getValueAt(tablesTreeTable.getSelectedRow(), 0);
             return new DnDDragStartBean(value, dragOrigin);
         }
 
@@ -105,7 +104,7 @@ public class FromTables extends QueryPanel {
             c.setBackground(RenderingUtil.getBackground(tablesTreeTable));
             c.setIcon(DatabaseIcons.Col);
 
-            var attachedObject = (QBTreeNode) bean.getAttachedObject();
+            var attachedObject = (TreeNode) bean.getAttachedObject();
             c.append(" +" + attachedObject.getUserObject().getDescription(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
 
             var size = c.getPreferredSize();
@@ -166,7 +165,7 @@ public class FromTables extends QueryPanel {
         selectedTablesModel.reload();
     }
 
-    private void removeSelectedTable(QBTreeNode node) {
+    private void removeSelectedTable(TreeNode node) {
         if (Objects.nonNull(node.getParent().getParent())) {
             return;
         }
@@ -176,7 +175,7 @@ public class FromTables extends QueryPanel {
         removeSelectedFieldsByTable(node);
     }
 
-    private void removeSelectedFieldsByTable(QBTreeNode node) {
+    private void removeSelectedFieldsByTable(TreeNode node) {
         var removeTableName = node.getUserObject().getDescription();
         for (var i = selectedFieldsModel.getItems().size() - 1; i >= 0; i--) {
             var name = selectedFieldsModel.getItem(i).getTableName();
@@ -186,7 +185,7 @@ public class FromTables extends QueryPanel {
         }
     }
 
-    private void addSelectedTable(QBTreeNode node, String alias) {
+    private void addSelectedTable(TreeNode node, String alias) {
         var parent1 = node.getParent();
         if (Objects.nonNull(parent1) && parent1.equals(sourceRoot)) {
             return;
@@ -211,11 +210,11 @@ public class FromTables extends QueryPanel {
         selectedFieldsModel.addRow(node);
     }
 
-    private void addSelectedTableNode(QBTreeNode node, String alias) {
+    private void addSelectedTableNode(TreeNode node, String alias) {
         var userObject = node.getUserObject();
         var existNumber = 0;
         for (var i = 0; i < selectedTablesRoot.getChildCount(); i++) {
-            var childAt = (QBTreeNode) selectedTablesRoot.getChildAt(i);
+            var childAt = (TreeNode) selectedTablesRoot.getChildAt(i);
             if (childAt.getUserObject().getName().equals(node.getUserObject().getName())) {
                 existNumber++;
             }
@@ -231,12 +230,12 @@ public class FromTables extends QueryPanel {
         getPublisher(SelectedTableAfterAddNotifier.class).onAction(newTableNode);
     }
 
-    private QBTreeNode selectedTablesRoot;
+    private TreeNode selectedTablesRoot;
     private ListTreeTableModel selectedTablesModel;
     private TreeTable selectedTablesTree;
 
     public JComponent selectedTables() {
-        selectedTablesRoot = new QBTreeNode(new TableElement("empty"));
+        selectedTablesRoot = new TreeNode(new TableElement("empty"));
         selectedTablesModel = new ListTreeTableModel(selectedTablesRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Tables")
         });
@@ -253,7 +252,7 @@ public class FromTables extends QueryPanel {
         var actionRename = new AnActionButton("Rename Table", AllIcons.Actions.Edit) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-                var value = (QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0);
+                var value = (TreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0);
                 var userObject = value.getUserObject();
                 var input = userObject.getName();
                 var dialog = new RenameDialogWrapper(input, "Rename table and its usages to:") {
@@ -289,14 +288,14 @@ public class FromTables extends QueryPanel {
 
         decorator.setRemoveAction(button ->
                 getPublisher(SelectedTableRemoveNotifier.class)
-                        .onAction((QBTreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0))
+                        .onAction((TreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0))
         );
         decorator.setRemoveActionUpdater(activeTableUpdater());
 
         selectedTablesTree.addMouseListener(new MouseAdapterDoubleClick(true) {
             @Override
             protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
-                var value = (QBTreeNode) selectedTablesTree.getValueAt(table.getSelectedRow(), 0);
+                var value = (TreeNode) selectedTablesTree.getValueAt(table.getSelectedRow(), 0);
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
                 }
@@ -315,7 +314,7 @@ public class FromTables extends QueryPanel {
             if (selectedTablesTree.getSelectedRow() == -1) {
                 return false;
             }
-            var value = (TreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0);
+            var value = (javax.swing.tree.TreeNode) selectedTablesTree.getValueAt(selectedTablesTree.getSelectedRow(), 0);
             return Objects.isNull(value.getParent().getParent());
         };
     }
@@ -390,7 +389,7 @@ public class FromTables extends QueryPanel {
             @Override
             protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
                 getPublisher(SelectedTableAddNotifier.class)
-                        .onAction((QBTreeNode) treeTable.getValueAt(table.getSelectedRow(), 0), null);
+                        .onAction((TreeNode) treeTable.getValueAt(table.getSelectedRow(), 0), null);
             }
         };
     }
@@ -424,14 +423,14 @@ public class FromTables extends QueryPanel {
         }
     }
 
-    private void loadStructureToTree(DBTables dbStructure, QBTreeNode root, Icon icon) {
+    private void loadStructureToTree(DBTables dbStructure, TreeNode root, Icon icon) {
         for (var entry : dbStructure.getDbElements().entrySet()) {
             var table = new TableElement(entry.getKey(), icon);
-            var child = new QBTreeNode(table);
+            var child = new TreeNode(table);
             root.add(child);
             for (var columnName : entry.getValue()) {
                 var column = new TableElement(columnName, DatabaseIcons.Col);
-                child.add(new QBTreeNode(column));
+                child.add(new TreeNode(column));
             }
         }
     }

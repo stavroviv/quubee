@@ -5,35 +5,35 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QBTreeNode extends DefaultMutableTreeTableNode  {
+public class TreeNode extends DefaultMutableTreeTableNode  {
 
     private final TableElement usObject;
 
-    public QBTreeNode(TableElement userObject) {
+    public TreeNode(TableElement userObject) {
         super(userObject);
         this.usObject = userObject;
     }
 
-    public List<QBTreeNode> nodeToList() {
-        var actualList = new ArrayList<QBTreeNode>();
-        children().asIterator().forEachRemaining(x -> actualList.add((QBTreeNode) x));
+    public List<TreeNode> nodeToList() {
+        var actualList = new ArrayList<TreeNode>();
+        children().asIterator().forEachRemaining(x -> actualList.add((TreeNode) x));
         return actualList;
     }
 
     @Override
-    public QBTreeNode getParent() {
-        return (QBTreeNode) this.parent;
+    public TreeNode getParent() {
+        return (TreeNode) this.parent;
     }
 
-    public QBTreeNode getChildAt(int childIndex) {
-        return (QBTreeNode) this.children.get(childIndex);
+    public TreeNode getChildAt(int childIndex) {
+        return (TreeNode) this.children.get(childIndex);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        QBTreeNode that = (QBTreeNode) o;
+        TreeNode that = (TreeNode) o;
         return usObject.getId().equals(that.getUserObject().getId());
     }
 

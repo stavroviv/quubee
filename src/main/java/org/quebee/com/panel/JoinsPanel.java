@@ -13,8 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.columns.EditableStringColumn;
 import org.quebee.com.model.LinkElement;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.model.TreeNode;
 import org.quebee.com.notifier.LoadQueryDataNotifier;
 import org.quebee.com.notifier.SaveQueryDataNotifier;
 import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
@@ -36,7 +36,7 @@ public class JoinsPanel extends QueryPanel {
 
     private final String header = "Joins";
     private final JComponent component;
-    private final Set<QBTreeNode> tables = new HashSet<>();
+    private final Set<TreeNode> tables = new HashSet<>();
     private final ListTableModel<LinkElement> joinTableModel;
     private final TableView<LinkElement> joinTable;
 
@@ -218,7 +218,7 @@ public class JoinsPanel extends QueryPanel {
         tables.clear();
     }
 
-    private void removeSelectedTable(QBTreeNode node) {
+    private void removeSelectedTable(TreeNode node) {
         var tableElement = node.getUserObject();
         for (var i = joinTableModel.getItems().size() - 1; i >= 0; i--) {
             if (joinTableModel.getItem(i).getTable1().equals(tableElement.getName())
@@ -229,7 +229,7 @@ public class JoinsPanel extends QueryPanel {
         tables.remove(node);
     }
 
-    private void addSelectedTable(QBTreeNode node) {
+    private void addSelectedTable(TreeNode node) {
         if (Objects.isNull(node.getParent())) {
             return;
         }

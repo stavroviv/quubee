@@ -10,8 +10,8 @@ import icons.DatabaseIcons;
 import lombok.Getter;
 import org.quebee.com.columns.EditableStringColumn;
 import org.quebee.com.model.OrderElement;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.model.TreeNode;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
@@ -75,12 +75,12 @@ public class OrderPanel extends AvailableFieldsTree {
     }
 
     @Override
-    protected void moveFieldToSelected(QBTreeNode value, int index) {
+    protected void moveFieldToSelected(TreeNode value, int index) {
         moveFieldToSelected(value, index, ORDER_TABLE);
     }
 
     @Override
-    protected void moveFieldToSelected(QBTreeNode value, int index, String componentName) {
+    protected void moveFieldToSelected(TreeNode value, int index, String componentName) {
         var newItem = new OrderElement();
         if (value != null) {
             newItem.setField(getDescription(value));
@@ -153,7 +153,7 @@ public class OrderPanel extends AvailableFieldsTree {
         subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
     }
 
-    private void refreshAvailableTables(List<QBTreeNode> tables) {
+    private void refreshAvailableTables(List<TreeNode> tables) {
         addAllFieldsRoot();
         tables.forEach(this::addSelectedTable);
     }
@@ -219,7 +219,7 @@ public class OrderPanel extends AvailableFieldsTree {
         ComponentUtils.removeRowsByPredicate(x -> x.getField().equals(name), orderTableModel);
     }
 
-    private void removeSelectedTable(QBTreeNode node) {
+    private void removeSelectedTable(TreeNode node) {
         ComponentUtils.removeNodeByTable(node, allFieldsRoot, availableModel);
         var removeTableName = node.getUserObject().getDescription();
         ComponentUtils.removeRowsByPredicate(x -> x.getField().contains(removeTableName + "."), orderTableModel);
@@ -237,15 +237,15 @@ public class OrderPanel extends AvailableFieldsTree {
         var tableElement = new TableElement(element);
         tableElement.setIcon(DatabaseIcons.Col);
         if (hasAllFields()) {
-            availableTreeRoot.insert(new QBTreeNode(tableElement), availableTreeRoot.getChildCount() - 1);
+            availableTreeRoot.insert(new TreeNode(tableElement), availableTreeRoot.getChildCount() - 1);
             availableModel.nodesWereInserted(availableTreeRoot, new int[]{availableTreeRoot.getChildCount() - 2});
         } else {
-            availableTreeRoot.add(new QBTreeNode(tableElement));
+            availableTreeRoot.add(new TreeNode(tableElement));
             availableModel.reload();
         }
     }
 
-    private void addSelectedTable(QBTreeNode node) {
+    private void addSelectedTable(TreeNode node) {
         var currentCte = mainPanel.getCurrentCte();
         if (currentCte.getUnionMap().size() > 1) {
             return;
@@ -258,7 +258,7 @@ public class OrderPanel extends AvailableFieldsTree {
         if (hasAllFields()) {
             return;
         }
-        allFieldsRoot = new QBTreeNode(new TableElement(ALL_FIELDS));
+        allFieldsRoot = new TreeNode(new TableElement(ALL_FIELDS));
         availableTreeRoot.add(allFieldsRoot);
         availableModel.reload();
     }

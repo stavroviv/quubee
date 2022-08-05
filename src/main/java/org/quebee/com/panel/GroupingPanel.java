@@ -11,8 +11,8 @@ import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.columns.EditableStringColumn;
 import org.quebee.com.model.AggregateElement;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.model.TreeNode;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.util.ComponentUtils;
@@ -69,7 +69,7 @@ public class GroupingPanel extends AvailableFieldsTree {
                 });
     }
 
-    private void removeSelectedTable(QBTreeNode node) {
+    private void removeSelectedTable(TreeNode node) {
         var userObject = node.getUserObject();
         var removeTableName = userObject.getDescription();
         ComponentUtils.removeNodeByTable(node, allFieldsRoot, availableModel);
@@ -107,7 +107,7 @@ public class GroupingPanel extends AvailableFieldsTree {
     private void addSelectedField(TableElement element, boolean interactive) {
         var tableElement = new TableElement(element);
         tableElement.setIcon(DatabaseIcons.Col);
-        availableTreeRoot.insert(new QBTreeNode(tableElement), availableTreeRoot.getChildCount() - 1);
+        availableTreeRoot.insert(new TreeNode(tableElement), availableTreeRoot.getChildCount() - 1);
         availableModel.nodesWereInserted(availableTreeRoot, new int[]{availableTreeRoot.getChildCount() - 2});
     }
 
@@ -261,12 +261,12 @@ public class GroupingPanel extends AvailableFieldsTree {
     }
 
     @Override
-    protected void moveFieldToSelected(QBTreeNode item, int index) {
+    protected void moveFieldToSelected(TreeNode item, int index) {
         moveFieldToSelected(item, index, GROUPING_TABLE);
     }
 
     @Override
-    protected void moveFieldToSelected(QBTreeNode item, int index, String componentName) {
+    protected void moveFieldToSelected(TreeNode item, int index, String componentName) {
         if (componentName.equals(GROUPING_TABLE)) {
             var newItem = new TableElement(getFieldDescription(item));
             moveFieldToTable(index, item, newItem, groupingTableModel, groupingTable);
@@ -275,14 +275,14 @@ public class GroupingPanel extends AvailableFieldsTree {
         }
     }
 
-    private void moveFieldToAggregate(QBTreeNode item, int index) {
+    private void moveFieldToAggregate(TreeNode item, int index) {
         var newItem = new AggregateElement();
         newItem.setField(getFieldDescription(item));
         newItem.setFunction(SUM);
         moveFieldToTable(index, item, newItem, aggregateTableModel, aggregateTable);
     }
 
-    private String getFieldDescription(QBTreeNode value) {
+    private String getFieldDescription(TreeNode value) {
         if (availableTreeRoot.equals(value.getParent())) {
             return value.getUserObject().getDescription();
         }

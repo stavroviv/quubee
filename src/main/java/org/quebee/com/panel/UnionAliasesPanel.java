@@ -17,8 +17,8 @@ import org.jetbrains.annotations.Nullable;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.columns.EditableStringColumn;
 import org.quebee.com.model.AliasElement;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
+import org.quebee.com.model.TreeNode;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.qpart.OneCte;
@@ -223,7 +223,7 @@ public class UnionAliasesPanel extends QueryPanel {
         subscribe(SelectedTableRemoveNotifier.class, this::removeSelectedTable);
     }
 
-    private void removeSelectedTable(QBTreeNode node) {
+    private void removeSelectedTable(TreeNode node) {
         var userObject = node.getUserObject();
         var removeTableName = userObject.getDescription();
         for (var i = aliasTableModel.getItems().size() - 1; i >= 0; i--) {

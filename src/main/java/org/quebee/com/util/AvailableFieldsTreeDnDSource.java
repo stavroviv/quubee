@@ -10,7 +10,7 @@ import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
-import org.quebee.com.model.QBTreeNode;
+import org.quebee.com.model.TreeNode;
 
 import java.awt.*;
 
@@ -24,10 +24,10 @@ public abstract class AvailableFieldsTreeDnDSource implements DnDSource {
 
     public abstract boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin);
 
-    public abstract String getFieldDescription(QBTreeNode attachedObject);
+    public abstract String getFieldDescription(TreeNode attachedObject);
 
     public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
-        var value = (QBTreeNode) treeTable.getValueAt(treeTable.getSelectedRow(), 0);
+        var value = (TreeNode) treeTable.getValueAt(treeTable.getSelectedRow(), 0);
         return new DnDDragStartBean(value, dragOrigin);
     }
 
@@ -37,7 +37,7 @@ public abstract class AvailableFieldsTreeDnDSource implements DnDSource {
         var c = new SimpleColoredComponent();
         c.setForeground(RenderingUtil.getForeground(treeTable));
         c.setBackground(RenderingUtil.getBackground(treeTable));
-        var attachedObject = (QBTreeNode) bean.getAttachedObject();
+        var attachedObject = (TreeNode) bean.getAttachedObject();
         var userObject = attachedObject.getUserObject();
         c.setIcon(userObject.getIcon());
 

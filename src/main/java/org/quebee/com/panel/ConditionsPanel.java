@@ -36,9 +36,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.quebee.com.columns.EditableBooleanColumn;
 import org.quebee.com.model.ConditionElement;
-import org.quebee.com.model.QBTreeNode;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.model.TreeComboTableElement;
+import org.quebee.com.model.TreeNode;
 import org.quebee.com.notifier.LoadQueryDataNotifier;
 import org.quebee.com.notifier.SaveQueryDataNotifier;
 import org.quebee.com.notifier.SelectedTableAfterAddNotifier;
@@ -297,12 +297,12 @@ public class ConditionsPanel extends QueryPanel {
         return treeComboBox;
     }
 
-    private QBTreeNode allFieldsRoot;
+    private TreeNode allFieldsRoot;
     private ListTreeTableModel allFieldsModel;
     private TreeTable availableFieldsTree;
 
     private JComponent getFieldsTree() {
-        allFieldsRoot = new QBTreeNode(new TableElement("empty"));
+        allFieldsRoot = new TreeNode(new TableElement("empty"));
         allFieldsModel = new ListTreeTableModel(allFieldsRoot, new ColumnInfo[]{
                 new TreeColumnInfo("Fields")
         });
@@ -313,7 +313,7 @@ public class ConditionsPanel extends QueryPanel {
         availableFieldsTree.addMouseListener(new MouseAdapterDoubleClick() {
             @Override
             protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
-                var value = (QBTreeNode) table.getValueAt(table.getSelectedRow(), 0);
+                var value = (TreeNode) table.getValueAt(table.getSelectedRow(), 0);
                 if (Objects.isNull(value.getParent().getParent())) {
                     return;
                 }
@@ -324,13 +324,13 @@ public class ConditionsPanel extends QueryPanel {
         return decorator.createPanel();
     }
 
-    private String getFieldDescription(QBTreeNode value) {
+    private String getFieldDescription(TreeNode value) {
         var columnObject = value.getUserObject();
         var tableObject = value.getParent().getUserObject();
         return tableObject.getName() + "." + columnObject.getName();
     }
 
-    private void addCondition(@Nullable QBTreeNode value, int newIndex) {
+    private void addCondition(@Nullable TreeNode value, int newIndex) {
         var item = new ConditionElement();
         if (value != null) {
             item.setConditionLeft(getFieldDescription(value));
@@ -347,10 +347,10 @@ public class ConditionsPanel extends QueryPanel {
     private void enableDragAndDrop() {
         DnDManager.getInstance().registerSource(new MyDnDSource(availableFieldsTree), availableFieldsTree, mainPanel.getDisposable());
         MyRowsDnDSupport.install(conditionTable, (EditableModel) conditionTable.getModel(), (event) -> {
-            if (event.getAttachedObject() instanceof QBTreeNode) {
+            if (event.getAttachedObject() instanceof TreeNode) {
                 var p = event.getPoint();
                 var i = conditionTable.rowAtPoint(p);
-                addCondition((QBTreeNode) event.getAttachedObject(), i);
+                addCondition((TreeNode) event.getAttachedObject(), i);
             }
         });
     }
@@ -361,12 +361,12 @@ public class ConditionsPanel extends QueryPanel {
             super(treeTable);
         }
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (QBTreeNode) availableFieldsTree.getValueAt(availableFieldsTree.getSelectedRow(), 0);
+            var value = (TreeNode) availableFieldsTree.getValueAt(availableFieldsTree.getSelectedRow(), 0);
             return !allFieldsRoot.equals(value.getParent());
         }
 
         @Override
-        public String getFieldDescription(QBTreeNode attachedObject) {
+        public String getFieldDescription(TreeNode attachedObject) {
             // FIXME
             var description = ConditionsPanel.this.getFieldDescription(attachedObject);
             if (allFieldsRoot.equals(attachedObject.getParent())) {
@@ -501,9 +501,9 @@ public class ConditionsPanel extends QueryPanel {
         tables.clear();
     }
 
-    private final Set<QBTreeNode> tables = new HashSet<>();
+    private final Set<TreeNode> tables = new HashSet<>();
 
-    private void addSelectedTable(QBTreeNode node) {
+    private void addSelectedTable(TreeNode node) {
         var newUserObject = new TableElement(node.getUserObject());
         ComponentUtils.addNodeWithChildren(node, newUserObject, allFieldsRoot, allFieldsModel);
         if (Objects.isNull(node.getParent().getParent())) {
@@ -513,13 +513,13 @@ public class ConditionsPanel extends QueryPanel {
         }
     }
 
-    private void removeSelectedTable(QBTreeNode node) {
+    private void removeSelectedTable(TreeNode node) {
         ComponentUtils.removeNodeByTable(node, allFieldsRoot, allFieldsModel);
         tables.remove(node);
         removeConditionsByTable(node);
     }
 
-    private void removeConditionsByTable(QBTreeNode node) {
+    private void removeConditionsByTable(TreeNode node) {
         var removeTableName = node.getUserObject().getDescription();
         for (var i = conditionTableModel.getItems().size() - 1; i >= 0; i--) {
             var item = conditionTableModel.getItem(i);

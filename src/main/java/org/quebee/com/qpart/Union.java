@@ -21,14 +21,14 @@ public class Union implements Orderable {
     private Integer order;
 
     // from tables
-    private QBTreeNode selectedTablesRoot = new QBTreeNode(new TableElement("empty"));
+    private TreeNode selectedTablesRoot = new TreeNode(new TableElement("empty"));
     private ListTableModel<TableElement> selectedFieldsModel = new ListTableModel<>();
 
     // joins
     private ListTableModel<LinkElement> joinTableModel = new ListTableModel<>();
 
     // grouping
-    private QBTreeNode groupingRoot;
+    private TreeNode groupingRoot;
     private ListTableModel<TableElement> groupingTableModel = new ListTableModel<>();
     private ListTableModel<AggregateElement> aggregateTableModel = new ListTableModel<>();
 
@@ -215,7 +215,7 @@ public class Union implements Orderable {
 
     private void fillFromTablesModels(PlainSelect select) {
         var fromItem = select.getFromItem(Table.class);
-        selectedTablesRoot.add(new QBTreeNode(new TableElement(fromItem)));
+        selectedTablesRoot.add(new TreeNode(new TableElement(fromItem)));
         var joins = select.getJoins();
         if (Objects.isNull(joins)) {
             return;
@@ -223,7 +223,7 @@ public class Union implements Orderable {
         for (var join : joins) {
             var rightItem = join.getRightItem();
             if (rightItem instanceof Table) {
-                selectedTablesRoot.add(new QBTreeNode(new TableElement(rightItem)));
+                selectedTablesRoot.add(new TreeNode(new TableElement(rightItem)));
             }
         }
     }
