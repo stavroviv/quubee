@@ -332,11 +332,6 @@ public class FromTables extends QueryPanel {
             }
 
             @Override
-            public Class<TableElement> getColumnClass() {
-                return TableElement.class;
-            }
-
-            @Override
             public TableCellRenderer getRenderer(TableElement tableElement) {
                 return new TableElement.TableRenderer(tableElement);
             }

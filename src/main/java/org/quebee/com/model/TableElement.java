@@ -110,7 +110,6 @@ public class TableElement {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                                                        boolean hasFocus, int row, int column) {
-//            var element = (TableElement) value;
             var label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             label.setText(element.getDescription());
             if (Objects.nonNull(element.getIcon())) {
