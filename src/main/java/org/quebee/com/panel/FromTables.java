@@ -18,6 +18,7 @@ import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
+import org.quebee.com.model.AliasElement;
 import org.quebee.com.model.TableElement;
 import org.quebee.com.model.TreeNode;
 import org.quebee.com.notifier.*;
@@ -130,6 +131,16 @@ public class FromTables extends QueryPanel {
         subscribe(SaveQueryDataNotifier.class, this::saveQueryData);
         subscribe(LoadQueryDataNotifier.class, this::loadQueryData);
         subscribe(NotifyRefreshAvailableTables.class, this::refreshAvailableTables);
+        subscribe(AliasFullRemoveNotifier.class, this::onAliasRemove);
+    }
+
+    private void onAliasRemove(AliasElement aliasElement) {
+        var row = ComponentUtils.getFirstRowByPredicate(x -> {
+            String anObject = aliasElement.getAlias().get(mainPanel.getCurrentUnion());
+            return x.getDescription().equals(anObject);
+        }, selectedFieldsModel);
+        getPublisher(SelectedFieldRemoveNotifier.class).onAction(row);
+        selectedFieldsModel.removeRow(selectedFieldsModel.indexOf(row));
     }
 
     private void refreshAvailableTables() {

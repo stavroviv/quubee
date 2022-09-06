@@ -51,6 +51,7 @@ public class UnionAliasesPanel extends QueryPanel {
     }
 
     private ListTableModel<AliasElement> aliasTableModel;
+    private TableView<AliasElement> aliasTable;
 
     private JComponent getAliasTablePanel() {
         var nameInfo = new EditableStringColumn<>("Field Name", AliasElement::getAliasName, AliasElement::setAliasName) {
@@ -65,11 +66,31 @@ public class UnionAliasesPanel extends QueryPanel {
             }
         };
         aliasTableModel = new ListTableModel<>(nameInfo);
-        var aliasTable = new TableView<>(aliasTableModel);
+        aliasTable = new TableView<>(aliasTableModel);
         aliasTable.getTableHeader().setReorderingAllowed(false);
         var decorator = ToolbarDecorator.createDecorator(aliasTable);
         decorator.disableAddAction();
+        decorator.setRemoveAction(button -> removeAlias());
         return decorator.createPanel();
+    }
+
+    private void removeAlias() {
+        var selectedAlias = aliasTable.getSelectedObject();
+        if (Objects.isNull(selectedAlias)) {
+            return;
+        }
+        for (var entry : mainPanel.getCurrentCte().getUnionMap().entrySet()) {
+            var union = entry.getValue();
+            if (entry.getKey().equals(mainPanel.getCurrentUnion())) {
+                continue;
+            }
+            ComponentUtils.removeFirstRowByPredicate(x -> {
+                var anObject = selectedAlias.getAlias().get("Union " + entry.getKey());
+                return x.getDescription().equals(anObject);
+            }, union.getSelectedFieldsModel());
+        }
+        getPublisher(AliasFullRemoveNotifier.class).onAction(selectedAlias);
+        TableUtil.removeSelectedItems(aliasTable);
     }
 
     private ListTableModel<TableElement> unionTableModel;
