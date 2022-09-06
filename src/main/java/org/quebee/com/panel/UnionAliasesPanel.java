@@ -29,6 +29,7 @@ import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.*;
 
@@ -212,12 +213,15 @@ public class UnionAliasesPanel extends QueryPanel {
                 return stringComboBox;
             }
 
-            stringComboBox = new ComboBox<>(fields.toArray(String[]::new));
+            List<String> objects = new ArrayList<>(fields);
+            objects.add(0, "");
+            stringComboBox = new ComboBox<>(objects.toArray(String[]::new));
             stringComboBox.setEditable(true);
             var clearExtension = ExtendableTextComponent.Extension.create(
                     AllIcons.Actions.Close, AllIcons.Actions.CloseHovered,
                     "Clear", UnionAliasesPanel.this::clearAliasValue
             );
+            stringComboBox.putClientProperty("test", "ttttt");
             stringComboBox.setEditor(new BasicComboBoxEditor() {
                 @Override
                 protected JTextField createEditorComponent() {
@@ -227,7 +231,15 @@ public class UnionAliasesPanel extends QueryPanel {
                     return ecbEditor;
                 }
             });
+            stringComboBox.addActionListener(UnionAliasesPanel.this::processAliasSelect);
             return stringComboBox;
+        }
+    }
+
+    private void processAliasSelect(ActionEvent x) {
+        mainPanel.getCurrentUnion();
+        for (AliasElement item : aliasTable.getItems()) {
+            System.out.println(item);
         }
     }
 
