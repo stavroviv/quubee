@@ -35,6 +35,7 @@ import java.util.*;
 
 @Getter
 public class UnionAliasesPanel extends QueryPanel {
+    private static final String COLUMN_NAME = "column_name";
     private final String header = "Union/Aliases";
     private final JComponent component;
 
@@ -213,15 +214,15 @@ public class UnionAliasesPanel extends QueryPanel {
                 return stringComboBox;
             }
 
-            List<String> objects = new ArrayList<>(fields);
-            objects.add(0, "");
-            stringComboBox = new ComboBox<>(objects.toArray(String[]::new));
+            var availableFields = new ArrayList<>(fields);
+            availableFields.add(0, "");
+            stringComboBox = new ComboBox<>(availableFields.toArray(String[]::new));
             stringComboBox.setEditable(true);
             var clearExtension = ExtendableTextComponent.Extension.create(
                     AllIcons.Actions.Close, AllIcons.Actions.CloseHovered,
                     "Clear", UnionAliasesPanel.this::clearAliasValue
             );
-            stringComboBox.putClientProperty("test", "ttttt");
+            stringComboBox.putClientProperty(COLUMN_NAME, aliasTable.getColumnName(column));
             stringComboBox.setEditor(new BasicComboBoxEditor() {
                 @Override
                 protected JTextField createEditorComponent() {
@@ -236,10 +237,37 @@ public class UnionAliasesPanel extends QueryPanel {
         }
     }
 
-    private void processAliasSelect(ActionEvent x) {
-        mainPanel.getCurrentUnion();
-        for (AliasElement item : aliasTable.getItems()) {
-            System.out.println(item);
+    private void processAliasSelect(ActionEvent event) {
+        @SuppressWarnings("unchecked")
+        var source = (ComboBox<String>) event.getSource();
+        var unionName = source.getClientProperty(COLUMN_NAME).toString();
+        var selectedItem = source.getItem();
+        for (var item : aliasTableModel.getItems()) {
+            if (aliasTable.getSelectedRow() == aliasTableModel.indexOf(item)) {
+                item.getAlias().put(unionName, selectedItem);
+                continue;
+            }
+            var aliasValue = item.getAlias().get(unionName);
+            if (aliasValue != null && aliasValue.equals(selectedItem)) {
+                item.getAlias().put(unionName, "");
+                cleanIfEmptyAliasRow(item);
+                break;
+            }
+        }
+    }
+
+    private void cleanIfEmptyAliasRow(AliasElement item) {
+        var allEmpty = true;
+        var unions = unionTableModel.getItems();
+        for (var union : unions) {
+            var aliasValue = item.getAlias().get(union.getName());
+            if (aliasValue != null && !aliasValue.isEmpty()) {
+                allEmpty = false;
+                break;
+            }
+        }
+        if (allEmpty) {
+            aliasTableModel.removeRow(aliasTableModel.indexOf(item));
         }
     }
 
