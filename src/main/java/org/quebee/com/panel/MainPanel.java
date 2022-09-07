@@ -370,4 +370,12 @@ public class MainPanel extends DefaultDialogWrapper {
         };
         dialog.show();
     }
+
+    public void activateNewUnion(String newUnion) {
+        queryTabs.select(queryTabs.getTabAt(0), true);
+        tabsUnion.getTabs().stream()
+                .filter(x -> x.getText().equals(newUnion.replace("Union ", "")))
+                .findAny()
+                .ifPresent(tabInfo -> tabsUnion.select(tabInfo, true));
+    }
 }

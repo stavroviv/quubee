@@ -23,6 +23,7 @@ import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
 import org.quebee.com.qpart.OneCte;
 import org.quebee.com.util.ComponentUtils;
+import org.quebee.com.util.MouseAdapterDoubleClick;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
@@ -30,12 +31,14 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
 
 @Getter
 public class UnionAliasesPanel extends QueryPanel {
     private static final String COLUMN_NAME = "column_name";
+    public static final String DISTINCT = "Distinct";
     private final String header = "Union/Aliases";
     private final JComponent component;
 
@@ -106,7 +109,7 @@ public class UnionAliasesPanel extends QueryPanel {
                 return Objects.isNull(o) ? "" : o.getName();
             }
         };
-        var isDistinctInfo = new EditableBooleanColumn<>("Distinct", 50, TableElement::isDistinct, TableElement::setDistinct);
+        var isDistinctInfo = new EditableBooleanColumn<>(DISTINCT, 50, TableElement::isDistinct, TableElement::setDistinct);
 
         unionTableModel = new ListTableModel<>(
                 nameInfo,
@@ -122,6 +125,17 @@ public class UnionAliasesPanel extends QueryPanel {
                 return false;
             }
             return unionTableModel.getRowCount() > 1;
+        });
+
+        unionTable.addMouseListener(new MouseAdapterDoubleClick() {
+            @Override
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
+                var selectedObject = unionTable.getSelectedObject();
+                if (DISTINCT.equals(table.getColumnName(table.getSelectedColumn())) || Objects.isNull(selectedObject)) {
+                    return;
+                }
+                mainPanel.activateNewUnion(selectedObject.getName());
+            }
         });
         return decorator.createPanel();
     }
@@ -190,6 +204,7 @@ public class UnionAliasesPanel extends QueryPanel {
         aliasTableModel.setColumnInfos(newColumnInfo);
         curMaxUnion++;
         getPublisher(UnionAddRemoveNotifier.class).onAction(unionTableModel.getItems().size(), interactive);
+        mainPanel.activateNewUnion(newUnion);
     }
 
     private class AvailableFieldsEditor extends AbstractTableCellEditor {
