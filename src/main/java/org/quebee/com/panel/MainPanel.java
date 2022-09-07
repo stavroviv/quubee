@@ -242,16 +242,22 @@ public class MainPanel extends DefaultDialogWrapper {
 
     private void loadCte() {
         dataIsLoading = true;
-        fullQuery.getCteNames().forEach(x ->
-                tabsCte.addTab(new TabInfo(Box.createVerticalBox())).setText(x).setIcon(DatabaseIcons.Package)
-        );
+        fullQuery.getCteNames().forEach(this::newTabInfo);
         setPanelsVisible();
         loadUnions(fullQuery.getFirstCte());
         dataIsLoading = false;
     }
 
+    @NotNull
+    private TabInfo newTabInfo(String name) {
+        var tabInfo = tabsCte.addTab(new TabInfo(Box.createVerticalBox()))
+                .setText(name)
+                .setIcon(DatabaseIcons.Package);
+        tabInfo.getComponent().putClientProperty("tab_name", name);
+        return tabInfo;
+    }
+
     private void setPanelsVisible() {
-//        ctePanel.setVisible(tabsCte.getTabCount() > 1);
         unionPanel.setVisible(tabsUnion.getTabCount() > 1);
         var selectedInfo = queryTabs.getSelectedInfo();
         if (Objects.nonNull(selectedInfo) && selectedInfo.getText().equals(ORDER_PANEL_HEADER)
@@ -335,8 +341,7 @@ public class MainPanel extends DefaultDialogWrapper {
 
     public void addCte(String name) {
         fullQuery.addCte(name);
-        var info = new TabInfo(Box.createVerticalBox());
-        tabsCte.addTab(info).setText(name).setIcon(DatabaseIcons.Package);
+        var info = newTabInfo(name);
         tabsCte.select(info, true);
         queryTabs.select(queryTabs.getTabAt(0), true);
     }
