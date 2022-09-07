@@ -38,6 +38,7 @@ import java.util.*;
 @Getter
 public class UnionAliasesPanel extends QueryPanel {
     private static final String COLUMN_NAME = "column_name";
+    private static final String VALUE_BEFORE_CHANGE = "val_before_change";
     public static final String DISTINCT = "Distinct";
     private final String header = "Union/Aliases";
     private final JComponent component;
@@ -195,8 +196,11 @@ public class UnionAliasesPanel extends QueryPanel {
 
             @Override
             public TableCellRenderer getRenderer(AliasElement aliasElement) {
-                return (table, value, isSelected, hasFocus, row, column) ->
-                        new JBTextField(aliasElement.getAlias().get(getName()));
+                return (table, value, isSelected, hasFocus, row, column) -> {
+                    var text = aliasElement.getAlias().get(getName());
+                    return new JBTextField(Objects.nonNull(text) && !text.isEmpty() ? text : "<Absent>");
+                };
+
             }
         };
 
@@ -237,7 +241,18 @@ public class UnionAliasesPanel extends QueryPanel {
                     AllIcons.Actions.Close, AllIcons.Actions.CloseHovered,
                     "Clear", UnionAliasesPanel.this::clearAliasValue
             );
-            stringComboBox.putClientProperty(COLUMN_NAME, aliasTable.getColumnName(column));
+            var columnName = aliasTable.getColumnName(column);
+            var selectedObject = aliasTable.getSelectedObject();
+            if (Objects.nonNull(selectedObject)) {
+                var item = selectedObject.getAlias().get(columnName);
+                if (Objects.nonNull(item)) {
+                    stringComboBox.setItem(item);
+                }
+            }
+
+            stringComboBox.putClientProperty(COLUMN_NAME, columnName);
+            stringComboBox.putClientProperty(VALUE_BEFORE_CHANGE, stringComboBox.getItem());
+
             stringComboBox.setEditor(new BasicComboBoxEditor() {
                 @Override
                 protected JTextField createEditorComponent() {
@@ -256,6 +271,7 @@ public class UnionAliasesPanel extends QueryPanel {
         @SuppressWarnings("unchecked")
         var source = (ComboBox<String>) event.getSource();
         var unionName = source.getClientProperty(COLUMN_NAME).toString();
+        var valueBeforeChange = source.getClientProperty(VALUE_BEFORE_CHANGE).toString();
         var selectedItem = source.getItem();
         for (var item : aliasTableModel.getItems()) {
             if (aliasTable.getSelectedRow() == aliasTableModel.indexOf(item)) {
@@ -264,7 +280,7 @@ public class UnionAliasesPanel extends QueryPanel {
             }
             var aliasValue = item.getAlias().get(unionName);
             if (aliasValue != null && aliasValue.equals(selectedItem)) {
-                item.getAlias().put(unionName, "");
+                item.getAlias().put(unionName, valueBeforeChange);
                 cleanIfEmptyAliasRow(item);
                 break;
             }
