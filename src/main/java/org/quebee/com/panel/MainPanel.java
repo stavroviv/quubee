@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.quebee.com.panel.OrderPanel.ORDER_PANEL_HEADER;
+import static org.quebee.com.util.Constants.BODY;
 
 public class MainPanel extends DefaultDialogWrapper {
 
@@ -64,7 +65,7 @@ public class MainPanel extends DefaultDialogWrapper {
         super.dispose();
     }
 
-    private int maxUnion;
+    private int maxCte;
 
     @Override
     protected JComponent createCenterPanel() {
@@ -108,9 +109,9 @@ public class MainPanel extends DefaultDialogWrapper {
         var actionAdd = new AnAction("Add", "Add", AllIcons.General.Add) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-                var name = "Table_expression_" + (maxUnion + 1);
-                addCte(name);
-                maxUnion++;
+                //var name = "Table_expression_" + (maxUnion + 1);
+                addCteInteractive(((TabLabel) e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT)).getInfo());
+               // maxUnion++;
             }
         };
         group.add(actionAdd);
@@ -193,13 +194,15 @@ public class MainPanel extends DefaultDialogWrapper {
                     return;
                 }
                 if (Objects.nonNull(oldSelection)) {
-                    JetSelectMessages.getPublisher(id, SaveQueryDataNotifier.class).onAction(fullQuery, oldSelection.getText(), 0);
-                    JetSelectMessages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, oldSelection.getText());
+                    var text = getText(oldSelection);
+                    JetSelectMessages.getPublisher(id, SaveQueryDataNotifier.class).onAction(fullQuery, text, 0);
+                    JetSelectMessages.getPublisher(id, SaveQueryCteDataNotifier.class).onAction(fullQuery, text);
                 }
-                loadUnions(newSelection.getText());
-                loadCteTree(newSelection.getText());
-                JetSelectMessages.getPublisher(id, LoadQueryDataNotifier.class).onAction(fullQuery, newSelection.getText(), 0);
-                JetSelectMessages.getPublisher(id, LoadQueryCteDataNotifier.class).onAction(fullQuery, newSelection.getText());
+                var text = getText(newSelection);
+                loadUnions(text);
+                loadCteTree(text);
+                JetSelectMessages.getPublisher(id, LoadQueryDataNotifier.class).onAction(fullQuery, text, 0);
+                JetSelectMessages.getPublisher(id, LoadQueryCteDataNotifier.class).onAction(fullQuery, text);
             }
         });
         tabsUnion.addListener(new TabsListener() {
@@ -224,6 +227,15 @@ public class MainPanel extends DefaultDialogWrapper {
         });
     }
 
+    @NotNull
+    private String getText(TabInfo oldSelection) {
+        var tab_name = oldSelection.getComponent().getClientProperty("tab_name");
+        if (tab_name != null) {
+            return tab_name.toString();
+        }
+        return oldSelection.getText();
+    }
+
     private void loadCteTree(String text) {
         var commonExpressions = new DBTables();
         for (var cteName : fullQuery.getCteNames()) {
@@ -243,9 +255,14 @@ public class MainPanel extends DefaultDialogWrapper {
     private void loadCte() {
         dataIsLoading = true;
         fullQuery.getCteNames().forEach(this::newTabInfo);
+        renameLast();
         setPanelsVisible();
         loadUnions(fullQuery.getFirstCte());
         dataIsLoading = false;
+    }
+
+    private void renameLast() {
+        tabsCte.getTabs().get(tabsCte.getTabs().size() - 1).setText(BODY);
     }
 
     @NotNull
@@ -339,11 +356,19 @@ public class MainPanel extends DefaultDialogWrapper {
         setPanelsVisible();
     }
 
-    public void addCte(String name) {
+    public void addCteInteractive(TabInfo currentTab) {
+        var name = "Table_expression_" + (maxCte + 1);
         fullQuery.addCte(name);
         var info = newTabInfo(name);
         tabsCte.select(info, true);
         queryTabs.select(queryTabs.getTabAt(0), true);
+        renamePrevLast(name);
+        renameLast();
+        maxCte++;
+    }
+
+    private void renamePrevLast(String name) {
+        tabsCte.getTabs().get(tabsCte.getTabs().size() - 2).setText(name);
     }
 
     private void removeCte(TabInfo tabInfo) {
