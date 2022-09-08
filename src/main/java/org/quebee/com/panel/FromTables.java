@@ -255,11 +255,37 @@ public class FromTables extends QueryPanel {
         });
 
         selectedTablesTree = new TreeTable(selectedTablesModel);
+//            selectedTablesTree = new TreeTable(selectedTablesModel); {
+//            @Override
+//            protected @NotNull ExpandableItemsHandler<TableCell> createExpandableItemsHandler() {
+//                ExpandableItemsHandler<TableCell> expandableItemsHandler = super.createExpandableItemsHandler();
+//                expandableItemsHandler.getExpandedItems();
+//                return expandableItemsHandler;
+//            }
+//        };
         selectedTablesTree.setName(SELECTED_TABLES_TREE);
 //        treeTable.getTree().setToggleClickCount(0);
         selectedTablesTree.setRootVisible(false);
         selectedTablesTree.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         selectedTablesTree.setTreeCellRenderer(new TableElement.Renderer());
+//        selectedFieldsModel.getListeners()
+//        selectedTablesTree.addTreeWillExpandListener(new Tree.ExpandListener() {
+//
+//            public void nodeExpand(ExpandEvent event) {
+//                // No children for the first node
+//                if (!hasChildren(event.getItemId())) {
+//                    tree.setChildrenAllowed(event.getItemId(), false);
+//
+//                } else {
+//                    // Add a few new child nodes to the expanded node
+//
+//                    tree.addItem(childId);
+//                    tree.setParent(childId, event.getItemId());
+//
+//
+//                }
+//            }
+//        });
         //  JBScrollPane jbScrollPane = new JBScrollPane(treeTable);
 
         var decorator = ToolbarDecorator.createDecorator(selectedTablesTree);
@@ -311,17 +337,26 @@ public class FromTables extends QueryPanel {
             @Override
             protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
                 var value = (TreeNode) selectedTablesTree.getValueAt(table.getSelectedRow(), 0);
-                if (Objects.isNull(value.getParent().getParent())) {
-                    return;
-                }
-                var columnObject = value.getUserObject();
-                var tableObject = value.getParent().getUserObject();
-                getPublisher(SelectedFieldAddNotifier.class).onAction(
-                        new TableElement(tableObject.getNameWithAlias(), columnObject.getName()), true
-                );
+                addSelectedFieldInteractive(value);
             }
         });
         return decorator.createPanel();
+    }
+
+    private void addSelectedFieldInteractive(TreeNode value) {
+        if (Objects.isNull(value.getParent().getParent())) {
+            value.nodeToList().forEach(this::addSelectedColumn);
+            return;
+        }
+        addSelectedColumn(value);
+    }
+
+    private void addSelectedColumn(TreeNode child) {
+        var columnObject = child.getUserObject();
+        var tableObject = child.getParent().getUserObject();
+        getPublisher(SelectedFieldAddNotifier.class).onAction(
+                new TableElement(tableObject.getNameWithAlias(), columnObject.getName()), true
+        );
     }
 
     private AnActionButtonUpdater activeTableUpdater() {
