@@ -1,13 +1,17 @@
 package org.quebee.com.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeNode extends DefaultMutableTreeTableNode  {
+public class TreeNode extends DefaultMutableTreeTableNode {
 
     private final TableElement usObject;
+    @Getter @Setter
+    private String source;
 
     public TreeNode(TableElement userObject) {
         super(userObject);

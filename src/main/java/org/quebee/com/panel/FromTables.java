@@ -1,11 +1,12 @@
 package org.quebee.com.panel;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.dnd.*;
+import com.intellij.ide.dnd.DnDAction;
+import com.intellij.ide.dnd.DnDEvent;
+import com.intellij.ide.dnd.DnDManager;
+import com.intellij.ide.dnd.DnDTarget;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.util.Pair;
 import com.intellij.ui.*;
-import com.intellij.ui.render.RenderingUtil;
 import com.intellij.ui.table.TableView;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
@@ -13,7 +14,6 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
-import com.intellij.util.ui.UIUtil;
 import icons.DatabaseIcons;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -23,21 +23,20 @@ import org.quebee.com.model.TableElement;
 import org.quebee.com.model.TreeNode;
 import org.quebee.com.notifier.*;
 import org.quebee.com.qpart.FullQuery;
-import org.quebee.com.util.ComponentUtils;
-import org.quebee.com.util.MouseAdapterDoubleClick;
-import org.quebee.com.util.MyRowsDnDSupport;
-import org.quebee.com.util.RenameDialogWrapper;
+import org.quebee.com.util.*;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Objects;
 
 @Getter
 public class FromTables extends QueryPanel {
+    private static final String SELECTED_TABLES_TREE = "selectedTablesTree";
+    private static final String TABLES_TREE_TABLE = "tablesTreeTable";
+
     private final String header = "Tables and Fields";
     private final JComponent component;
 
@@ -63,10 +62,9 @@ public class FromTables extends QueryPanel {
     }
 
     private void enableDragAndDrop() {
-        DnDManager.getInstance().registerSource(new MyDnDSource("tablesTreeTable"), tablesTreeTable, mainPanel.getDisposable());
-        DnDManager.getInstance().registerSource(new MyDnDSource("selectedTablesTree"), selectedTablesTree, mainPanel.getDisposable());
+        DnDManager.getInstance().registerSource(new MyDnDSource(tablesTreeTable), tablesTreeTable, mainPanel.getDisposable());
+        DnDManager.getInstance().registerSource(new MyDnDSource(selectedTablesTree), selectedTablesTree, mainPanel.getDisposable());
         DnDManager.getInstance().registerTarget(new MyDnDTargetST(), selectedTablesTree, mainPanel.getDisposable());
-//        DnDManager.getInstance().registerTarget(new MyDnDTargetSF(), selectedFieldsTable, mainPanel.getDisposable());
         MyRowsDnDSupport.install(selectedFieldsTable, selectedFieldsModel, (event) -> {
             if (event.getAttachedObject() instanceof TreeNode) {
 //                var p = event.getPoint();
@@ -80,55 +78,48 @@ public class FromTables extends QueryPanel {
 
         @Override
         public void drop(DnDEvent event) {
-
+            if (event.getAttachedObject() instanceof TreeNode) {
+                var node = (TreeNode) event.getAttachedObject();
+                if (TABLES_TREE_TABLE.equals(node.getSource())) {
+                    getPublisher(SelectedTableAddNotifier.class).onAction(node, null);
+                }
+            }
         }
 
         @Override
         public boolean update(DnDEvent event) {
+            if (event.getAttachedObject() instanceof TreeNode) {
+                var node = (TreeNode) event.getAttachedObject();
+                if (SELECTED_TABLES_TREE.equals(node.getSource())) {
+                    event.setDropPossible(false);
+                    return false;
+               }
+            } else if (event.getAttachedObject() instanceof MyRowsDnDSupport.RowDragInfo) {
+                event.setDropPossible(false);
+                return false;
+            }
             event.setDropPossible(true);
             return true;
         }
     }
 
-    private class MyDnDSource implements DnDSource {
+    private class MyDnDSource extends AvailableFieldsTreeDnDSource {
 
-        private final String component;
-
-        public MyDnDSource(String component) {
-            this.component = component;
+        public MyDnDSource(TreeTable treeTable) {
+            super(treeTable);
         }
 
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
-            if (component.equals("selectedTablesTree")) {
+            if (SELECTED_TABLES_TREE.equals(getTreeTableName())) {
                 return true;
             }
             var value = (TreeNode) tablesTreeTable.getValueAt(tablesTreeTable.getSelectedRow(), 0);
             return !(value.equals(tablesRoot) || value.equals(cteRoot));
         }
 
-        public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
-            var value = (TreeNode) tablesTreeTable.getValueAt(tablesTreeTable.getSelectedRow(), 0);
-            return new DnDDragStartBean(value, dragOrigin);
-        }
-
-        public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action, Point dragOrigin, @NotNull DnDDragStartBean bean) {
-            var c = new SimpleColoredComponent();
-            c.setForeground(RenderingUtil.getForeground(tablesTreeTable));
-            c.setBackground(RenderingUtil.getBackground(tablesTreeTable));
-            c.setIcon(DatabaseIcons.Col);
-
-            var attachedObject = (TreeNode) bean.getAttachedObject();
-            c.append(" +" + attachedObject.getUserObject().getDescription(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
-
-            var size = c.getPreferredSize();
-            c.setSize(size);
-            var image = UIUtil.createImage(c, size.width, size.height, 2);
-            c.setOpaque(false);
-            var g = image.createGraphics();
-            c.paint(g);
-            g.dispose();
-
-            return Pair.create(image, new Point(-20, 5));
+        @Override
+        public String getFieldDescription(TreeNode attachedObject) {
+            return attachedObject.getUserObject().getDescription();
         }
     }
 
@@ -264,6 +255,7 @@ public class FromTables extends QueryPanel {
         });
 
         selectedTablesTree = new TreeTable(selectedTablesModel);
+        selectedTablesTree.setName(SELECTED_TABLES_TREE);
 //        treeTable.getTree().setToggleClickCount(0);
         selectedTablesTree.setRootVisible(false);
         selectedTablesTree.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -390,7 +382,14 @@ public class FromTables extends QueryPanel {
                 new TreeColumnInfo("Database")
         });
         tablesTreeTable = new TreeTable(databaseModel);
-        tablesTreeTable.addMouseListener(fieldsMouseListener(tablesTreeTable));
+        tablesTreeTable.setName(TABLES_TREE_TABLE);
+        tablesTreeTable.addMouseListener(new MouseAdapterDoubleClick(true) {
+            @Override
+            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
+                getPublisher(SelectedTableAddNotifier.class)
+                        .onAction((TreeNode) tablesTreeTable.getValueAt(table.getSelectedRow(), 0), null);
+            }
+        });
         tablesTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablesTreeTable.setTreeCellRenderer(new TableElement.Renderer());
         tablesTreeTable.setRootVisible(false);
@@ -404,17 +403,6 @@ public class FromTables extends QueryPanel {
         });
 
         return decorator.createPanel();
-    }
-
-    @NotNull
-    private MouseAdapter fieldsMouseListener(TreeTable treeTable) {
-        return new MouseAdapterDoubleClick(true) {
-            @Override
-            protected void mouseDoubleClicked(MouseEvent mouseEvent, JTable table) {
-                getPublisher(SelectedTableAddNotifier.class)
-                        .onAction((TreeNode) treeTable.getValueAt(table.getSelectedRow(), 0), null);
-            }
-        };
     }
 
     public void setDatabaseTables(DBTables dbStructure) {

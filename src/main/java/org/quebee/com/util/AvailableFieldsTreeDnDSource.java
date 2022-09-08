@@ -22,12 +22,17 @@ public abstract class AvailableFieldsTreeDnDSource implements DnDSource {
         this.treeTable = treeTable;
     }
 
+    protected String getTreeTableName() {
+        return treeTable.getName();
+    }
+
     public abstract boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin);
 
     public abstract String getFieldDescription(TreeNode attachedObject);
 
     public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
         var value = (TreeNode) treeTable.getValueAt(treeTable.getSelectedRow(), 0);
+        value.setSource(getTreeTableName());
         return new DnDDragStartBean(value, dragOrigin);
     }
 
