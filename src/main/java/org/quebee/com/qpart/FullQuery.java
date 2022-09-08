@@ -49,7 +49,7 @@ public class FullQuery {
     }
 
     public void addCte(String cteName) {
-        cteMap.put(cteName, new OneCte(cteName, null, cteMap.size() + 1));
+        cteMap.put(cteName, new OneCte(null, cteMap.size() + 1));
     }
 
     public void removeCte(String cteName) {
@@ -57,7 +57,7 @@ public class FullQuery {
     }
 
     public void addCte(String cteName, SelectBody selectBody, int order) {
-        cteMap.put(cteName, new OneCte(cteName, selectBody, order));
+        cteMap.put(cteName, new OneCte(selectBody, order));
     }
 
     public String getFirstCte() {
@@ -88,7 +88,9 @@ public class FullQuery {
                 break;
             }
             var cteBody = new WithItem();
-            cteBody.setName(cteMap.get(cte).getCteName());
+            cteBody.setName(cte);
+            cteBody.setUseValues(false);
+//            cteBody.setUseBracketsForValues(false);
             var subSelect = new SubSelect();
             subSelect.setSelectBody(getSelectBody(cte));
             cteBody.setSubSelect(subSelect);

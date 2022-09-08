@@ -16,7 +16,7 @@ import static org.quebee.com.panel.OrderPanel.DESC;
 @Getter
 @Setter
 public class OneCte implements Orderable {
-    private String cteName;
+//    private String cteName;
     private int order;
     private int curMaxUnion;
 
@@ -26,8 +26,8 @@ public class OneCte implements Orderable {
     private ListTableModel<TableElement> unionTable = new ListTableModel<>();
     private ListTableModel<OrderElement> orderTable = new ListTableModel<>();
 
-    public OneCte(String cteName, SelectBody selectBody, Integer order) {
-        this.cteName = cteName;
+    public OneCte(SelectBody selectBody, Integer order) {
+//        this.cteName = cteName;
         this.order = order;
 
         unionTable.addRow(new TableElement("Union " + 0));
