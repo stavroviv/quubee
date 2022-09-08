@@ -229,10 +229,10 @@ public class MainPanel extends DefaultDialogWrapper {
 
     @NotNull
     private String getText(TabInfo oldSelection) {
-        var tab_name = oldSelection.getComponent().getClientProperty("tab_name");
-        if (tab_name != null) {
-            return tab_name.toString();
-        }
+//        var tab_name = oldSelection.getComponent().getClientProperty("tab_name");
+//        if (tab_name != null) {
+//            return tab_name.toString();
+//        }
         return oldSelection.getText();
     }
 
@@ -360,10 +360,10 @@ public class MainPanel extends DefaultDialogWrapper {
         var name = "Table_expression_" + (maxCte + 1);
         fullQuery.addCte(name);
         var info = newTabInfo(name);
-        tabsCte.select(info, true);
-        queryTabs.select(queryTabs.getTabAt(0), true);
         renamePrevLast(name);
         renameLast();
+        tabsCte.select(info, true);
+        queryTabs.select(queryTabs.getTabAt(0), true);
         maxCte++;
     }
 
