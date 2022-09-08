@@ -36,7 +36,7 @@ public class FullQuery {
             }
             addCte(BODY, select.getSelectBody(), i);
         } else {
-            addCte(CTE_0, select.getSelectBody(), 0);
+            addCte(BODY, select.getSelectBody(), 0);
         }
     }
 
