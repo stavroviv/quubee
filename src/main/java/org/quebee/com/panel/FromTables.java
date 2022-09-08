@@ -63,7 +63,8 @@ public class FromTables extends QueryPanel {
     }
 
     private void enableDragAndDrop() {
-        DnDManager.getInstance().registerSource(new MyDnDSource(), tablesTreeTable, mainPanel.getDisposable());
+        DnDManager.getInstance().registerSource(new MyDnDSource("tablesTreeTable"), tablesTreeTable, mainPanel.getDisposable());
+        DnDManager.getInstance().registerSource(new MyDnDSource("selectedTablesTree"), selectedTablesTree, mainPanel.getDisposable());
         DnDManager.getInstance().registerTarget(new MyDnDTargetST(), selectedTablesTree, mainPanel.getDisposable());
 //        DnDManager.getInstance().registerTarget(new MyDnDTargetSF(), selectedFieldsTable, mainPanel.getDisposable());
         MyRowsDnDSupport.install(selectedFieldsTable, selectedFieldsModel, (event) -> {
@@ -91,8 +92,18 @@ public class FromTables extends QueryPanel {
 
     private class MyDnDSource implements DnDSource {
 
+        private final String component;
+
+        public MyDnDSource(String component) {
+            this.component = component;
+        }
+
         public boolean canStartDragging(DnDAction action, @NotNull Point dragOrigin) {
-            return true;
+            if (component.equals("selectedTablesTree")) {
+                return true;
+            }
+            var value = (TreeNode) tablesTreeTable.getValueAt(tablesTreeTable.getSelectedRow(), 0);
+            return !(value.equals(tablesRoot) || value.equals(cteRoot));
         }
 
         public @NotNull DnDDragStartBean startDragging(DnDAction action, @NotNull Point dragOrigin) {
