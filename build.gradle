@@ -34,11 +34,11 @@ test {
     useJUnitPlatform()
 }
 
-//if (JavaVersion.current() != JavaVersion.VERSION_17 || !System.getProperty('java.vm.vendor').toLowerCase().contains('amazon')) {
-//    throw new GradleException('Java version must be 17 and Java vendor Amazon. Please setup correct JAVA_HOME')
-//}
-//
-//tasks.withType(JavaCompile) {
-//    sourceCompatibility = JavaVersion.VERSION_17
-//    targetCompatibility = JavaVersion.VERSION_17
-//}
+if (JavaVersion.current() != JavaVersion.VERSION_11 || !System.getProperty('java.vm.vendor').toLowerCase().contains('amazon')) {
+    throw new GradleException('Java version must be 11 and Java vendor Amazon. Please setup correct JAVA_HOME')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
