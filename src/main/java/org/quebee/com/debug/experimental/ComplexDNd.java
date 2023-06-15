@@ -7,11 +7,11 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
 
-public class ComplexDnD extends JFrame implements DragGestureListener {
+public class ComplexDNd extends JFrame implements DragGestureListener {
 
     private JPanel leftPanel;
 
-    public ComplexDnD() {
+    public ComplexDNd() {
         initUI();
     }
 
@@ -127,7 +127,7 @@ public class ComplexDnD extends JFrame implements DragGestureListener {
 
         EventQueue.invokeLater(() -> {
 
-            var ex = new ComplexDnD();
+            var ex = new ComplexDNd();
             ex.setVisible(true);
         });
     }

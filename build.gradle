@@ -16,8 +16,8 @@ dependencies {
     implementation "com.github.jsqlparser:jsqlparser:4.4"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    compileOnly 'org.projectlombok:lombok:1.18.10'
-    annotationProcessor 'org.projectlombok:lombok:1.18.10'
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -33,3 +33,12 @@ patchPluginXml {
 test {
     useJUnitPlatform()
 }
+
+//if (JavaVersion.current() != JavaVersion.VERSION_17 || !System.getProperty('java.vm.vendor').toLowerCase().contains('amazon')) {
+//    throw new GradleException('Java version must be 17 and Java vendor Amazon. Please setup correct JAVA_HOME')
+//}
+//
+//tasks.withType(JavaCompile) {
+//    sourceCompatibility = JavaVersion.VERSION_17
+//    targetCompatibility = JavaVersion.VERSION_17
+//}
