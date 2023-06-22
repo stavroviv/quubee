@@ -3,7 +3,7 @@
     <name>JetSelectV2</name>
     <vendor email="test@test.com" url="http://test.com">test</vendor>
 
-    <description>description of my super puper plugin description of my super puper plugin</description>
+    <description>this plugin provides possibility to create selects queries in UI mode</description>
 
     <depends>com.intellij.modules.database</depends>
     <depends>com.intellij.modules.ultimate</depends>
@@ -16,7 +16,7 @@
         <action id="com.querybuilder.MainAction"
                 class="org.quebee.com.MainAction"
                 text="Jet Select"
-                icon="/images/table.png"
+                icon="/images/table.svg"
                 description="Open Jet Select to edit query">
             <add-to-group group-id="Console.Jdbc.Left" anchor="after" relative-to-action="Database.Settings"/>
         </action>

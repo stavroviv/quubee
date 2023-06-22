@@ -50,8 +50,6 @@ import org.quebee.com.util.MouseAdapterDoubleClick;
 import org.quebee.com.util.MyRowsDnDSupport;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -134,12 +132,9 @@ public class ConditionsPanel extends QueryPanel {
 
 
         conditionTable = new TableView<>(conditionTableModel);
-        conditionTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                System.out.println("test");
+        conditionTable.getSelectionModel().addListSelectionListener(event -> {
+            System.out.println("test");
 //                conditionTable.getSelection().
-            }
         });
         var decorator = ToolbarDecorator.createDecorator(conditionTable);
         decorator.setAddAction(button -> addCondition(null, -1));
@@ -488,13 +483,13 @@ public class ConditionsPanel extends QueryPanel {
         subscribe(LoadQueryDataNotifier.class, this::loadQueryData);
     }
 
-    private void loadQueryData(FullQuery fullQuery, String cteName, int i1) {
-        var union = fullQuery.getCte(cteName).getUnion("" + i1);
+    private void loadQueryData(FullQuery fullQuery, String cteName, int id) {
+        var union = fullQuery.getCte(cteName).getUnion(String.valueOf(id));
         ComponentUtils.loadTableToTable(union.getConditionTableModel(), conditionTableModel);
     }
 
     private void saveQueryData(FullQuery fullQuery, String cteName, int id) {
-        var union = fullQuery.getCte(cteName).getUnion("" + id);
+        var union = fullQuery.getCte(cteName).getUnion(String.valueOf(id));
         ComponentUtils.loadTableToTable(conditionTableModel, union.getConditionTableModel());
         ComponentUtils.clearTable(conditionTableModel);
         ComponentUtils.clearTree(allFieldsRoot);
