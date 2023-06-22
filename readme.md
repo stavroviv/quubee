@@ -1,6 +1,9 @@
-Jet Builder  
 Jet Select  
-UI Bui  
-UI Select  
-Query Wizard
-Jet Wizard
+
+**UI plugin for SQL Selects creation**
+
+*can help in SQL selects creation for users not well familiar with SQL*
+
+**Demo**
+
+![Demo](demo/demo.gif)  
