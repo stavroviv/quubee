@@ -1,4 +1,4 @@
-Jet Select  
+**Jet Select**
 
 **UI plugin for SQL Selects creation**
 
@@ -6,4 +6,10 @@ Jet Select
 
 **Demo**
 
-![Demo](demo/demo.gif)  
+Query with joins, conditions, order, alias naming
+
+![demo_simple](demo/demo.gif)
+
+Common Table Expressions
+
+![demo_cte](demo/demo_cte.gif)
