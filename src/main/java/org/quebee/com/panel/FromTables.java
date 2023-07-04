@@ -67,9 +67,8 @@ public class FromTables extends QueryPanel {
         DnDManager.getInstance().registerTarget(new MyDnDTargetST(), selectedTablesTree, mainPanel.getDisposable());
         MyRowsDnDSupport.install(selectedFieldsTable, selectedFieldsModel, (event) -> {
             if (event.getAttachedObject() instanceof TreeNode) {
-//                var p = event.getPoint();
-//                var i = conditionTable.rowAtPoint(p);
-//                addCondition((QBTreeNode) event.getAttachedObject(), i);
+                // TODO add insert order
+                addSelectedFieldInteractive((TreeNode) event.getAttachedObject());
             }
         });
     }
@@ -119,7 +118,16 @@ public class FromTables extends QueryPanel {
 
         @Override
         public String getFieldDescription(TreeNode attachedObject) {
-            return attachedObject.getUserObject().getDescription();
+            return getDescription(attachedObject);
+        }
+
+        private String getDescription(TreeNode node) {
+            if (tablesRoot.equals(node.getParent())) {
+                return node.getUserObject().getName();
+            }
+            var columnObject = node.getUserObject();
+            var tableObject = node.getParent().getUserObject();
+            return tableObject.getName() + "." + columnObject.getName();
         }
     }
 
@@ -137,9 +145,9 @@ public class FromTables extends QueryPanel {
     }
 
     private void onAliasRemove(AliasElement aliasElement) {
-        var row = ComponentUtils.getFirstRowByPredicate(x -> {
+        var row = ComponentUtils.getFirstRowByPredicate(element -> {
             var anObject = aliasElement.getAlias().get(mainPanel.getCurrentUnion());
-            return x.getDescription().equals(anObject);
+            return element.getDescription().equals(anObject);
         }, selectedFieldsModel);
         getPublisher(SelectedFieldRemoveNotifier.class).onAction(row);
         selectedFieldsModel.removeRow(selectedFieldsModel.indexOf(row));
@@ -164,17 +172,17 @@ public class FromTables extends QueryPanel {
         }
 
         var union = cte.getUnion("" + unionNumber);
-        union.getSelectedTablesRoot().nodeToList().forEach(x ->
+        union.getSelectedTablesRoot().nodeToList().forEach(treeNode ->
                 List.of(tablesRoot, cteRoot).forEach(y -> y.nodeToList().forEach(node -> {
-                    var xName = x.getUserObject().getName();
+                    var xName = treeNode.getUserObject().getName();
                     var nodeName = node.getUserObject().getName();
                     if (nodeName.equals(xName)) {
-                        getPublisher(SelectedTableAddNotifier.class).onAction(node, x.getUserObject().getAlias());
+                        getPublisher(SelectedTableAddNotifier.class).onAction(node, treeNode.getUserObject().getAlias());
                     }
                 }))
         );
-        union.getSelectedFieldsModel().getItems().forEach(x ->
-                getPublisher(SelectedFieldAddNotifier.class).onAction(x, false)
+        union.getSelectedFieldsModel().getItems().forEach(item ->
+                getPublisher(SelectedFieldAddNotifier.class).onAction(item, false)
         );
         selectedTablesModel.reload();
     }
@@ -200,19 +208,19 @@ public class FromTables extends QueryPanel {
     }
 
     private void addSelectedTable(TreeNode node, String alias) {
-        var parent1 = node.getParent();
-        if (Objects.nonNull(parent1) && parent1.equals(sourceRoot)) {
+        var nodeParent = node.getParent();
+        if (Objects.nonNull(nodeParent) && nodeParent.equals(sourceRoot)) {
             return;
         }
-        var parent2 = parent1.getParent();
-        if (Objects.nonNull(parent2) && parent2.equals(sourceRoot)) {
+        var nodeParentParent = nodeParent.getParent();
+        if (Objects.nonNull(nodeParentParent) && nodeParentParent.equals(sourceRoot)) {
             addSelectedTableNode(node, alias);
             return;
         }
         var parent = node.getParent();
         var parentUserObject = parent.getUserObject();
         if (selectedTablesRoot.nodeToList().stream()
-                .noneMatch(x -> x.getUserObject().getName().equals(parentUserObject.getName()))) {
+                .noneMatch(treeNode -> treeNode.getUserObject().getName().equals(parentUserObject.getName()))) {
             addSelectedTableNode(parent, alias);
         }
         getPublisher(SelectedFieldAddNotifier.class).onAction(
@@ -307,8 +315,8 @@ public class FromTables extends QueryPanel {
                     protected String validateSource() {
                         var result = getResult().getText();
                         if (selectedTablesRoot.nodeToList().stream()
-                                .map(x -> x.getUserObject().getName())
-                                .anyMatch(x -> x.equals(result) && !x.equals(input))) {
+                                .map(node -> node.getUserObject().getName())
+                                .anyMatch(node -> node.equals(result) && !node.equals(input))) {
                             return "Table with name <b>" + result + "</b> already exists";
                         }
                         return null;
@@ -360,7 +368,7 @@ public class FromTables extends QueryPanel {
     }
 
     private AnActionButtonUpdater activeTableUpdater() {
-        return e -> {
+        return event -> {
             if (selectedTablesTree.getSelectedRow() == -1) {
                 return false;
             }

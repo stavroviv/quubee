@@ -39,23 +39,24 @@ public abstract class AvailableFieldsTreeDnDSource implements DnDSource {
     public @NotNull Pair<Image, Point> createDraggedImage(DnDAction action,
                                                           Point dragOrigin,
                                                           @NotNull DnDDragStartBean bean) {
-        var c = new SimpleColoredComponent();
-        c.setForeground(RenderingUtil.getForeground(treeTable));
-        c.setBackground(RenderingUtil.getBackground(treeTable));
+        var component = new SimpleColoredComponent();
+        component.setForeground(RenderingUtil.getForeground(treeTable));
+        component.setBackground(RenderingUtil.getBackground(treeTable));
         var attachedObject = (TreeNode) bean.getAttachedObject();
         var userObject = attachedObject.getUserObject();
-        c.setIcon(userObject.getIcon());
+        component.setIcon(userObject.getIcon());
 
         var description = getFieldDescription(attachedObject);
-        c.append(" +" + description, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+        component.append(" +" + description, SimpleTextAttributes.REGULAR_ATTRIBUTES);
 
-        var size = c.getPreferredSize();
-        c.setSize(size);
-        var image = UIUtil.createImage(c, size.width, size.height, 2);
-        c.setOpaque(false);
-        var g = image.createGraphics();
-        c.paint(g);
-        g.dispose();
+        var size = component.getPreferredSize();
+        component.setSize(size);
+        var image = UIUtil.createImage(component, size.width, size.height, 2);
+        component.setOpaque(false);
+
+        var graphics = image.createGraphics();
+        component.paint(graphics);
+        graphics.dispose();
 
         return Pair.create(image, new Point(-20, 5));
     }
