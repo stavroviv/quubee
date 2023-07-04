@@ -30,12 +30,12 @@ public final class MyRowsDnDSupport {
 
     private static void dropHandler(JComponent component, EditableModel model, Consumer<DnDEvent> handler, DnDEvent event) {
         handler.accept(event);
-        final var o = event.getAttachedObject();
-        final var p = event.getPoint();
-        if (o instanceof RowDragInfo && ((RowDragInfo) o).component == component) {
-            var oldIndex = ((RowDragInfo) o).row;
+        final var attachedObject = event.getAttachedObject();
+        final var eventPoint = event.getPoint();
+        if (attachedObject instanceof RowDragInfo && ((RowDragInfo) attachedObject).component == component) {
+            var oldIndex = ((RowDragInfo) attachedObject).row;
             if (oldIndex == -1) return;
-            var newIndex = getRow(component, p);
+            var newIndex = getRow(component, eventPoint);
             if (newIndex == -1) {
                 newIndex = getRowCount(component) - 1;
             }
@@ -61,11 +61,11 @@ public final class MyRowsDnDSupport {
     }
 
     private static boolean targetChecker(JComponent component, EditableModel model, DnDEvent event) {
-        var o = event.getAttachedObject();
-        if (o instanceof TreeNode) {
+        var attachedObject = event.getAttachedObject();
+        if (attachedObject instanceof TreeNode) {
             return dndAnotherSourceInfo(component, event);
-        } else if (o instanceof RowDragInfo) {
-            if (((RowDragInfo) o).component == component) {
+        } else if (attachedObject instanceof RowDragInfo) {
+            if (((RowDragInfo) attachedObject).component == component) {
                 return dndRowDragInfo(component, model, event);
             } else {
                 return dndAnotherSourceInfo(component, event);
@@ -91,8 +91,8 @@ public final class MyRowsDnDSupport {
     }
 
     private static boolean dndRowDragInfo(JComponent component, EditableModel model, DnDEvent event) {
-        var o = event.getAttachedObject();
-        var oldIndex = ((RowDragInfo) o).row;
+        var attachedObject = event.getAttachedObject();
+        var oldIndex = ((RowDragInfo) attachedObject).row;
         var newIndex = getRow(component, event.getPoint());
         if (newIndex == -1) {
             event.setDropPossible(false, "");
