@@ -5,7 +5,6 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
 import org.jetbrains.annotations.NotNull;
 import org.quebee.com.database.DBTables;
 import org.quebee.com.notifier.LoadQueryCteDataNotifier;
@@ -57,7 +56,7 @@ public class DebugGUI implements StartupActivity {
     private void testActivity2() {
         FullQuery fullQuery;
         try {
-            Statement statement = CCJSqlParserUtil.parse("with test_table_1 as (" +
+            var statement = CCJSqlParserUtil.parse("with test_table_1 as (" +
                     "select table.id, table.test_2, table.test_3, table1.test_4 " +
                     "from table " +
                     "join table1 on table.id=table1.id " +
@@ -108,7 +107,7 @@ public class DebugGUI implements StartupActivity {
     private void testActivityJoinTable() {
         FullQuery fullQuery;
         try {
-            Statement statement = CCJSqlParserUtil.parse(
+            var statement = CCJSqlParserUtil.parse(
                     "select test_table_1.id, ss2.id " +
                             "from test_table_1 " +
                             "left join test_table_2 on test_table_1.id=test_table_2.id " +
@@ -146,7 +145,7 @@ public class DebugGUI implements StartupActivity {
     private void testOrder() {
         FullQuery fullQuery;
         try {
-            Statement statement = CCJSqlParserUtil.parse(
+            var statement = CCJSqlParserUtil.parse(
                     "with test as (SELECT t4.id as field, t4.a, t4.b\n" +
                             "              FROM t4,\n" +
                             "                   t7\n" +

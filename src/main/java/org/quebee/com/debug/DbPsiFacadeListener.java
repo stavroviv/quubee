@@ -11,7 +11,7 @@ public class DbPsiFacadeListener implements DbPsiFacade.Listener {
     public void onChanged(@Nullable DbDataSource dbDataSource) {
 //        System.out.println(dbDataSource);
         if (Objects.nonNull(dbDataSource)) {
-            String name = dbDataSource.getModel().getCurrentRootNamespace().getName();
+            var name = dbDataSource.getModel().getCurrentRootNamespace().getName();
 //            System.out.println(dbDataSource.getDasChildren(ObjectKind.TABLE).toList());
         }
 

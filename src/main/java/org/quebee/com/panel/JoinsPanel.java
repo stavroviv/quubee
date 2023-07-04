@@ -191,7 +191,7 @@ public class JoinsPanel extends QueryPanel {
         return new DefaultCellEditor(
                 new ComboBox<>(tables.stream()
                         .map(x -> {
-                            TableElement userObject = x.getUserObject();
+                            var userObject = x.getUserObject();
                             return Objects.nonNull(userObject.getAlias()) ? userObject.getAlias() : userObject.getName();
                         })
                         .toArray(String[]::new))

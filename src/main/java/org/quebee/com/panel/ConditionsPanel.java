@@ -170,7 +170,7 @@ public class ConditionsPanel extends QueryPanel {
         }
         var model = (TableModel) e.getSource();
         var columnName = model.getColumnName(column);
-        int firstRow = e.getFirstRow();
+        var firstRow = e.getFirstRow();
         customColumnChanged(firstRow, column, model, columnName);
     }
 
@@ -196,7 +196,7 @@ public class ConditionsPanel extends QueryPanel {
         }
 
         row.setCustom(true);
-        int i = Messages.showOkCancelDialog(
+        var i = Messages.showOkCancelDialog(
                 "Cannot convert to simple condition. Continue?", "Warning", "Ok", "Cancel",
                 Messages.getWarningIcon()
         );
@@ -394,7 +394,7 @@ public class ConditionsPanel extends QueryPanel {
                 var userObject = table.getUserObject();
                 var tableName = userObject.getDescription();
                 var tableNode = new TreeComboTableElement(tableName, null, userObject.getIcon());
-                for (int i = 0; i < table.getChildCount(); i++) {
+                for (var i = 0; i < table.getChildCount(); i++) {
                     var column = table.getChildAt(i);
                     tableNode.add(new TreeComboTableElement(column.getUserObject().getName(), tableName, DatabaseIcons.Col));
                 }
@@ -429,10 +429,10 @@ public class ConditionsPanel extends QueryPanel {
                 var treeModel = conditionLeftCombo.getTreeModel();
                 var root = treeModel.getRoot();
                 TreeComboTableElement find = null;
-                for (int i = 0; i < treeModel.getChildCount(root); i++) {
+                for (var i = 0; i < treeModel.getChildCount(root); i++) {
                     var tableEl = (TreeComboTableElement) treeModel.getChild(root, i);
                     if (tableEl.getText().equals(split[0])) {
-                        for (int j = 0; j < treeModel.getChildCount(tableEl); j++) {
+                        for (var j = 0; j < treeModel.getChildCount(tableEl); j++) {
                             var columnEl = (TreeComboTableElement) treeModel.getChild(tableEl, j);
                             if (columnEl.getText().equals(split[1])) {
                                 find = columnEl;

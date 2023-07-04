@@ -138,7 +138,7 @@ public class FromTables extends QueryPanel {
 
     private void onAliasRemove(AliasElement aliasElement) {
         var row = ComponentUtils.getFirstRowByPredicate(x -> {
-            String anObject = aliasElement.getAlias().get(mainPanel.getCurrentUnion());
+            var anObject = aliasElement.getAlias().get(mainPanel.getCurrentUnion());
             return x.getDescription().equals(anObject);
         }, selectedFieldsModel);
         getPublisher(SelectedFieldRemoveNotifier.class).onAction(row);

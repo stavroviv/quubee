@@ -20,7 +20,7 @@ public final class MyRowsDnDSupport {
         table.setTransferHandler(new TransferHandler(null));
         DnDSupport.createBuilder(table)
                 .setBeanProvider(info -> {
-                    final Point p = info.getPoint();
+                    final var p = info.getPoint();
                     return new DnDDragStartBean(new RowDragInfo(table, getRow(table, p)));
                 })
                 .setTargetChecker(event -> targetChecker(table, model, event))

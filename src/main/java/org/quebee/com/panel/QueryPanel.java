@@ -1,7 +1,6 @@
 package org.quebee.com.panel;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.util.messages.Topic;
 import org.quebee.com.util.JetSelectMessages;
 
 import javax.swing.*;
@@ -24,7 +23,7 @@ public abstract class QueryPanel {
 
     protected <L> void subscribe(Class<L> listenerClass, L handler) {
         var bus = ApplicationManager.getApplication().getMessageBus();
-        Topic<L> topic = getTopic(mainPanel.getId(), listenerClass);
+        var topic = getTopic(mainPanel.getId(), listenerClass);
         bus.connect(mainPanel.getDisposable()).subscribe(topic, handler);
     }
 

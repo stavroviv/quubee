@@ -34,10 +34,14 @@ public class TreeNode extends DefaultMutableTreeTableNode {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TreeNode that = (TreeNode) o;
+    public boolean equals(Object node) {
+        if (this == node) {
+            return true;
+        }
+        if (node == null || getClass() != node.getClass()) {
+            return false;
+        }
+        var that = (TreeNode) node;
         return usObject.getId().equals(that.getUserObject().getId());
     }
 

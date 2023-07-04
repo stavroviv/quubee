@@ -182,7 +182,7 @@ public class MainPanel extends DefaultDialogWrapper {
         if (Objects.isNull(data)) {
             return;
         }
-        boolean enabled = tabsCte.getTabs().indexOf(data.getInfo()) != tabsCte.getTabs().size() - 1;
+        var enabled = tabsCte.getTabs().indexOf(data.getInfo()) != tabsCte.getTabs().size() - 1;
         e.getPresentation().setEnabled(enabled);
     }
 

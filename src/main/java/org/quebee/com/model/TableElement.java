@@ -47,7 +47,7 @@ public class TableElement extends IconableElement {
 
     public TableElement(FromItem fromItem) {
         if (fromItem instanceof Table) {
-            Table fromItem1 = (Table) fromItem;
+            var fromItem1 = (Table) fromItem;
             this.name = fromItem1.getName();
         }
         this.alias = Objects.nonNull(fromItem.getAlias()) ? fromItem.getAlias().getName() : null;

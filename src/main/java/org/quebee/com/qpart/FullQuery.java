@@ -210,10 +210,8 @@ public class FullQuery {
 
     @SneakyThrows
     private static Expression getExpression(String where) {
-        Statement stmt = CCJSqlParserUtil.parse(
-                "SELECT * FROM TABLES WHERE " + where
-        );
-        Select select = (Select) stmt;
+        var statement = CCJSqlParserUtil.parse("SELECT * FROM TABLES WHERE " + where);
+        var select = (Select) statement;
         return ((PlainSelect) select.getSelectBody()).getWhere();
     }
 
@@ -322,10 +320,10 @@ public class FullQuery {
             var sItem = new SelectExpressionItem();
             sItem.setExpression(expression);
 
-            var expression1 = sItem.getExpression();
+            var itemExpression = sItem.getExpression();
             var equals = true;
-            if (expression1 instanceof Column) {
-                Column column = (Column) expression1;
+            if (itemExpression instanceof Column) {
+                var column = (Column) itemExpression;
                 equals = !column.getColumnName().equals(item.getAliasName());
             }
 

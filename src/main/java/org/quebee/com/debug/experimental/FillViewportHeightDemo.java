@@ -50,8 +50,8 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
     private DefaultTableModel tableModel;
 
     private static String getNextString(int count) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < 5; i++) {
+        var buf = new StringBuffer();
+        for (var i = 0; i < 5; i++) {
             buf.append(String.valueOf(count));
             buf.append(",");
         }
@@ -62,7 +62,7 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
     }
 
     private static DefaultTableModel getDefaultTableModel() {
-        String[] cols = {"Foo", "Toto", "Kala", "Pippo", "Boing"};
+        var cols = new String[]{"Foo", "Toto", "Kala", "Pippo", "Boing"};
         return new DefaultTableModel(null, cols);
     }
 
@@ -97,9 +97,9 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
                 }
 
                 // fetch the drop location
-                JTable.DropLocation dl = (JTable.DropLocation)support.getDropLocation();
+                var dropLocation = (JTable.DropLocation)support.getDropLocation();
 
-                int row = dl.getRow();
+                var row = dropLocation.getRow();
 
                 // fetch the data and bail if this fails
                 String data;
@@ -111,10 +111,10 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
                     return false;
                 }
 
-                String[] rowData = data.split(",");
+                var rowData = data.split(",");
                 tableModel.insertRow(row, rowData);
 
-                Rectangle rect = table.getCellRect(row, 0, false);
+                var rect = table.getCellRect(row, 0, false);
                 if (rect != null) {
                     table.scrollRectToVisible(rect);
                 }
@@ -128,7 +128,7 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
             }
         });
 
-        JList dragFrom = new JList(model);
+        var dragFrom = new JList(model);
         dragFrom.setFocusable(false);
         dragFrom.setPrototypeCellValue(getNextString(100));
         model.insertElementAt(getNextString(count++), 0);
@@ -138,8 +138,8 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
         dragFrom.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent me) {
                 if (SwingUtilities.isLeftMouseButton(me) && me.getClickCount() % 2 == 0) {
-                    String text = (String)model.getElementAt(0);
-                    String[] rowData = text.split(",");
+                    var text = (String)model.getElementAt(0);
+                    var rowData = text.split(",");
                     tableModel.insertRow(table.getRowCount(), rowData);
                     model.removeAllElements();
                     model.insertElementAt(getNextString(count++), 0);
@@ -147,9 +147,9 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
             }
         });
 
-        JPanel p = new JPanel();
+        var p = new JPanel();
         p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-        JPanel wrap = new JPanel();
+        var wrap = new JPanel();
         wrap.add(new JLabel("Drag from here:"));
         wrap.add(dragFrom);
         p.add(Box.createHorizontalStrut(4));
@@ -159,17 +159,17 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
         p.add(Box.createHorizontalStrut(4));
         getContentPane().add(p, BorderLayout.NORTH);
 
-        JScrollPane sp = new JScrollPane(table);
-        getContentPane().add(sp, BorderLayout.CENTER);
+        var scrollPane = new JScrollPane(table);
+        getContentPane().add(scrollPane, BorderLayout.CENTER);
         fillBox = new JCheckBoxMenuItem("Fill Viewport Height");
         fillBox.addActionListener(this);
 
-        JMenuBar mb = new JMenuBar();
-        JMenu options = new JMenu("Options");
-        mb.add(options);
-        setJMenuBar(mb);
+        var menuBar = new JMenuBar();
+        var options = new JMenu("Options");
+        menuBar.add(options);
+        setJMenuBar(menuBar);
 
-        JMenuItem clear = new JMenuItem("Reset");
+        var clear = new JMenuItem("Reset");
         clear.addActionListener(this);
         options.add(clear);
         options.add(fillBox);
@@ -190,7 +190,7 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
 
     private static void createAndShowGUI() {
         //Create and set up the window.
-        FillViewportHeightDemo test = new FillViewportHeightDemo();
+        var test = new FillViewportHeightDemo();
         test.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Display the window.
@@ -199,12 +199,10 @@ public class FillViewportHeightDemo extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                //Turn off metal's use of bold fonts
-                UIManager.put("swing.boldMetal", Boolean.FALSE);
-                createAndShowGUI();
-            }
+        SwingUtilities.invokeLater(() -> {
+            //Turn off metal's use of bold fonts
+            UIManager.put("swing.boldMetal", Boolean.FALSE);
+            createAndShowGUI();
         });
     }
 }

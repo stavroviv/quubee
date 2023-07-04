@@ -13,13 +13,13 @@ import java.util.function.Predicate;
 public class ComponentUtils {
 
     public static void clearTable(ListTableModel<?> tableModel) {
-        for (int i = tableModel.getRowCount() - 1; i >= 0; i--) {
+        for (var i = tableModel.getRowCount() - 1; i >= 0; i--) {
             tableModel.removeRow(i);
         }
     }
 
     public static void clearTree(TreeNode treeRoot) {
-        for (int i = treeRoot.getChildCount() - 1; i >= 0; i--) {
+        for (var i = treeRoot.getChildCount() - 1; i >= 0; i--) {
             treeRoot.remove(i);
         }
     }
@@ -56,7 +56,7 @@ public class ComponentUtils {
     }
 
     public static <T> void removeFirstRowByPredicate(Predicate<T> predicate, ListTableModel<T> model) {
-        T row = getFirstRowByPredicate(predicate, model);
+        var row = getFirstRowByPredicate(predicate, model);
         if (Objects.nonNull(row)) {
             model.removeRow(model.indexOf(row));
         }
@@ -85,7 +85,7 @@ public class ComponentUtils {
     }
 
     public static TreeNode selectedAvailableField(TreeTable treeTable) {
-        int selectedRow = treeTable.getSelectedRow();
+        var selectedRow = treeTable.getSelectedRow();
         if (selectedRow == -1) {
             return null;
         }

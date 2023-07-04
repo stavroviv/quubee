@@ -2,7 +2,6 @@ package org.quebee.com;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
 import org.junit.jupiter.api.Test;
 import org.quebee.com.qpart.FullQuery;
 
@@ -10,14 +9,14 @@ class StatementToModelTest {
 
     @Test
     void dummyTest() throws JSQLParserException {
-        Statement parse = CCJSqlParserUtil.parse("select table.id from table where table.id = 1");
+        var parse = CCJSqlParserUtil.parse("select table.id from table where table.id = 1");
         System.out.println(parse);
-        FullQuery fullQuery = new FullQuery(parse);
+        var fullQuery = new FullQuery(parse);
     }
 
     @Test
     void dummyTest1() throws JSQLParserException {
-        Statement parse = CCJSqlParserUtil.parse(
+        var parse = CCJSqlParserUtil.parse(
                 "select table.id " +
                         "from table where table.id = 1 " +
                         "union all " +
@@ -25,12 +24,12 @@ class StatementToModelTest {
                         "from table where table.id = 1"
         );
         System.out.println(parse);
-        FullQuery fullQuery = new FullQuery(parse);
+        var fullQuery = new FullQuery(parse);
     }
 
     @Test
     void dummyTest3() throws JSQLParserException {
-        Statement parse = CCJSqlParserUtil.parse(
+        var parse = CCJSqlParserUtil.parse(
                 "with ss as (select table.id, table.id from table where table.id = 1), " +
                         "ss2 as (" +
                         "select table.id from table where table.id = 1 union " +
@@ -43,12 +42,12 @@ class StatementToModelTest {
                         "from table where table.id = 1"
         );
         System.out.println(parse);
-        FullQuery fullQuery = new FullQuery(parse);
+        var fullQuery = new FullQuery(parse);
     }
 
     @Test
     void dummyTest4() throws JSQLParserException {
-        Statement parse = CCJSqlParserUtil.parse(
+        var parse = CCJSqlParserUtil.parse(
                 "with ss as (select table.id from table where table.id = 1), " +
                         "ss2 as (" +
                         "select table.id from table where table.id = 1 union " +
@@ -61,6 +60,6 @@ class StatementToModelTest {
                         "where ss.id = 1"
         );
         System.out.println(parse);
-        FullQuery fullQuery = new FullQuery(parse);
+        var fullQuery = new FullQuery(parse);
     }
 }
